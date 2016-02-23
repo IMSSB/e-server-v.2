@@ -28,6 +28,14 @@
 
 char dir[] = "/e-server/data";
 
+typedef struct
+{
+	int email_address;
+	int num_messages;
+	int num_subjects;
+	int next_message;
+	int next_subject;
+}config;
 
 typedef struct
 {
@@ -100,6 +108,7 @@ criar_lista_de_enderecos()
 {
 
 }
+
 
 //Lista de Textos
 
