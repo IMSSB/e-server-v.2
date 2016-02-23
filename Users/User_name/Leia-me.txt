@@ -1,0 +1,2 @@
+Abra os arquivos bin em um editor de texto, para ler a função de cada um!
+
