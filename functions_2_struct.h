@@ -111,7 +111,7 @@ void error_m(char *errormessage)
 }
 
 //Lista de Endereços Global
-criar_lista_de_enderecos()
+create_address_list()
 {
 
 }
@@ -122,26 +122,26 @@ char* get_address(int account_address)
 	return address;
 }
 
-void criar_config(int account_address)
+void create_config(int account_address)
 {	char *address;
 	FILE *config;
-	configuration nova;
+	configuration new;
 
 
 	address = strcat(dir,get_address(account_address));
 	address = strcat(address,"/config.bin");
 
 	if(!(config=fopen(address,"wb")))
-		error_m("Erro ao criar arquivo");
+		error_m("Error at file allocation");
 	else
 	{
-		nova.account_address=account_address;
-		nova.num_messages=0;
-		nova.num_subjects=0;
-		nova.next_message=0;
-		nova.next_subject=0;
+		new.account_address=account_address;
+		new.num_messages=0;
+		new.num_subjects=0;
+		new.next_message=0;
+		new.next_subject=0;
 
-		fwrite(&nova,sizeof(configuration),1,config);
+		fwrite(&new,sizeof(configuration),1,config);
 		fclose(config);
 	}
 
