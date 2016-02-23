@@ -26,8 +26,13 @@
 //#define dir \e-server-v2\data\ //Diretório no Windows
 //#define dir /e-server-v2/data/ //Diretório no Linux
 
-char dir[] = "/e-server/data/";
-
+char *dir;
+typedef struct
+{
+	int num_addresses;
+	int next_address;
+	char dir[100];
+}settings;
 typedef struct
 {
 	int account_address;
@@ -111,7 +116,28 @@ void error_m(char *errormessage)
 }
 
 //Lista de Endereços Global
-create_address_list()
+void create_address_list(void)
+{
+	FILE *new;
+	addresses ad;
+
+	if(!(new=fopen(dir,"wb")))
+		error_m("Error at file allocation");
+	else
+	{	ad.address[0]=-1;
+		fwrite(&ad,sizeof(addresses),1,new);
+		fclose(new);
+	}
+
+	return;
+}
+
+void add_address()
+{
+
+}
+
+void remove_address()
 {
 
 }
@@ -122,6 +148,21 @@ char* get_address(int account_address)
 	return address;
 }
 
+void setup(char *dir)
+{
+	FILE *set;
+	settings new;
+	char *name = strcat(dir,"/settings.bin");
+	if(!(set=fopen(name,"wb")))
+		error_m("Error at file allocation");
+	else
+	{
+		sprintf(new.dir,"%s",dir);
+		new.num_addresses=0;
+		new.next_address=0;
+		fclose(set);
+	}
+}
 void create_config(int account_address)
 {	char *address;
 	FILE *config;
