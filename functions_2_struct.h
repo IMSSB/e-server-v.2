@@ -27,12 +27,26 @@
 typedef struct
 {
 	char mail[300];
-}MSG;
+
+}mensages;
+
+typedef struct
+{
+	char subject[100];
+
+}subjects;
+
+typedef struct
+{
+	char address[64];
+
+}addresses;
+
 typedef struct //O resto das informações não serve pra busca
 {
 	int dia,mes,ano,horas,minutos,segundos;
 
-}horario;
+}HORARIO;
 
 typedef struct
 {
@@ -40,19 +54,21 @@ typedef struct
 	int destinatario;
 	int assunto;
 	int  MSG;
-	horario data;
+	HORARIO data;
 
 }HISTORICO;
+
 typedef struct
 {
 	int remetente;
 	int destinatario;
 	int assunto;
 	int  MSG;
-	horario data;
+	HORARIO data;
 	int historico[x];
 
 }SUB_NODO;
+
 typedef struct
 {
        int user;
@@ -60,11 +76,12 @@ typedef struct
        int inbox; //Todos vão conter o valor no qual está no vetor o NODO que corresponde
        int outbox;
        int read;
-       int  trash;
-       int  sent;
+       int trash;
+       int sent;
 
 }CONTA;//Conta deve ser uma arvore pois seria totalmente incompreensivel
 //usar metodos tão sofisticados de busca pra tudo exceto pra achar as contas
+
 typedef struct
 {
 	int chaves[k-1];
