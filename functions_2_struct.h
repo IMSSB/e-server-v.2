@@ -15,7 +15,7 @@
 #include <time.h>
 #include "functions_2_mail.h"
 
-#define limpar_tela system("CLS || clear");
+#define cls system("CLS || clear");
 #define pause printf("\nDigite algo para continuar\n"); getchar();
 #define spc printf("  |");
 #define spc_m printf("              ");
@@ -23,12 +23,17 @@
 #define line nl; printf("____________________________________________________________"); nl;
 #define x 10
 #define k 64
+//#define dir \e-server-v2\data\ //Diretório no Windows
+//#define dir /e-server-v2/data/ //Diretório no Linux
+
+char dir[] = "/e-server/data";
+
 
 typedef struct
 {
 	char mail[300];
 
-}mensages;
+}messages;
 
 typedef struct
 {
@@ -63,7 +68,7 @@ typedef struct
 	int remetente;
 	int destinatario;
 	int assunto;
-	int  MSG;
+	int MSG;
 	HORARIO data;
 	int historico[x];
 
@@ -89,6 +94,21 @@ typedef struct
 	int pai;
 
 }NODO;//B, B# ou B+? já passou da hora!!
+
+//Lista de Endereços Global
+criar_lista_de_enderecos()
+{
+
+}
+
+//Lista de Textos
+
+
+//Lista de Assuntos
+
+
+//Lista de Emails
+
 
 
 #endif /* FUNCTIONS_2_STRUCT_H_ */
