@@ -4,7 +4,7 @@
  *  Created on: 11/01/2016
  *      Author: ricardo
  */
-//MUDANÇAS xxx
+//MUDANÇAS
 #ifndef FUNCTIONS_2_STRUCT_H_
 #define FUNCTIONS_2_STRUCT_H_
 
