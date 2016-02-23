@@ -26,16 +26,16 @@
 //#define dir \e-server-v2\data\ //Diretório no Windows
 //#define dir /e-server-v2/data/ //Diretório no Linux
 
-char dir[] = "/e-server/data";
+char dir[] = "/e-server/data/";
 
 typedef struct
 {
-	int email_address;
+	int account_address;
 	int num_messages;
 	int num_subjects;
 	int next_message;
 	int next_subject;
-}config;
+}configuration;
 
 typedef struct
 {
@@ -103,13 +103,50 @@ typedef struct
 
 }NODO;//B, B# ou B+? já passou da hora!!
 
+void error_m(char *errormessage)
+{ /* Função para facilitar exibição de mensagens de erro */
+    printf("\n%s",errormessage);
+    pause;
+    exit(1);
+}
+
 //Lista de Endereços Global
 criar_lista_de_enderecos()
 {
 
 }
 
+char* get_address(int account_address)
+{	char* address;
 
+	return address;
+}
+
+void criar_config(int account_address)
+{	char *address;
+	FILE *config;
+	configuration nova;
+
+
+	address = strcat(dir,get_address(account_address));
+	address = strcat(address,"/config.bin");
+
+	if(!(config=fopen(address,"wb")))
+		error_m("Erro ao criar arquivo");
+	else
+	{
+		nova.account_address=account_address;
+		nova.num_messages=0;
+		nova.num_subjects=0;
+		nova.next_message=0;
+		nova.next_subject=0;
+
+		fwrite(&nova,sizeof(configuration),1,config);
+		fclose(config);
+	}
+
+	return;
+}
 //Lista de Textos
 
 

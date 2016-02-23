@@ -22,19 +22,19 @@ endif
 # Add inputs and outputs from these tool invocations to the build variables 
 
 # All Target
-all: E-server_v2
+all: e-server-v.2
 
 # Tool invocations
-E-server_v2: $(OBJS) $(USER_OBJS)
+e-server-v.2: $(OBJS) $(USER_OBJS)
 	@echo 'Building target: $@'
 	@echo 'Invoking: GCC C Linker'
-	gcc  -o"E-server_v2" $(OBJS) $(USER_OBJS) $(LIBS)
+	gcc  -o "e-server-v.2" $(OBJS) $(USER_OBJS) $(LIBS)
 	@echo 'Finished building target: $@'
 	@echo ' '
 
 # Other Targets
 clean:
-	-$(RM) $(OBJS)$(C_DEPS)$(EXECUTABLES) E-server_v2
+	-$(RM) $(OBJS)$(C_DEPS)$(EXECUTABLES) e-server-v.2
 	-@echo ' '
 
 .PHONY: all clean dependents
