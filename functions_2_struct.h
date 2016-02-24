@@ -303,11 +303,29 @@ int horario_menor(HORARIO a,HORARIO b)
 }
 int horario_menor_igual(HORARIO a,HORARIO b)
 {
-	return(horario_menor(a,b) || horario_igual(a,b));
+	int c;
+
+		for(c=0;c<6;c++)
+		{
+			if(a.data[c] < b.data[c])
+				return 1;
+			if(a.data[c] > b.data[c])
+				return 0;
+		}
+		return 1;//se chegar aqui necessariamente é igual
 }
 int horario_maior_igual(HORARIO a,HORARIO b)
 {
-	return(horario_maior(a,b) || horario_igual(a,b));
+	int c;
+
+		for(c=0;c<6;c++)
+		{
+			if(a.data[c] > b.data[c])
+				return 1;
+			if(a.data[c] < b.data[c])
+				return 0;
+		}
+		return 1;//se chegar aqui necessariamente é igual
 }
 
 #endif /* FUNCTIONS_2_STRUCT_H_ */
