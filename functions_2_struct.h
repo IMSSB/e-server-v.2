@@ -154,7 +154,7 @@ void add_address(char *new)
 		fseek(ad,scroll,0);
 		fread(&ads,sizeof(addresses),1,ad);
 		if(s.next_address!=-1)//caso haja blocos não utilizados a serem subscritos
-			s.next_address=ads.address[0];//definir em remoção a possibilidade disso
+			s.next_address=scanf("d",ads.address);//definir em remoção a possibilidade disso
 		s.num_addresses++;
 		fwrite(&s,sizeof(settings),1,set);//escrevendo alterações feitas
 		fwrite(&ads,sizeof(addresses),1,ad);
@@ -183,7 +183,7 @@ void remove_address(int scroll)
 		fread(&s,sizeof(settings),1,set);
 		fseek(ad,scroll,0);
 		fread(&ads,sizeof(addresses),1,ad);
-		ads.address[0]=s.next_address;
+		sprintf(&(ads.address[0]),"%d", s.next_address);
 		s.next_address=scroll;
 		s.num_addresses--;
 		fwrite(&s,sizeof(settings),1,set);//escrevendo alterações feitas
@@ -233,7 +233,8 @@ void setup(char *dir)
 	return;
 }
 void create_config(int account_address)
-{	char *address;
+{
+	char *address;
 	FILE *config;
 	configuration new;
 
