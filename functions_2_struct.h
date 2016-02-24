@@ -209,6 +209,7 @@ char* get_address(int scroll)
 		fseek(ad,scroll,0);
 		fread(&ads,sizeof(addresses),1,ad);
 		sprintf(address,"%s",ads.address);
+		fclose(ad);
 	}
 	return address;
 }
