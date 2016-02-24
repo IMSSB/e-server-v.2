@@ -62,7 +62,8 @@ typedef struct
 
 typedef struct //O resto das informações não serve pra busca
 {
-	int dia,mes,ano,horas,minutos,segundos;
+	//int dia,mes,ano,horas,minutos,segundos;
+	int data[6];//data ordenada por relevancia (ano,mes,dia,hora,minuto,segundo)
 
 }HORARIO;
 
@@ -264,6 +265,42 @@ void create_config(int account_address)
 
 //Lista de Emails
 
+//Funções de comparação de horário
+int horario_igual(HORARIO a,HORARIO b)
+{
+	int c;
+
+	for(c=0;c<6;c++)
+		if(a.data[c]!=b.data[c])
+			return 0;
+	return 1;
+}
+int horario_maior(HORARIO a,HORARIO b)
+{
+	int c;
+
+	for(c=0;c<6;c++)
+	{
+		if(a.data[c] > b.data[c])
+			return 1;
+		if(a.data[c] < b.data[c])
+			return 0;
+	}
+	return 0;//se chegar aqui necessariamente é igual
+}
+int horario_menor(HORARIO a,HORARIO b)
+{
+	int c;
+
+	for(c=0;c<6;c++)
+	{
+		if(a.data[c] < b.data[c])
+			return 1;
+		if(a.data[c] > b.data[c])
+			return 0;
+	}
+	return 0;//se chegar aqui necessariamente é igual
+}
 
 
 #endif /* FUNCTIONS_2_STRUCT_H_ */
