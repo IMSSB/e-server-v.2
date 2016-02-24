@@ -120,8 +120,9 @@ void create_address_list(void)
 {
 	FILE *new;
 	addresses ad;
+	char *dir_ad=strcat(dir,"/addresses.bin");
 
-	if(!(new=fopen(dir,"wb")))
+	if(!(new=fopen(dir_ad,"wb")))
 		error_m("Error at file allocation");
 	else
 	{	ad.address[0]=-1;
@@ -132,19 +133,83 @@ void create_address_list(void)
 	return;
 }
 
-void add_address()
+void add_address(char *new)
 {
+	FILE *set,*ad;
+	char *dir_s=strcat(dir,"/settings.bin"),*dir_ad=strcat(dir,"/addresses.bin");
+	settings s;
+	addresses ads;
+	int scroll;
+
+	if(!(set=fopen(dir_s,"w+b")))
+		error_m("error at file oppening");
+	if(!(ad=fopen(dir_ad,"w+b")))
+		error_m("error at file oppening");
+
+	{
+		fread(&s,sizeof(settings),1,set);
+		sprintf(ads.address,"%s",new);//guardando novo endereço
+		scroll=(s.next_address == -1)?s.num_addresses:s.next_address;
+		fseek(ad,scroll,0);
+		fread(&ads,sizeof(addresses),1,ad);
+		if(s.next_address!=-1)//caso haja blocos não utilizados a serem subscritos
+			s.next_address=ads.address[0];//definir em remoção a possibilidade disso
+		s.num_addresses++;
+		fwrite(&s,sizeof(settings),1,set);//escrevendo alterações feitas
+		fwrite(&ads,sizeof(addresses),1,ad);
+		fclose(set);
+		fclose(ad);
+	}
+	free(dir_ad);
+	free(dir_s);
+
+	return;
+}
+
+void remove_address(int scroll)
+{
+	FILE *set,*ad;
+	char *dir_s=strcat(dir,"/settings.bin"),*dir_ad=strcat(dir,"/addresses.bin");
+	settings s;
+	addresses ads;
+
+
+	if(!(set=fopen(dir_s,"w+b")))
+		error_m("error at file oppening");
+	if(!(ad=fopen(dir_ad,"w+b")))
+		error_m("error at file oppening");
+	{
+		fread(&s,sizeof(settings),1,set);
+		fseek(ad,scroll,0);
+		fread(&ads,sizeof(addresses),1,ad);
+		ads.address[0]=s.next_address;
+		s.next_address=scroll;
+		s.num_addresses--;
+		fwrite(&s,sizeof(settings),1,set);//escrevendo alterações feitas
+		fwrite(&ads,sizeof(addresses),1,ad);
+		fclose(set);
+		fclose(ad);
+	}
+	free(dir_ad);
+	free(dir_s);
+
+	return;
 
 }
 
-void remove_address()
-{
+char* get_address(int scroll)
+{	char* address = (char*)malloc(sizeof(char)*64),*dir_ad=strcat(dir,"/addresses.bin");
+	FILE *ad;
+	addresses ads;
 
-}
 
-char* get_address(int account_address)
-{	char* address;
-
+	if(!(ad=fopen(dir_ad,"w+b")))
+		error_m("error at file oppening");
+	{
+		fseek(ad,scroll,0);
+		fread(&ads,sizeof(addresses),1,ad);
+		sprintf(address,"%s",ads.address);
+	}
 	return address;
 }
 
@@ -152,8 +217,8 @@ void setup(char *dir)
 {
 	FILE *set;
 	settings new;
-	char *name = strcat(dir,"/settings.bin");
-	if(!(set=fopen(name,"wb")))
+	char *dir_s = strcat(dir,"/settings.bin");
+	if(!(set=fopen(dir_s,"wb")))
 		error_m("Error at file allocation");
 	else
 	{
@@ -162,6 +227,8 @@ void setup(char *dir)
 		new.next_address=0;
 		fclose(set);
 	}
+	free(dir_s);
+	return;
 }
 void create_config(int account_address)
 {	char *address;
@@ -185,7 +252,7 @@ void create_config(int account_address)
 		fwrite(&new,sizeof(configuration),1,config);
 		fclose(config);
 	}
-
+	free(address);
 	return;
 }
 //Lista de Textos
