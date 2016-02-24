@@ -301,6 +301,13 @@ int horario_menor(HORARIO a,HORARIO b)
 	}
 	return 0;//se chegar aqui necessariamente é igual
 }
-
+int horario_menor_igual(HORARIO a,HORARIO b)
+{
+	return(horario_menor(a,b) || horario_igual(a,b));
+}
+int horario_maior_igual(HORARIO a,HORARIO b)
+{
+	return(horario_maior(a,b) || horario_igual(a,b));
+}
 
 #endif /* FUNCTIONS_2_STRUCT_H_ */
