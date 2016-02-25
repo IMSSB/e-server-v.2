@@ -154,7 +154,7 @@ void add_address(char *new)
 		fseek(ad,scroll,0);
 		fread(&ads,sizeof(addresses),1,ad);
 		if(s.next_address!=-1)//caso haja blocos não utilizados a serem subscritos
-			s.next_address=scanf("d",ads.address);//definir em remoção a possibilidade disso
+			sscanf(&(ads.address),"%d",s.next_address);//Atualizando o próximo a ser subscrito
 		s.num_addresses++;
 		fwrite(&s,sizeof(settings),1,set);//escrevendo alterações feitas
 		fwrite(&ads,sizeof(addresses),1,ad);
