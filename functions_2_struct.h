@@ -25,7 +25,7 @@
 #define k 64
 //#define dir \e-server-v2\data\ //Diretório no Windows
 //#define dir /e-server-v2/data/ //Diretório no Linux
-
+//Declarar escopos
 char *dir;
 typedef struct
 {
@@ -114,6 +114,10 @@ void error_m(char *errormessage)
     printf("\n%s",errormessage);
     pause;
     exit(1);
+}
+char* dir_builder(int account_number,char*dir,char* file)
+{
+	return strcat(strcat(dir,get_address(account_number,dir)),file);
 }
 
 //Lista de Endereços Global
@@ -239,7 +243,7 @@ void create_config(int account_address,char *dir)
 	configuration new;
 
 
-	address = strcat(strcat(dir,get_address(account_address,dir)),"/config.bin");
+	address = dir_builder(account_address,dir,"/config.bin");
 
 	if(!(config=fopen(address,"wb")))
 		error_m("Error at file allocation");
@@ -260,7 +264,7 @@ void create_config(int account_address,char *dir)
 //Lista de Textos
 void create_text_list(int account_address,char *dir)
 {
-	char *address=strcat(strcat(dir,get_address(account_address,dir)),"/text_list.bin");
+	char *address=dir_builder(account_address,dir,"/text_list.bin");
 	FILE *text_list;
 	messages msg;
 
@@ -283,7 +287,7 @@ void create_text_list(int account_address,char *dir)
 }
 void add_text(int account_address,char *dir,char *new)
 {
-	char *address = strcat(strcat(dir,get_address(account_address,dir)),"/text_list.bin"),*config_address = strcat(strcat(dir,get_address(account_address,dir)),"/config.bin");
+	char *address = dir_builder(account_address,dir,"/text_list.bin"),*config_address =dir_builder(account_address,dir,"/config.bin");
 	FILE *text_list,*config;
 	messages msg;
 	configuration c;
@@ -302,7 +306,7 @@ void add_text(int account_address,char *dir,char *new)
 	{
 
 		fread(&c,sizeof(configuration),1,config);
-		scroll=c.next_message;
+		scroll=(c.next_message == -1)?c.num_messages:c.next_message;
 		fseek(text_list,scroll,0);
 		fread(&msg,sizeof(messages),1,text_list);
 		sscanf(msg.mail,"%d",c.next_message);
@@ -322,7 +326,7 @@ void add_text(int account_address,char *dir,char *new)
 }
 void remove_text(int account_address,char *dir,int scroll)//precisamos validar as remoções depois
 {
-	char *list_address=strcat(strcat(dir,get_address(account_address,dir)),"/text_list.bin"),*config_address = strcat(strcat(dir,get_address(account_address,dir)),"/config.bin");
+	char *list_address=dir_builder(account_address,dir,"/text_list.bin"),*config_address = dir_builder(account_address,dir,"/config.bin");
 	FILE *text_list,*config;
 	messages msg;
 	configuration c;
@@ -354,7 +358,7 @@ void remove_text(int account_address,char *dir,int scroll)//precisamos validar a
 }
 char* get_text(int account_address, char* dir,int scroll)
 {
-	char *address=strcat(strcat(dir,get_address(account_address,dir)),"/text_list.bin");
+	char *address=dir_builder(account_address,dir,"/text_list.bin");
 	char *t=(char*)malloc(sizeof(char)*300);
 	messages read;
 	FILE *texts;
@@ -377,8 +381,108 @@ char* get_text(int account_address, char* dir,int scroll)
 
 
 //Lista de Assuntos
+void create_subject_list(int account_address,char* dir)
+{
+	char *subjects_address=dir_builder(account_address,dir,"/subject_list.bin");//fazer uma função pra isso!!!
+	FILE *subject_list;
+	subjects sub;
 
-
+	if(!(subject_list=fopen(subjects_address,"wb")))
+	{
+		error_m("Error at file allocation");
+	}
+	else
+	{
+		sprintf(sub.subject,"%d",-1);
+		fwrite(&sub,sizeof(subjects),1,subject_list);
+		fclose(subject_list);
+	}
+	free(subjects_address);
+	return;
+}
+void add_subject(int account_address,char*dir,char *new)
+{
+	char *address=dir_builder(account_address,dir,"/subject_list.bin"),*config_address=dir_builder(account_address,dir,"/config.bin");
+	FILE *subject_list,*config;
+	configuration c;
+	subjects s;
+	int scroll;
+	if(!(config=fopen(config_address,"w+b")))
+	{
+		error_m("Error at file oppening");
+	}
+	else
+	if(!(subject_list=fopen(address,"w+b")))
+	{
+		error_m("Error at file oppening");
+	}
+	else
+	{
+		fread(&c,sizeof(configuration),1,config);
+		scroll=(c.next_subject==-1)?c.num_subjects:c.next_subject;
+		fseek(subject_list,scroll,0);
+		fread(&s,sizeof(subjects),1,subject_list);
+		if(c.next_subject != -1)
+			sscanf(s.subject,"%d",c.next_subject);
+		sprintf(s.subject,"%s",new);
+		c.num_subjects++;
+		fwrite(&c,sizeof(configuration),1,config);
+		fwrite(&s,sizeof(subjects),1,subject_list);
+		fclose(config);
+		fclose(subject_list);
+	}
+	free(address);
+	free(config_address);
+	return;
+}
+void remove_subject(account_address,char *dir,int scroll)
+{
+	char *address=dir_builder(account_address,dir,"/subject_list.bin"),*config_address=dir_builder(account_address,dir,"/config.bin");
+	FILE *subject_list,*config;
+	configuration c;
+	subjects s;
+	int scroll;
+	if(!(config=fopen(config_address,"w+b")))
+	{
+		error_m("Error at file oppening");
+	}
+	else
+	if(!(subject_list=fopen(address,"w+b")))
+	{
+		error_m("Error at file oppening");
+	}
+	else
+	{	fread(&c,sizeof(configuration),1,config);
+		sprintf(s.subject,"%d",c.next_subject);
+		fseek(subject_list,scroll,0);
+		fwrite(&s,sizeof(subjects),1,subject_list);
+		c.num_subjects--;
+		c.next_subject=scroll;
+		fwrite(&c,sizeof(configuration),1,config);
+		fclose(config);
+		fclose(subject_list);
+	}
+	free(address);
+	free(config_address);
+	return;
+}
+char* get_subject(int account_address,char *dir,int scroll)
+{	char *address=dir_builder(account_address,dir,"/subject_list.bin");
+	FILE *subject_list;
+	subjects s;
+	if(!(subject_list=fopen(address,"w+b")))
+	{
+		error_m("Error at file oppening");
+	}
+	else
+	{
+		fseek(subject_list,scroll,0);
+		fread(&s,sizeof(subjects),1,subject_list);
+		fclose(subject_list);
+	}
+	free(address);
+	return s.subject;
+}
 //Lista de Emails
 
 //Funções de comparação de horário
