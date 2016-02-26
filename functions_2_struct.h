@@ -26,20 +26,45 @@
 //#define dir \e-server-v2\data\ //Diretório no Windows
 //#define dir /e-server-v2/data/ //Diretório no Linux
 //Declarar escopos
-char *dir;
+
+void error_m(char *errormessage);
+char* dir_builder(int account_number,char*dir,char* file);
+void create_address_list(char *dir);
+void add_address(char *new,char *dir);
+void remove_address(int scroll,char *dir);
+char* get_address(int scroll,char *dir);
+void setup(char *dir);
+void create_config(int account_address,char *dir);
+void create_text_list(int account_address,char *dir);
+void add_text(int account_address,char *dir,char *new);
+void remove_text(int account_address,char *dir,int scroll);
+char* get_text(int account_address, char* dir,int scroll);
+void create_subject_list(int account_address,char* dir);
+void add_subject(int account_address,char*dir,char *new);
+void remove_subject(account_address,char *dir,int scroll);
+char* get_subject(int account_address,char *dir,int scroll);
+int horario_igual(HORARIO a,HORARIO b);
+int horario_maior(HORARIO a,HORARIO b);
+int horario_menor(HORARIO a,HORARIO b);
+int horario_menor_igual(HORARIO a,HORARIO b);
+int horario_maior_igual(HORARIO a,HORARIO b);
+
 typedef struct
 {
 	int num_addresses;
 	int next_address;
 	char dir[100];
 }settings;
+
 typedef struct
 {
 	int account_address;
 	int num_messages;
 	int num_subjects;
+	int num_emails;
 	int next_message;
 	int next_subject;
+	int next_email;
 }configuration;
 
 typedef struct
@@ -115,13 +140,14 @@ void error_m(char *errormessage)
     pause;
     exit(1);
 }
+
 char* dir_builder(int account_number,char*dir,char* file)
 {
-	return strcat(strcat(dir,get_address(account_number,dir)),file);
+	return strcat(strcat(strcat(dir,"/"),get_address(account_number,dir)),file);
 }
 
 //Lista de Endereços Global
-void create_address_list(char *dir)
+void create_address_list(char *dir) //
 {
 	FILE *new;
 	addresses ad;
@@ -147,9 +173,9 @@ void add_address(char *new,char *dir)
 	int scroll;
 
 	if(!(set=fopen(dir_s,"w+b")))
-		error_m("error at file oppening");
+		error_m("Error at file oppening");
 	if(!(ad=fopen(dir_ad,"w+b")))
-		error_m("error at file oppening");
+		error_m("Error at file oppening");
 
 	{
 		fread(&s,sizeof(settings),1,set);
@@ -180,9 +206,9 @@ void remove_address(int scroll,char *dir)
 
 
 	if(!(set=fopen(dir_s,"w+b")))
-		error_m("error at file oppening");
+		error_m("Error at file oppening");
 	if(!(ad=fopen(dir_ad,"w+b")))
-		error_m("error at file oppening");
+		error_m("Error at file oppening");
 	{
 		fread(&s,sizeof(settings),1,set);
 		fseek(ad,scroll,0);
@@ -199,7 +225,6 @@ void remove_address(int scroll,char *dir)
 	free(dir_s);
 
 	return;
-
 }
 
 char* get_address(int scroll,char *dir)
@@ -207,15 +232,15 @@ char* get_address(int scroll,char *dir)
 	FILE *ad;
 	addresses ads;
 
-
 	if(!(ad=fopen(dir_ad,"w+b")))
-		error_m("error at file oppening");
+		error_m("Error at file oppening");
 	{
 		fseek(ad,scroll,0);
 		fread(&ads,sizeof(addresses),1,ad);
 		sprintf(address,"%s",ads.address);
 		fclose(ad);
 	}
+
 	return address;
 }
 //Configuração
@@ -224,6 +249,7 @@ void setup(char *dir)
 	FILE *set;
 	settings new;
 	char *dir_s = strcat(dir,"/settings.bin");
+
 	if(!(set=fopen(dir_s,"wb")))
 		error_m("Error at file allocation");
 	else
@@ -234,6 +260,7 @@ void setup(char *dir)
 		fclose(set);
 	}
 	free(dir_s);
+
 	return;
 }
 void create_config(int account_address,char *dir)
@@ -241,7 +268,6 @@ void create_config(int account_address,char *dir)
 	char *address;
 	FILE *config;
 	configuration new;
-
 
 	address = dir_builder(account_address,dir,"/config.bin");
 
@@ -252,13 +278,16 @@ void create_config(int account_address,char *dir)
 		new.account_address=account_address;
 		new.num_messages=0;
 		new.num_subjects=0;
+		new.num_emails=0;
 		new.next_message=0;
 		new.next_subject=0;
+		new.next_email=0;
 
 		fwrite(&new,sizeof(configuration),1,config);
 		fclose(config);
 	}
 	free(address);
+
 	return;
 }
 //Lista de Textos
@@ -267,7 +296,6 @@ void create_text_list(int account_address,char *dir)
 	char *address=dir_builder(account_address,dir,"/text_list.bin");
 	FILE *text_list;
 	messages msg;
-
 
 	if(!(text_list=fopen(address,"wb")))
 	{
@@ -280,11 +308,11 @@ void create_text_list(int account_address,char *dir)
 		fclose(text_list);
 
 	}
-
 	free(address);
-	return;
 
+	return;
 }
+
 void add_text(int account_address,char *dir,char *new)
 {
 	char *address = dir_builder(account_address,dir,"/text_list.bin"),*config_address =dir_builder(account_address,dir,"/config.bin");
@@ -318,12 +346,12 @@ void add_text(int account_address,char *dir,char *new)
 		fclose(text_list);
 
 	}
-
 	free(address);
 	free(config_address);
-	return;
 
+	return;
 }
+
 void remove_text(int account_address,char *dir,int scroll)//precisamos validar as remoções depois
 {
 	char *list_address=dir_builder(account_address,dir,"/text_list.bin"),*config_address = dir_builder(account_address,dir,"/config.bin");
@@ -354,8 +382,10 @@ void remove_text(int account_address,char *dir,int scroll)//precisamos validar a
 	}
 	free(list_address);
 	free(config_address);
+
 	return;
 }
+
 char* get_text(int account_address, char* dir,int scroll)
 {
 	char *address=dir_builder(account_address,dir,"/text_list.bin");
@@ -373,9 +403,9 @@ char* get_text(int account_address, char* dir,int scroll)
 		fread(&read,sizeof(messages),1,texts);
 		fclose(texts);
 	}
-
 	free(address);
 	sprintf(t,"%s",read.mail);
+
 	return t;
 }
 
@@ -398,8 +428,10 @@ void create_subject_list(int account_address,char* dir)
 		fclose(subject_list);
 	}
 	free(subjects_address);
+
 	return;
 }
+
 void add_subject(int account_address,char*dir,char *new)
 {
 	char *address=dir_builder(account_address,dir,"/subject_list.bin"),*config_address=dir_builder(account_address,dir,"/config.bin");
@@ -407,6 +439,7 @@ void add_subject(int account_address,char*dir,char *new)
 	configuration c;
 	subjects s;
 	int scroll;
+
 	if(!(config=fopen(config_address,"w+b")))
 	{
 		error_m("Error at file oppening");
@@ -433,8 +466,10 @@ void add_subject(int account_address,char*dir,char *new)
 	}
 	free(address);
 	free(config_address);
+
 	return;
 }
+
 void remove_subject(account_address,char *dir,int scroll)
 {
 	char *address=dir_builder(account_address,dir,"/subject_list.bin"),*config_address=dir_builder(account_address,dir,"/config.bin");
@@ -442,6 +477,7 @@ void remove_subject(account_address,char *dir,int scroll)
 	configuration c;
 	subjects s;
 	int scroll;
+
 	if(!(config=fopen(config_address,"w+b")))
 	{
 		error_m("Error at file oppening");
@@ -464,12 +500,16 @@ void remove_subject(account_address,char *dir,int scroll)
 	}
 	free(address);
 	free(config_address);
+
 	return;
 }
+
 char* get_subject(int account_address,char *dir,int scroll)
-{	char *address=dir_builder(account_address,dir,"/subject_list.bin");
+{
+	char *address=dir_builder(account_address,dir,"/subject_list.bin");
 	FILE *subject_list;
 	subjects s;
+
 	if(!(subject_list=fopen(address,"w+b")))
 	{
 		error_m("Error at file oppening");
@@ -481,9 +521,43 @@ char* get_subject(int account_address,char *dir,int scroll)
 		fclose(subject_list);
 	}
 	free(address);
+
 	return s.subject;
 }
 //Lista de Emails
+void create_email_list(int account_address,char *dir)
+{
+	char *address = dir_builder(account_address,dir,"/email_list.bin");
+	FILE *email_list;
+	SUB_NODO new;
+
+	if (!(email_list=fopen(address,"wb")))
+			error_n("Error at file allocation");
+	else
+	{
+		new.remetente=-1;
+		fwrite(&new,sizeof(messages),1,email_list);
+		fclose(email_list);
+	}
+	free(address);
+
+	return;
+}
+void add_email(int account_address,char *dir,int remetente,int destinario, int assunto, int MSG, HORARIO data, int historico[x])
+{
+
+
+	return;
+}
+
+
+void remove_email(int account_address,char *dir,int scroll)
+{
+
+
+	return;
+}
+
 
 //Funções de comparação de horário
 int horario_igual(HORARIO a,HORARIO b)
@@ -495,6 +569,7 @@ int horario_igual(HORARIO a,HORARIO b)
 			return 0;
 	return 1;
 }
+
 int horario_maior(HORARIO a,HORARIO b)
 {
 	int c;
@@ -508,6 +583,7 @@ int horario_maior(HORARIO a,HORARIO b)
 	}
 	return 0;//se chegar aqui necessariamente é igual
 }
+
 int horario_menor(HORARIO a,HORARIO b)
 {
 	int c;
@@ -521,6 +597,7 @@ int horario_menor(HORARIO a,HORARIO b)
 	}
 	return 0;//se chegar aqui necessariamente é igual
 }
+
 int horario_menor_igual(HORARIO a,HORARIO b)
 {
 	int c;
@@ -534,6 +611,7 @@ int horario_menor_igual(HORARIO a,HORARIO b)
 		}
 		return 1;//se chegar aqui necessariamente é igual
 }
+
 int horario_maior_igual(HORARIO a,HORARIO b)
 {
 	int c;
