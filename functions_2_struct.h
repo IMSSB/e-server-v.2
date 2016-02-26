@@ -352,7 +352,28 @@ void remove_text(int account_address,char *dir,int scroll)//precisamos validar a
 	free(config_address);
 	return;
 }
-get_text();
+char* get_text(int account_address, char* dir,int scroll)
+{
+	char *address=strcat(strcat(dir,get_address(account_address,dir)),"/text_list.bin");
+	char *t=(char*)malloc(sizeof(char)*300);
+	messages read;
+	FILE *texts;
+
+	if(!(texts=fopen(address,"rb")))
+	{
+		error_m("Eror at file oppening");
+	}
+	else
+	{
+		fseek(texts,scroll,0);
+		fread(&read,sizeof(messages),1,texts);
+		fclose(texts);
+	}
+
+	free(address);
+	sprintf(t,"%s",read.mail);
+	return t;
+}
 
 
 //Lista de Assuntos
