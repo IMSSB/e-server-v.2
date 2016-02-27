@@ -122,18 +122,28 @@ typedef struct
 
 typedef struct
 {
-	int chaves[k-1];
-	int filhos[k];
+	int chaves[k-1]; 	// Campo que é escolhido convenientemente ao funcionamento do sistema. (messages, subjects, HORARIO
+	int addresses[k-1];	// Apontam para Listas de SUB_NODO
+	int filhos[k]; 		// NODOS
 	int pai;
+	char num_chaves;	// Escolha do tipo char devido ao tamanho máximo escalado para o programa, 64 filhos e 63 chaves.
+	char num_filhos;	// Número de Filhos. Também pode indicar se o NODO é uma folha ou não, 0 = folha.
 
-}NODO;	//B, B# ou B+? já passou da hora!!
-		// B, PORRA!
+}NODO;	//	B, B# ou B+? já passou da hora!!
+		// 	B, PORRA!
 
 typedef struct
 {
-	NODO *arvoreb;
+	int arvoreb;
 
 }ARVOREB;
+
+typedef struct
+{
+	int address;
+	int next;
+
+}LISTA;
 
 void error_m(char *errormessage)
 { 	/* Função para facilitar exibição de mensagens de erro */
