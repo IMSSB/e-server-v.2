@@ -587,7 +587,7 @@ void create_email_list(int account_address,char *dir)
 }
 
 void add_email(int account_address,char *dir,int remetente,int destinatario, int assunto, int MSG, HORARIO data, int historico)
-{ 	//	Função para adicionar email na Lista de Emails
+{ 	//	Função para adicionar um email na Lista de Emails
 	char *address=dir_builder(account_address,dir,"/email_list.bin"),*config_address=dir_builder(account_address,dir,"/config.bin");
 	FILE *email_list, *config; 	// 	Arquivos que serão abertos
 	configuration c; 			//	Manipulação da configuração
@@ -658,11 +658,14 @@ void remove_email(int account_address,char *dir,int scroll)
 
 	return;
 }
+
+//LISTA ENCADEADA DE EMAILS
 void create_LISTA_ENC(int account_address, char *dir)
-{
+{	// Função para criar o arquivo da Lista de Listas Encadeada de Emails
 	char* address = dir_builder(account_address,dir,"/lista_enc.bin");
 	FILE *lista_enc;
 	LISTA l;
+
 	if(!(lista_enc=fopen(address,"wb")))
 		error_m("Error at file allocation");
 	else
@@ -672,10 +675,12 @@ void create_LISTA_ENC(int account_address, char *dir)
 		fclose(lista_enc);
 	}
 	free(address);
+
 	return;
 }
+
 void add_LISTA_ENC(int account_address, char *dir,int antecessor,int novo)
-{
+{	//	Função para adicionar lista à Lista de Listas Encadeadas de Emails
 	char   *address = dir_builder(account_address,dir,"/lista_enc.bin"),*config_address=dir_builder(account_address,dir,"/config.bin");
 	FILE *lista_enc,*config;
 	LISTA a;
@@ -713,13 +718,12 @@ void add_LISTA_ENC(int account_address, char *dir,int antecessor,int novo)
 	}
 	free(address);
 	free(config_address);
+
 	return;
-
-
 }
-void remove_LISTA_ENC(int account_address, char *dir,int antecessor,int atual)
-{
 
+void remove_LISTA_ENC(int account_address, char *dir,int antecessor,int atual)
+{	//	Função para remover lista da Lista de Listas Encadeadas de Emails
 	char   *address = dir_builder(account_address,dir,"/lista_enc.bin"),*config_address=dir_builder(account_address,dir,"/config.bin");
 	FILE *lista_enc,*config;
 	LISTA a;
@@ -752,11 +756,13 @@ void remove_LISTA_ENC(int account_address, char *dir,int antecessor,int atual)
 	}
 	free(address);
 	free(config_address);
-	return;
 
+	return;
 }
+
+//LISTA DE HORÁRIOS
 void create_horario_list(int account_address, char *dir)
-{
+{	// Função para criar arquivo da Lista de Horários
 	char *address = dir_builder(account_address,dir,"/horario_list.bin");
 	FILE *horarios;
 	HORARIO a;
@@ -770,25 +776,26 @@ void create_horario_list(int account_address, char *dir)
 		fclose(horarios);
 	}
 	free(address);
+
 	return;
-
 }
-void add_horario(int account_address, char *dir,HORARIO novo)
-{
 
+void add_horario(int account_address, char *dir,HORARIO novo)
+{	// Função para adicionar horário à Lista de Horários
 	char *address = dir_builder(account_address,dir,"/horario_list.bin"),*config_address=dir_builder(account_address,dir,"/config.bin");
 	FILE *horarios,*config;
 	HORARIO a;
 	configuration c;
 	int scroll;
+
 	if(!(config=fopen(config_address,"w+b")))
 		error_m("Error at file oppening");
 	else
 	if(!(horarios=fopen(address,"w+b")))
 		error_m("Error at file allocation");
 	else
-	{	fread(&c,sizeof(configuration),1,config);
-
+	{
+		fread(&c,sizeof(configuration),1,config);
 		scroll=(c.next_HORARIO==-1)?c.num_HORARIO:c.next_HORARIO;
 		fseek(horarios,scroll,0);
 		fread(&a,sizeof(HORARIO),1,horarios);
@@ -804,10 +811,12 @@ void add_horario(int account_address, char *dir,HORARIO novo)
 	}
 	free(address);
 	free(config_address);
+
 	return;
 }
+
 void remove_horario(int account_address, char *dir,int scroll)
-{
+{	// Função para remover horário da Lista de Horários
 	char *address = dir_builder(account_address,dir,"/horario_list.bin"),*config_address=dir_builder(account_address,dir,"/config.bin");
 	FILE *horarios,*config;
 	HORARIO a;
@@ -832,8 +841,10 @@ void remove_horario(int account_address, char *dir,int scroll)
 	}
 	free(address);
 	free(config_address);
+
 	return;
 }
+
 //FUNÇÕES DE COMPARAÇÃO DE HORÁRIO
 int horario_igual(HORARIO a,HORARIO b)
 {
