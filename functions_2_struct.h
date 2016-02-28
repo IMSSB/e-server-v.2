@@ -137,7 +137,10 @@ typedef struct
 	int arvoreb;
 
 }ARVOREB;
-
+typedef struct
+{
+	char key[30];
+}PALAVRA;
 typedef struct
 {
 	int address;
