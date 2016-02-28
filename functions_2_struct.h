@@ -27,31 +27,7 @@
 //#define dir /e-server-v2/data/ //Diretório no Linux
 
 
-//ESCOPO DAS FUNÇÕES
-void error_m(char *errormessage);
-char* dir_builder(int account_number,char*dir,char* file);
-void create_address_list(char *dir);
-void add_address(char *new,char *dir);
-void remove_address(int scroll,char *dir);
-char* get_address(int scroll,char *dir);
-void setup(char *dir);
-void create_config(int account_address,char *dir);
-void create_text_list(int account_address,char *dir);
-void add_text(int account_address,char *dir,char *new);
-void remove_text(int account_address,char *dir,int scroll);
-char* get_text(int account_address, char* dir,int scroll);
-void create_subject_list(int account_address,char* dir);
-void add_subject(int account_address,char*dir,char *new);
-void remove_subject(account_address,char *dir,int scroll);
-char* get_subject(int account_address,char *dir,int scroll);
-void create_email_list(int account_address,char *dir);
-void add_email(int account_address,char *dir,int remetente,int destinatario, int assunto, int MSG, HORARIO data, int historico);
-void remove_email(int account_address,char *dir,int scroll);
-int horario_igual(HORARIO a,HORARIO b);
-int horario_maior(HORARIO a,HORARIO b);
-int horario_menor(HORARIO a,HORARIO b);
-int horario_menor_igual(HORARIO a,HORARIO b);
-int horario_maior_igual(HORARIO a,HORARIO b);
+
 
 typedef struct
 {
@@ -66,9 +42,12 @@ typedef struct
 	int num_messages;
 	int num_subjects;
 	int num_emails;
+	int num_LISTA_ENC;
 	int next_message;
 	int next_subject;
 	int next_email;
+	int next_LISTA_ENC;
+
 }configuration;
 
 typedef struct
@@ -139,7 +118,9 @@ typedef struct
 }ARVOREB;
 typedef struct
 {
+
 	char key[30];
+
 }PALAVRA;
 typedef struct
 {
@@ -147,6 +128,36 @@ typedef struct
 	int next;
 
 }LISTA;
+
+//ESCOPO DAS FUNÇÕES
+void error_m(char *errormessage);
+char* dir_builder(int account_number,char*dir,char* file);
+void create_address_list(char *dir);
+void add_address(char *new,char *dir);
+void remove_address(int scroll,char *dir);
+char* get_address(int scroll,char *dir);
+void setup(char *dir);
+void create_config(int account_address,char *dir);
+void create_text_list(int account_address,char *dir);
+void add_text(int account_address,char *dir,char *new);
+void remove_text(int account_address,char *dir,int scroll);
+char* get_text(int account_address, char* dir,int scroll);
+void create_subject_list(int account_address,char* dir);
+void add_subject(int account_address,char *dir,char *new);
+void remove_subject(int account_address,char *dir,int scroll);
+char* get_subject(int account_address,char *dir,int scroll);
+void create_email_list(int account_address,char *dir);
+void add_email(int account_address,char *dir,int remetente,int destinatario, int assunto, int MSG, HORARIO data, int historico);
+void remove_email(int account_address,char *dir,int scroll);
+void create_LISTA_ENC(int account_address, char *dir);
+void add_LISTA_ENC(int account_address, char *dir,int ultimo,int novo);
+void remove_LISTA_ENC(int account_address, char *dir,int anterior,int atual);//A chamada desta função deve ser feita dentro da arvore onde é posível ter essas informações
+int horario_igual(HORARIO a,HORARIO b);
+int horario_maior(HORARIO a,HORARIO b);
+int horario_menor(HORARIO a,HORARIO b);
+int horario_menor_igual(HORARIO a,HORARIO b);
+int horario_maior_igual(HORARIO a,HORARIO b);
+
 
 void error_m(char *errormessage)
 { 	/* Função para facilitar exibição de mensagens de erro */
@@ -301,6 +312,8 @@ void create_config(int account_address,char *dir)
 		new.next_message=0;
 		new.next_subject=0;
 		new.next_email=0;
+		new.next_LISTA_ENC=0;
+		new.num_LISTA_ENC=0;
 
 		fwrite(&new,sizeof(configuration),1,config);
 		fclose(config);
@@ -487,7 +500,7 @@ void add_subject(int account_address,char*dir,char *new)
 	return;
 }
 
-void remove_subject(account_address,char *dir,int scroll)
+void remove_subject(int account_address,char *dir,int scroll)
 {	// Função para remover um assunto da Lista de Assuntos
 	char *address=dir_builder(account_address,dir,"/subject_list.bin"),*config_address=dir_builder(account_address,dir,"/config.bin");
 	FILE *subject_list,*config;
@@ -524,21 +537,25 @@ char* get_subject(int account_address,char *dir,int scroll)
 {	//	Função que retorna um assunto da Lista de Assuntos dada sua posição (scroll)
 	char *address=dir_builder(account_address,dir,"/subject_list.bin");
 	FILE *subject_list;
+	char *sub;
 	subjects s;
+
+
 
 	if(!(subject_list=fopen(address,"w+b")))
 	{
 		error_m("Error at file oppening");
 	}
 	else
-	{
+	{	sub=(char*)malloc(sizeof(char)*100);
 		fseek(subject_list,scroll,0);
 		fread(&s,sizeof(subjects),1,subject_list);
 		fclose(subject_list);
+		sprintf(sub,"%s",s.subject);
 	}
 	free(address);
 
-	return s.subject;
+	return sub;
 }
 
 //LISTA DE EMAILS
@@ -549,7 +566,7 @@ void create_email_list(int account_address,char *dir)
 	SUB_NODO new;
 
 	if (!(email_list=fopen(address,"wb")))
-			error_n("Error at file allocation");
+			error_m("Error at file allocation");
 	else
 	{
 		new.remetente=-1;
@@ -633,7 +650,103 @@ void remove_email(int account_address,char *dir,int scroll)
 
 	return;
 }
+void create_LISTA_ENC(int account_address, char *dir)
+{
+	char* address = dir_builder(account_address,dir,"/lista_enc.bin");
+	FILE *lista_enc;
+	LISTA l;
+	if(!(lista_enc=fopen(address,"wb")))
+		error_m("Error at file allocation");
+	else
+	{
+		l.next=l.address==-1;
+		fwrite(&l,sizeof(LISTA),1,lista_enc);
+		fclose(lista_enc);
+	}
+	free(address);
+	return;
+}
+void add_LISTA_ENC(int account_address, char *dir,int antecessor,int novo)
+{
+	char   *address = dir_builder(account_address,dir,"/lista_enc.bin"),*config_address=dir_builder(account_address,dir,"/config.bin");
+	FILE *lista_enc,*config;
+	LISTA a;
+	configuration c;
+	int scroll,aux=-1;
 
+	if(!(config=fopen(config_address,"w+b")))
+		error_m("Error at file oppening");
+	else
+	if(!(lista_enc=fopen(address,"w+b")))
+		error_m("Error at file oppening");
+	else
+	{
+		fread(&c,sizeof(configuration),1,config);
+		scroll = (c.next_LISTA_ENC==-1)?c.num_LISTA_ENC:c.next_LISTA_ENC;
+		if(antecessor >= 0)
+		{
+			fseek(lista_enc,antecessor,0);
+			fread(&a,sizeof(LISTA),1,lista_enc);
+			aux = a.next;
+			a.next = scroll;
+			fwrite(&a,sizeof(LISTA),1,lista_enc);
+		}
+		rewind(lista_enc);
+		fseek(lista_enc,scroll,0);
+		fread(&a,sizeof(LISTA),1,lista_enc);
+		if(c.next_LISTA_ENC!=-1)
+			c.next_LISTA_ENC=a.next;
+		a.next=aux;
+		a.address = novo;
+		fwrite(&a,sizeof(LISTA),1,lista_enc);
+		fwrite(&c,sizeof(configuration),1,config);
+		fclose(lista_enc);
+		fclose(config);
+	}
+	free(address);
+	free(config_address);
+	return;
+
+
+}
+void remove_LISTA_ENC(int account_address, char *dir,int antecessor,int atual)
+{
+
+	char   *address = dir_builder(account_address,dir,"/lista_enc.bin"),*config_address=dir_builder(account_address,dir,"/config.bin");
+	FILE *lista_enc,*config;
+	LISTA a;
+	configuration c;
+	int aux;
+
+	if(!(config=fopen(config_address,"w+b")))
+		error_m("Error at file oppening");
+	else
+	if(!(lista_enc=fopen(address,"w+b")))
+		error_m("Error at file oppening");
+	else
+	{
+		fread(&c,sizeof(configuration),1,config);
+		fseek(lista_enc,atual,0);
+		fread(&a,sizeof(LISTA),1,lista_enc);
+		aux = a.next;
+		a.next=c.next_LISTA_ENC;
+		c.num_LISTA_ENC--;
+		c.next_LISTA_ENC=atual;
+		if(antecessor >= 0)
+		{
+			fseek(lista_enc,antecessor,0);
+			fread(&a,sizeof(LISTA),1,lista_enc);
+			a.next=aux;
+			fwrite(&a,sizeof(LISTA),1,lista_enc);
+		}
+		fwrite(&c,sizeof(configuration),1,config);
+		fclose(lista_enc);
+	}
+	free(address);
+	free(config_address);
+	return;
+
+}
 //FUNÇÕES DE COMPARAÇÃO DE HORÁRIO
 int horario_igual(HORARIO a,HORARIO b)
 {
