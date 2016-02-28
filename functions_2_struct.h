@@ -178,14 +178,14 @@ void error_m(char *errormessage)
 }
 
 char *filepath_gen(char *dir, char *file)
-{
+{ 	// 	Função para gerar ponteiro para char com o diretório
 	char *path=(char *) malloc(sizeof(char)*250);
 	printf("minitest\n");
 	sprintf(path, "%s",dir);
 	strcat(path,file);
 	return path;
 }
-
+// Não se pode usar strcat em string constante, perdi um tempinho com isso.
 char* dir_builder(int account_number,char*dir,char* file)
 {	//	Função para gerar o caminho do arquivo
 	return strcat(strcat(strcat(dir,"/"),get_address(account_number,dir)),file);
