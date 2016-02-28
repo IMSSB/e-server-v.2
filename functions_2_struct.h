@@ -152,6 +152,9 @@ void remove_email(int account_address,char *dir,int scroll);
 void create_LISTA_ENC(int account_address, char *dir);
 void add_LISTA_ENC(int account_address, char *dir,int ultimo,int novo);
 void remove_LISTA_ENC(int account_address, char *dir,int anterior,int atual);//A chamada desta função deve ser feita dentro da arvore onde é posível ter essas informações
+void create_horario_list(int account_address, char *dir);
+void add_horario(int account_address, char *dir,HORARIO novo);
+void remove_horario(int account_address, char *dir,int scroll);
 int horario_igual(HORARIO a,HORARIO b);
 int horario_maior(HORARIO a,HORARIO b);
 int horario_menor(HORARIO a,HORARIO b);
