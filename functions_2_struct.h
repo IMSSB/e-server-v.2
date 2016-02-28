@@ -177,6 +177,15 @@ void error_m(char *errormessage)
     exit(1);
 }
 
+char *filepath_gen(char *dir, char *file)
+{
+	char *path=(char *) malloc(sizeof(char)*250);
+	printf("minitest\n");
+	sprintf(path, "%s",dir);
+	strcat(path,file);
+	return path;
+}
+
 char* dir_builder(int account_number,char*dir,char* file)
 {	//	Função para gerar o caminho do arquivo
 	return strcat(strcat(strcat(dir,"/"),get_address(account_number,dir)),file);
@@ -187,8 +196,9 @@ void create_address_list(char *dir) //
 {	// Função para criar o arquivo da Lista de Endereços
 	FILE *new;
 	addresses ad;
-	char *dir_ad=strcat(dir,"/addresses.bin");
-
+	char *dir_ad=filepath_gen(dir,"addresses.bin");
+	printf("TEST1\n");
+	printf("TEST2: %s\n",dir_ad);
 	if(!(new=fopen(dir_ad,"wb")))
 		error_m("Error at file allocation");
 	else
@@ -204,12 +214,12 @@ void create_address_list(char *dir) //
 void add_address(char *new,char *dir)
 {	//	Função para adicionar um endereço na Lista de Endereços
 	FILE *set,*ad;
-	char *dir_s=strcat(dir,"/settings.bin"),*dir_ad=strcat(dir,"/addresses.bin");
+	char *dir_s=filepath_gen(dir,"settings.bin");
+	char *dir_ad=filepath_gen(dir,"addresses.bin");
 	settings s;
 	addresses ads;
 	int scroll;		//	Variáveis auxliares
 	fpos_t c;
-
 	if(!(set=fopen(dir_s,"r+b")))				// Confirmando abertura dos arquivos de settings e addresses
 		error_m("Error at file oppening");
 	if(!(ad=fopen(dir_ad,"r+b")))
@@ -218,7 +228,8 @@ void add_address(char *new,char *dir)
 	fread(&s,sizeof(settings),1,set);	//	Lendo arquivo de configurações e armazenando na variável s
 	rewind(set);						//	Colocando a posição do fluxo de dados no ínicio
 	scroll=(s.next_address == -1)?s.num_addresses:s.next_address;	//	Definindo a posição em que o novo endereço será salvo no arquivo addresses.bin
-	fseek(ad,scroll*sizeof(ad),SEEK_SET);							//	Deslocando a posição do buffer no arquivo addresses.bin
+	printf("NEXT: %d\nNUM AD: %d",s.next_address,s.num_addresses);
+	fseek(ad,scroll*sizeof(addresses),SEEK_SET);							//	Deslocando a posição do buffer no arquivo addresses.bin
 	if(s.next_address!=-1)											//	caso haja blocos não utilizados a serem subscritos
 	{
 		fgetpos(ad,&c);								//	Guardando a posição atual do fluxo de dados
@@ -242,7 +253,7 @@ void add_address(char *new,char *dir)
 void remove_address(int scroll,char *dir)
 {	//	Função para remover um endereço da Lista de Endereços
 	FILE *set,*ad;
-	char *dir_s=strcat(dir,"/settings.bin"),*dir_ad=strcat(dir,"/addresses.bin");
+	char *dir_s=filepath_gen(dir,"settings.bin"),*dir_ad=filepath_gen(dir,"addresses.bin");
 	settings s;
 	addresses ads;
 	fpos_t c;
@@ -274,7 +285,7 @@ void remove_address(int scroll,char *dir)
 
 char* get_address(int scroll,char *dir)
 {	//	Função que retorna um endereço da Lista de Endereços
-	char* address = (char*)malloc(sizeof(char)*64),*dir_ad=strcat(dir,"/addresses.bin");
+	char* address = (char*)malloc(sizeof(char)*64),*dir_ad=filepath_gen(dir,"addresses.bin");
 	FILE *ad;
 	addresses ads;
 
@@ -294,7 +305,7 @@ void setup(char *dir)
 {	//	Função de configuração geral do Servidor
 	FILE *set;
 	settings new;
-	char *dir_s = strcat(dir,"/settings.bin");
+	char *dir_s = filepath_gen(dir,"settings.bin");
 
 	if(!(set=fopen(dir_s,"wb")))
 		error_m("Error at file allocation");
@@ -303,6 +314,7 @@ void setup(char *dir)
 		sprintf(new.dir,"%s",dir);
 		new.num_addresses=0;
 		new.next_address=0;
+		fwrite(&new,sizeof(settings),1,set);
 		fclose(set);
 	}
 	free(dir_s);
