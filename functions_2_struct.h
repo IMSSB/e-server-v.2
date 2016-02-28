@@ -44,11 +44,13 @@ typedef struct
 	int num_emails;
 	int num_LISTA_ENC;
 	int num_HORARIO;
+	int num_PALAVRA;
 	int next_message;
 	int next_subject;
 	int next_email;
 	int next_LISTA_ENC;
 	int next_HORARIO;
+	int next_PALAVRA;
 
 }configuration;
 
@@ -118,12 +120,13 @@ typedef struct
 	int arvoreb;
 
 }ARVOREB;
+
 typedef struct
 {
-
 	char key[30];
 
 }PALAVRA;
+
 typedef struct
 {
 	int address;
@@ -525,10 +528,10 @@ void remove_subject(int account_address,char *dir,int scroll)
 		fread(&c,sizeof(configuration),1,config);
 		rewind(config);
 		sprintf(s.subject,"%d",c.next_subject);
-		fseek(subject_list,scroll*sizeof(subjects),SEEK_SET);
-		fwrite(&s,sizeof(subjects),1,subject_list);
 		c.num_subjects--;
 		c.next_subject=scroll;
+		fseek(subject_list,scroll*sizeof(subjects),SEEK_SET);
+		fwrite(&s,sizeof(subjects),1,subject_list);
 		fwrite(&c,sizeof(configuration),1,config);
 		fclose(config);
 		fclose(subject_list);
@@ -809,7 +812,7 @@ void add_horario(int account_address, char *dir,HORARIO novo)
 		error_m("Error at file oppening");
 	else
 	if(!(horarios=fopen(address,"r+b")))
-		error_m("Error at file allocation");
+		error_m("Error at file oppening");
 	else
 	{
 		fread(&c,sizeof(configuration),1,config);
@@ -846,7 +849,7 @@ void remove_horario(int account_address, char *dir,int scroll)
 		error_m("Error at file oppening");
 	else
 	if(!(horarios=fopen(address,"r+b")))
-		error_m("Error at file allocation");
+		error_m("Error at file oppening");
 	else
 	{
 		fread(&c,sizeof(configuration),1,config);
@@ -867,6 +870,98 @@ void remove_horario(int account_address, char *dir,int scroll)
 }
 
 //LISTA DE PALAVRAS
+create_word_list(int account_address,char *dir)
+{	//	Função para criar o arquivo da Lista de Palavras
+	char *address = dir_builder(account_address,dir,"/word_list.bin");
+	FILE *word_list;
+	PALAVRA w;
+
+	if (!(word_list=fopen(address,"wb")))
+		error_m("Error at file allocation");
+	sprintf(&(w.key),"%d",-1);
+	fwrite(&w,sizeof(PALAVRA),1,word_list);
+	fclose(word_list);
+
+	free(address);
+
+	return;
+}
+
+add_word(int account_address,char *dir, char *new)
+{	// 	Função para adicionar palavra da Lista de Palavras
+	char *address = dir_builder(account_address,dir,"/word_list.bin"),*config_address=dir_builder(account_address,dir,"/config.bin");
+	FILE *word_list,*config;
+	PALAVRA w;
+	configuration c;
+	int scroll;
+	fpos_t p;
+
+	if (!(word_list=fopen(address,"r+b")))
+		error_m("Error at file oppening");
+	else
+	if (!(config=fopen(config_address,"r+b")))
+		error_m("Error at file oppening");
+	else
+	{
+		fread(&c,sizeof(configuration),1,config);
+		rewind(config);
+		scroll=(c.next_PALAVRA==-1)?c.num_PALAVRA:c.next_PALAVRA;
+		fseek(word_list,scroll*sizeof(PALAVRA),SEEK_SET);
+		fgetpos(word_list,p);
+		fread(&w,sizeof(PALAVRA),1,word_list);
+		fsetpos(word_list,p);
+		if (c.next_PALAVRA != -1)
+		{
+			fgetpos(word_list,p);
+			fread(&w,sizeof(messages),1,word_list);
+			sscanf(w.key,"%d",c.next_PALAVRA);
+			fsetpos(word_list,p);
+		}
+		sprintf(w.key,"%s",new);
+		c.num_PALAVRA++;
+		fwrite(&w,sizeof(PALAVRA),1,word_list);
+		fwrite(&c,sizeof(PALAVRA),1,config);
+		fclose(word_list);
+		fclose(config);
+	}
+	free(address);
+	free(config_address);
+
+	return;
+}
+
+remove_word(int account_address,char *dir, int scroll)
+{	// 	Função para remover palavra da Lista de Palavras
+	char *address = dir_builder(account_address,dir,"/word_list.bin"),*config_address=dir_builder(account_address,dir,"/config.bin");
+	FILE *word_list,*config;
+	PALAVRA w;
+	configuration c;
+	fpos_t p;
+
+	if (!(word_list=fopen(address,"r+b")))
+		error_m("Error at file oppening");
+	else
+	if (!(config=fopen(config_address,"r+b")))
+		error_m("Error at file oppening");
+	else
+	{
+		fread(&c,sizeof(configuration),1,config);
+		rewind(config);
+		sprintf(w.key,"%d",c.next_PALAVRA);
+		c.num_PALAVRA--;
+		c.next_PALAVRA=scroll;
+		fseek(word_list,scroll*sizeof(PALAVRA),SEEK_SET);
+		fwrite(&w,sizeof(PALAVRA),1,word_list);
+		fwrite(&c,sizeof(PALAVRA),1,config);
+		fclose(word_list);
+		fclose(config);
+	}
+	free(address);
+	free(config_address);
+
+	return;
+}
+
 
 //FUNÇÕES DE COMPARAÇÃO DE HORÁRIO
 int horario_igual(HORARIO a,HORARIO b)
