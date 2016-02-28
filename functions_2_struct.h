@@ -43,10 +43,12 @@ typedef struct
 	int num_subjects;
 	int num_emails;
 	int num_LISTA_ENC;
+	int num_HORARIO;
 	int next_message;
 	int next_subject;
 	int next_email;
 	int next_LISTA_ENC;
+	int next_HORARIO;
 
 }configuration;
 
@@ -312,11 +314,14 @@ void create_config(int account_address,char *dir)
 		new.num_messages=0;
 		new.num_subjects=0;
 		new.num_emails=0;
+		new.num_LISTA_ENC=0;
+		new.num_HORARIO=0;
 		new.next_message=0;
 		new.next_subject=0;
 		new.next_email=0;
 		new.next_LISTA_ENC=0;
-		new.num_LISTA_ENC=0;
+		new.next_HORARIO=0;
+
 
 		fwrite(&new,sizeof(configuration),1,config);
 		fclose(config);
@@ -749,6 +754,85 @@ void remove_LISTA_ENC(int account_address, char *dir,int antecessor,int atual)
 	free(config_address);
 	return;
 
+}
+void create_horario_list(int account_address, char *dir)
+{
+	char *address = dir_builder(account_address,dir,"/horario_list.bin");
+	FILE *horarios;
+	HORARIO a;
+
+	if(!(horarios=fopen(address,"wb")))
+		error_m("Error at file allocation");
+	else
+	{
+		a.data[0]=-1;
+		fwrite(&a,sizeof(HORARIO),1,horarios);
+		fclose(horarios);
+	}
+	free(address);
+	return;
+
+}
+void add_horario(int account_address, char *dir,HORARIO novo)
+{
+
+	char *address = dir_builder(account_address,dir,"/horario_list.bin"),*config_address=dir_builder(account_address,dir,"/config.bin");
+	FILE *horarios,*config;
+	HORARIO a;
+	configuration c;
+	int scroll;
+	if(!(config=fopen(config_address,"w+b")))
+		error_m("Error at file oppening");
+	else
+	if(!(horarios=fopen(address,"w+b")))
+		error_m("Error at file allocation");
+	else
+	{	fread(&c,sizeof(configuration),1,config);
+
+		scroll=(c.next_HORARIO==-1)?c.num_HORARIO:c.next_HORARIO;
+		fseek(horarios,scroll,0);
+		fread(&a,sizeof(HORARIO),1,horarios);
+		if(c.next_HORARIO!=-1)
+			c.next_HORARIO=a.data[0];
+		c.num_HORARIO++;
+		for(scroll=0;scroll<6;scroll++)
+			a.data[scroll]=novo.data[scroll];
+		fwrite(&c,sizeof(configuration),1,config);
+		fwrite(&a,sizeof(HORARIO),1,horarios);
+		fclose(horarios);
+		fclose(config);
+	}
+	free(address);
+	free(config_address);
+	return;
+}
+void remove_horario(int account_address, char *dir,int scroll)
+{
+	char *address = dir_builder(account_address,dir,"/horario_list.bin"),*config_address=dir_builder(account_address,dir,"/config.bin");
+	FILE *horarios,*config;
+	HORARIO a;
+	configuration c;
+
+	if(!(config=fopen(config_address,"w+b")))
+		error_m("Error at file oppening");
+	else
+	if(!(horarios=fopen(address,"w+b")))
+		error_m("Error at file allocation");
+	else
+	{
+		fread(&c,sizeof(configuration),1,config);
+		a.data[0]=c.next_HORARIO;
+		c.next_HORARIO=scroll;
+		c.num_HORARIO--;
+		fseek(horarios,scroll,0);
+		fwrite(&c,sizeof(configuration),1,config);
+		fwrite(&a,sizeof(HORARIO),1,horarios);
+		fclose(horarios);
+		fclose(config);
+	}
+	free(address);
+	free(config_address);
+	return;
 }
 //FUNÇÕES DE COMPARAÇÃO DE HORÁRIO
 int horario_igual(HORARIO a,HORARIO b)
