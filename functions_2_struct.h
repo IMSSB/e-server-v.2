@@ -26,7 +26,7 @@
 //#define dir \e-server-v2\data\ //Diretório no Windows
 //#define dir /e-server-v2/data/ //Diretório no Linux
 
-
+// 	Temos que voltar o ponteiro dos arquivos depois das operações de leitura
 
 
 typedef struct
@@ -186,7 +186,8 @@ void create_address_list(char *dir) //
 	if(!(new=fopen(dir_ad,"wb")))
 		error_m("Error at file allocation");
 	else
-	{	sprintf(&(ad.address[0]),"%d",-1);//Tinha esquecido disso kkkk
+	{
+		sprintf(&(ad.address[0]),"%d",-1);//Tinha esquecido disso kkkk
 		fwrite(&ad,sizeof(addresses),1,new);
 		fclose(new);
 	}
@@ -202,9 +203,9 @@ void add_address(char *new,char *dir)
 	addresses ads;
 	int scroll;
 
-	if(!(set=fopen(dir_s,"w+b")))
+	if(!(set=fopen(dir_s,"r+b")))
 		error_m("Error at file oppening");
-	if(!(ad=fopen(dir_ad,"w+b")))
+	if(!(ad=fopen(dir_ad,"r+b")))
 		error_m("Error at file oppening");
 
 	{
@@ -237,9 +238,9 @@ void remove_address(int scroll,char *dir)
 	addresses ads;
 
 
-	if(!(set=fopen(dir_s,"w+b")))
+	if(!(set=fopen(dir_s,"r+b")))
 		error_m("Error at file oppening");
-	if(!(ad=fopen(dir_ad,"w+b")))
+	if(!(ad=fopen(dir_ad,"r+b")))
 		error_m("Error at file oppening");
 	{
 		fread(&s,sizeof(settings),1,set);
@@ -265,7 +266,7 @@ char* get_address(int scroll,char *dir)
 	FILE *ad;
 	addresses ads;
 
-	if(!(ad=fopen(dir_ad,"w+b")))
+	if(!(ad=fopen(dir_ad,"r+b")))
 		error_m("Error at file oppening");
 	{
 		fseek(ad,scroll,0);
@@ -362,12 +363,12 @@ void add_text(int account_address,char *dir,char *new)
 	configuration c;
 	int scroll;
 
-	if(!(config=fopen(config_address,"w+b")))
+	if(!(config=fopen(config_address,"r+b")))
 	{
 		error_m("Error at file oppening");
 	}
 	else
-	if(!(text_list=fopen(address,"w+b")))
+	if(!(text_list=fopen(address,"r+b")))
 	{
 		error_m("Error at file oppening");
 	}
@@ -403,10 +404,10 @@ void remove_text(int account_address,char *dir,int scroll)//precisamos validar a
 	messages msg;
 	configuration c;
 
-	if(!(config=fopen(config_address,"w+b")))
+	if(!(config=fopen(config_address,"r+b")))
 		error_m("Error at file oppening");
 	else
-	if(!(text_list=fopen(list_address,"w+b")))
+	if(!(text_list=fopen(list_address,"r+b")))
 		error_m("Error at file oppening");
 	else
 	{
@@ -455,7 +456,7 @@ void create_subject_list(int account_address,char* dir)
 	FILE *subject_list;
 	subjects sub;
 
-	if(!(subject_list=fopen(subjects_address,"wb")))
+	if(!(subject_list=fopen(subjects_address,"rb")))
 		error_m("Error at file allocation");
 	else
 	{
@@ -476,12 +477,12 @@ void add_subject(int account_address,char*dir,char *new)
 	subjects s;
 	int scroll;
 
-	if(!(config=fopen(config_address,"w+b")))
+	if(!(config=fopen(config_address,"r+b")))
 	{
 		error_m("Error at file oppening");
 	}
 	else
-	if(!(subject_list=fopen(address,"w+b")))
+	if(!(subject_list=fopen(address,"r+b")))
 	{
 		error_m("Error at file oppening");
 	}
@@ -515,12 +516,12 @@ void remove_subject(int account_address,char *dir,int scroll)
 	configuration c;
 	subjects s;
 
-	if(!(config=fopen(config_address,"w+b")))
+	if(!(config=fopen(config_address,"r+b")))
 	{
 		error_m("Error at file oppening");
 	}
 	else
-	if(!(subject_list=fopen(address,"w+b")))
+	if(!(subject_list=fopen(address,"r+b")))
 	{
 		error_m("Error at file oppening");
 	}
@@ -550,7 +551,7 @@ char* get_subject(int account_address,char *dir,int scroll)
 
 
 
-	if(!(subject_list=fopen(address,"w+b")))
+	if(!(subject_list=fopen(address,"r+b")))
 	{
 		error_m("Error at file oppening");
 	}
@@ -594,10 +595,10 @@ void add_email(int account_address,char *dir,int remetente,int destinatario, int
 	SUB_NODO e; 				//	Manipulação de email
 	int scroll;					// 	Variável para deslocamento
 
-	if (!(email_list=fopen(address,"w+b"))) 	// 	Abrindo o arquivo da Lista de Emails
+	if (!(email_list=fopen(address,"r+b"))) 	// 	Abrindo o arquivo da Lista de Emails
 		error_m("Error at file oppening"); 		// 	Mensagem de erro
 	else
-	if (!(config=fopen(config_address,"w+b"))) 	// 	Abrindo o arquivo de Configuração da Conta
+	if (!(config=fopen(config_address,"r+b"))) 	// 	Abrindo o arquivo de Configuração da Conta
 		error_m("Error at file oppening");		// 	Mensagem de erro
 	else
 	{
@@ -635,10 +636,10 @@ void remove_email(int account_address,char *dir,int scroll)
 	configuration c; 			//	Manipulação da configuração
 	SUB_NODO e; 				//	Manipulação de email
 
-	if (!(email_list=fopen(address,"w+b"))) 	// 	Abrindo o arquivo da Lista de Emails
+	if (!(email_list=fopen(address,"r+b"))) 	// 	Abrindo o arquivo da Lista de Emails
 		error_m("Error at file oppening"); 		// 	Mensagem de erro
 	else
-	if (!(config=fopen(config_address,"w+b"))) 	// 	Abrindo o arquivo de Configuração da Conta
+	if (!(config=fopen(config_address,"r+b"))) 	// 	Abrindo o arquivo de Configuração da Conta
 		error_m("Error at file oppening");		// 	Mensagem de erro
 	else
 	{
@@ -659,9 +660,9 @@ void remove_email(int account_address,char *dir,int scroll)
 	return;
 }
 
-//LISTA ENCADEADA DE EMAILS
+//LISTA DE LISTAS ENCADEADAS DE EMAILS
 void create_LISTA_ENC(int account_address, char *dir)
-{	// Função para criar o arquivo da Lista de Listas Encadeada de Emails
+{	// Função para criar o arquivo da Lista de Listas Encadeadas de Emails
 	char* address = dir_builder(account_address,dir,"/lista_enc.bin");
 	FILE *lista_enc;
 	LISTA l;
@@ -687,10 +688,10 @@ void add_LISTA_ENC(int account_address, char *dir,int antecessor,int novo)
 	configuration c;
 	int scroll,aux=-1;
 
-	if(!(config=fopen(config_address,"w+b")))
+	if(!(config=fopen(config_address,"r+b")))
 		error_m("Error at file oppening");
 	else
-	if(!(lista_enc=fopen(address,"w+b")))
+	if(!(lista_enc=fopen(address,"r+b")))
 		error_m("Error at file oppening");
 	else
 	{
@@ -702,7 +703,9 @@ void add_LISTA_ENC(int account_address, char *dir,int antecessor,int novo)
 			fread(&a,sizeof(LISTA),1,lista_enc);
 			aux = a.next;
 			a.next = scroll;
-			fwrite(&a,sizeof(LISTA),1,lista_enc);
+			fwrite(&a,sizeof(LISTA),1,lista_enc);	//	Não tem que voltar uma posição antes de escrever?
+													//	Se não vai estar gravando uma posição na frente
+													// 	da posição original de a.
 		}
 		rewind(lista_enc);
 		fseek(lista_enc,scroll,0);
@@ -730,10 +733,10 @@ void remove_LISTA_ENC(int account_address, char *dir,int antecessor,int atual)
 	configuration c;
 	int aux;
 
-	if(!(config=fopen(config_address,"w+b")))
+	if(!(config=fopen(config_address,"r+b")))
 		error_m("Error at file oppening");
 	else
-	if(!(lista_enc=fopen(address,"w+b")))
+	if(!(lista_enc=fopen(address,"r+b")))
 		error_m("Error at file oppening");
 	else
 	{
@@ -788,10 +791,10 @@ void add_horario(int account_address, char *dir,HORARIO novo)
 	configuration c;
 	int scroll;
 
-	if(!(config=fopen(config_address,"w+b")))
+	if(!(config=fopen(config_address,"r+b")))
 		error_m("Error at file oppening");
 	else
-	if(!(horarios=fopen(address,"w+b")))
+	if(!(horarios=fopen(address,"r+b")))
 		error_m("Error at file allocation");
 	else
 	{
@@ -822,10 +825,10 @@ void remove_horario(int account_address, char *dir,int scroll)
 	HORARIO a;
 	configuration c;
 
-	if(!(config=fopen(config_address,"w+b")))
+	if(!(config=fopen(config_address,"r+b")))
 		error_m("Error at file oppening");
 	else
-	if(!(horarios=fopen(address,"w+b")))
+	if(!(horarios=fopen(address,"r+b")))
 		error_m("Error at file allocation");
 	else
 	{
@@ -844,6 +847,8 @@ void remove_horario(int account_address, char *dir,int scroll)
 
 	return;
 }
+
+//LISTA DE PALAVRAS
 
 //FUNÇÕES DE COMPARAÇÃO DE HORÁRIO
 int horario_igual(HORARIO a,HORARIO b)
