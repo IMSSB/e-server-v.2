@@ -9,6 +9,7 @@
 
 int main(void)
 {
+	create_address_list("C:/Users/Ruan/Desktop/Test/");
 	return 0;
 }
 

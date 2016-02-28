@@ -160,6 +160,9 @@ void remove_LISTA_ENC(int account_address, char *dir,int anterior,int atual);//A
 void create_horario_list(int account_address, char *dir);
 void add_horario(int account_address, char *dir,HORARIO novo);
 void remove_horario(int account_address, char *dir,int scroll);
+void create_word_list(int account_address,char *dir);
+void add_word(int account_address,char *dir, char *new);
+void remove_word(int account_address,char *dir, int scroll);
 int horario_igual(HORARIO a,HORARIO b);
 int horario_maior(HORARIO a,HORARIO b);
 int horario_menor(HORARIO a,HORARIO b);
@@ -218,10 +221,10 @@ void add_address(char *new,char *dir)
 	fseek(ad,scroll*sizeof(ad),SEEK_SET);							//	Deslocando a posição do buffer no arquivo addresses.bin
 	if(s.next_address!=-1)											//	caso haja blocos não utilizados a serem subscritos
 	{
-		fgetpos(ad,c);								//	Guardando a posição atual do fluxo de dados
+		fgetpos(ad,&c);								//	Guardando a posição atual do fluxo de dados
 		fread(&ads,sizeof(addresses),1,ad);			//	Lendo arquivo de endereços e armazenando na variável ad
-		sscanf(ads.address,"%d",s.next_address);	//	Atualizando o próximo a ser subscrito
-		fsetpos(ad,c);								// 	Retornando a posição do fluxo de dados para a salva anteriormente
+		sscanf(ads.address,"%d",&(s.next_address));	//	Atualizando o próximo a ser subscrito
+		fsetpos(ad,&c);								// 	Retornando a posição do fluxo de dados para a salva anteriormente
 	}
 	sprintf(ads.address,"%s",new);			//	Guardando novo endereço
 	s.num_addresses++;						//	Incrementando o número de endereços
@@ -252,9 +255,9 @@ void remove_address(int scroll,char *dir)
 	fread(&s,sizeof(settings),1,set);
 	rewind(set);
 	fseek(ad,scroll*sizeof(addresses),SEEK_SET);
-	fgetpos(ad,c);
+	fgetpos(ad,&c);
 	fread(&ads,sizeof(addresses),1,ad);
-	fsetpos(ad,c);
+	fsetpos(ad,&c);
 	sprintf(&(ads.address[0]),"%d", s.next_address);
 	s.next_address=scroll;
 	s.num_addresses--;
@@ -379,10 +382,10 @@ void add_text(int account_address,char *dir,char *new)
 		fseek(text_list,scroll*sizeof(messages),SEEK_SET);
 		if (c.next_message != -1)
 		{
-			fgetpos(text_list,p);
+			fgetpos(text_list,&p);
 			fread(&msg,sizeof(messages),1,text_list);
-			sscanf(msg.mail,"%d",c.next_message);
-			fsetpos(text_list,p);
+			sscanf(msg.mail,"%d",&(c.next_message));
+			fsetpos(text_list,&p);
 		}
 		sprintf(msg.mail,"%s",new);
 		c.num_messages++;
@@ -493,10 +496,10 @@ void add_subject(int account_address,char*dir,char *new)
 		fseek(subject_list,scroll*sizeof(subjects),SEEK_SET);
 		if(c.next_subject != -1)
 		{
-			fgetpos(subject_list,p);
+			fgetpos(subject_list,&p);
 			fread(&s,sizeof(subjects),1,subject_list);
-			sscanf(s.subject,"%d",c.next_subject);
-			fsetpos(subject_list,p);
+			sscanf(s.subject,"%d",&(c.next_subject));
+			fsetpos(subject_list,&p);
 		}
 		sprintf(s.subject,"%s",new);
 		c.num_subjects++;
@@ -606,10 +609,10 @@ void add_email(int account_address,char *dir,int remetente,int destinatario, int
 		fseek(email_list,scroll*sizeof(SUB_NODO),SEEK_SET);								//
 		if (c.next_email!=-1)									//
 		{
-			fgetpos(p);
+			fgetpos(email_list,&p);
 			fread(&e,sizeof(SUB_NODO),1,email_list);			//
 			c.next_email = e.remetente;							//
-			fsetpos(p);
+			fsetpos(email_list,&p);
 		}
 		c.num_emails++;											//
 		e.remetente = remetente;								//
@@ -648,9 +651,9 @@ void remove_email(int account_address,char *dir,int scroll)
 		fread(&c,sizeof(configuration),1,config);				//
 		rewind(config);
 		fseek(email_list,scroll*sizeof(SUB_NODO),SEEK_SET);								//
-		fgetpos(email_list,p);
+		fgetpos(email_list,&p);
 		fread(&e,sizeof(SUB_NODO),1,email_list);				//
-		fsetpos(email_list,p);
+		fsetpos(email_list,&p);
 		e.remetente = c.next_email;								//
 		c.next_email = scroll;									//
 		c.num_emails--;											//
@@ -707,9 +710,9 @@ void add_LISTA_ENC(int account_address, char *dir,int antecessor,int novo)
 		if(antecessor >= 0)
 		{
 			fseek(lista_enc,antecessor*sizeof(LISTA),SEEK_SET);
-			fgetpos(lista_enc,p);
+			fgetpos(lista_enc,&p);
 			fread(&a,sizeof(LISTA),1,lista_enc);
-			fsetpos(lista_enc,p);
+			fsetpos(lista_enc,&p);
 			aux = a.next;
 			a.next = scroll;
 			fwrite(&a,sizeof(LISTA),1,lista_enc);	//	Não tem que voltar uma posição antes de escrever?
@@ -717,9 +720,9 @@ void add_LISTA_ENC(int account_address, char *dir,int antecessor,int novo)
 													// 	da posição original de a. - FIZ A ALTERAÇÃO
 		}
 		fseek(lista_enc,scroll*sizeof(LISTA),SEEK_SET);
-		fgetpos(lista_enc,p);
+		fgetpos(lista_enc,&p);
 		fread(&a,sizeof(LISTA),1,lista_enc);
-		fsetpos(lista_enc,p);
+		fsetpos(lista_enc,&p);
 		if(c.next_LISTA_ENC!=-1)
 			c.next_LISTA_ENC=a.next;
 		a.next=aux;
@@ -754,9 +757,9 @@ void remove_LISTA_ENC(int account_address, char *dir,int antecessor,int atual)
 		fread(&c,sizeof(configuration),1,config);
 		rewind(config);
 		fseek(lista_enc,atual*sizeof(LISTA),SEEK_SET);
-		fgetpos(lista_enc,p);
+		fgetpos(lista_enc,&p);
 		fread(&a,sizeof(LISTA),1,lista_enc);
-		fsetpos(lista_enc,p);
+		fsetpos(lista_enc,&p);
 		aux = a.next;
 		a.next=c.next_LISTA_ENC;
 		c.num_LISTA_ENC--;
@@ -764,9 +767,9 @@ void remove_LISTA_ENC(int account_address, char *dir,int antecessor,int atual)
 		if(antecessor >= 0)
 		{
 			fseek(lista_enc,antecessor,0);
-			fgetpos(lista_enc,p);
+			fgetpos(lista_enc,&p);
 			fread(&a,sizeof(LISTA),1,lista_enc);
-			fsetpos(lista_enc,p);
+			fsetpos(lista_enc,&p);
 			a.next=aux;
 			fwrite(&a,sizeof(LISTA),1,lista_enc);
 		}
@@ -819,9 +822,9 @@ void add_horario(int account_address, char *dir,HORARIO novo)
 		rewind(config);
 		scroll=(c.next_HORARIO==-1)?c.num_HORARIO:c.next_HORARIO;
 		fseek(horarios,scroll*sizeof(HORARIO),SEEK_SET);
-		fgetpos(horarios,p);
+		fgetpos(horarios,&p);
 		fread(&a,sizeof(HORARIO),1,horarios);
-		fsetpos(horarios,p);
+		fsetpos(horarios,&p);
 		if(c.next_HORARIO!=-1)
 			c.next_HORARIO=a.data[0];
 		c.num_HORARIO++;
@@ -870,7 +873,7 @@ void remove_horario(int account_address, char *dir,int scroll)
 }
 
 //LISTA DE PALAVRAS
-create_word_list(int account_address,char *dir)
+void create_word_list(int account_address,char *dir)
 {	//	Função para criar o arquivo da Lista de Palavras
 	char *address = dir_builder(account_address,dir,"/word_list.bin");
 	FILE *word_list;
@@ -878,7 +881,7 @@ create_word_list(int account_address,char *dir)
 
 	if (!(word_list=fopen(address,"wb")))
 		error_m("Error at file allocation");
-	sprintf(&(w.key),"%d",-1);
+	sprintf(w.key,"%d",-1);
 	fwrite(&w,sizeof(PALAVRA),1,word_list);
 	fclose(word_list);
 
@@ -887,7 +890,7 @@ create_word_list(int account_address,char *dir)
 	return;
 }
 
-add_word(int account_address,char *dir, char *new)
+void add_word(int account_address,char *dir, char *new)
 {	// 	Função para adicionar palavra da Lista de Palavras
 	char *address = dir_builder(account_address,dir,"/word_list.bin"),*config_address=dir_builder(account_address,dir,"/config.bin");
 	FILE *word_list,*config;
@@ -907,15 +910,15 @@ add_word(int account_address,char *dir, char *new)
 		rewind(config);
 		scroll=(c.next_PALAVRA==-1)?c.num_PALAVRA:c.next_PALAVRA;
 		fseek(word_list,scroll*sizeof(PALAVRA),SEEK_SET);
-		fgetpos(word_list,p);
+		fgetpos(word_list,&p);
 		fread(&w,sizeof(PALAVRA),1,word_list);
-		fsetpos(word_list,p);
+		fsetpos(word_list,&p);
 		if (c.next_PALAVRA != -1)
 		{
-			fgetpos(word_list,p);
+			fgetpos(word_list,&p);
 			fread(&w,sizeof(messages),1,word_list);
-			sscanf(w.key,"%d",c.next_PALAVRA);
-			fsetpos(word_list,p);
+			sscanf(w.key,"%d",&(c.next_PALAVRA));
+			fsetpos(word_list,&p);
 		}
 		sprintf(w.key,"%s",new);
 		c.num_PALAVRA++;
@@ -930,13 +933,12 @@ add_word(int account_address,char *dir, char *new)
 	return;
 }
 
-remove_word(int account_address,char *dir, int scroll)
+void remove_word(int account_address,char *dir, int scroll)
 {	// 	Função para remover palavra da Lista de Palavras
 	char *address = dir_builder(account_address,dir,"/word_list.bin"),*config_address=dir_builder(account_address,dir,"/config.bin");
 	FILE *word_list,*config;
 	PALAVRA w;
 	configuration c;
-	fpos_t p;
 
 	if (!(word_list=fopen(address,"r+b")))
 		error_m("Error at file oppening");
