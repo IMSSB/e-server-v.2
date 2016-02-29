@@ -13,6 +13,7 @@
 #include <locale.h>
 #include <string.h>
 #include <time.h>
+#include <dir.h>
 #include "functions_2_mail.h"
 
 #define cls system("CLS || clear");
@@ -28,6 +29,7 @@
 
 // 	Temos que voltar o ponteiro dos arquivos depois das operações de leitura
 
+mkdir();
 
 typedef struct
 {
