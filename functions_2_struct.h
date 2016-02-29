@@ -13,7 +13,7 @@
 #include <locale.h>
 #include <string.h>
 #include <time.h>
-//#include <dir.h>
+#include <sys/stat.h>
 #include "functions_2_mail.h"
 
 #define cls system("CLS || clear");
@@ -196,7 +196,9 @@ char *filepath_gen(char *dir, char *file)
 char* dir_builder(int account_number,char*dir,char* file)
 {	//	Função para gerar o caminho do arquivo
 	char *ad = get_address(account_number,dir), *r;
+
 	r = strcat(strcat(strcat(filepath_gen(dir,""),ad),"/"),file);
+	printf("\nAd = %s \n r= %s",ad,r);
 	free(ad);
 	return r;
 }
@@ -344,7 +346,7 @@ void create_config(int account_address,char *dir)
 
 	ac = get_address(account_address, dir);
 	aux = filepath_gen(dir,ac);
-	mkdir(aux);
+	mkdir(aux,S_IRWXU);
 	if(!(config=fopen(address,"wb")))
 		error_m("Error at file allocation");
 	else
