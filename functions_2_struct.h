@@ -13,7 +13,7 @@
 #include <locale.h>
 #include <string.h>
 #include <time.h>
-#include <dir.h>
+//#include <dir.h>
 #include "functions_2_mail.h"
 
 #define cls system("CLS || clear");

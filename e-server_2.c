@@ -6,13 +6,15 @@
  */
 #include "functions_2_mail.h"
 #include "functions_2_struct.h"
-#define er "C:/Users/Ruan/Desktop/T/"
+//#define er "C:/Users/Ruan/Desktop/T/"
+#define er "/home/ricardo/e-server/"
 void ler_end(void)
 {
 	printf("TESTE1.x.1: Lendo endereço 0\n");pause;
 			printf("Endereço lido: %s\n",get_address(0,er));
 	printf("TESTE1.x.2: Lendo endereço 1\n");pause;
 		printf("Endereço lido: %s\n",get_address(1,er));
+
 }
 
 int main(void)
