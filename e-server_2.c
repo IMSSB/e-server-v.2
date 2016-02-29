@@ -6,8 +6,8 @@
  */
 #include "functions_2_mail.h"
 #include "functions_2_struct.h"
-//#define er "C:/Users/Ruan/Desktop/T/"
-#define er "/home/ricardo/e-server/"
+#define er "C:/Users/Ruan/Desktop/T/"
+//#define er "/home/ricardo/e-server/"
 
 void ler_end(void)
 {
