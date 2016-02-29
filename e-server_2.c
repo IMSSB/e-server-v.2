@@ -8,6 +8,7 @@
 #include "functions_2_struct.h"
 //#define er "C:/Users/Ruan/Desktop/T/"
 #define er "/home/ricardo/e-server/"
+
 void ler_end(void)
 {
 	printf("TESTE1.x.1: Lendo endereço 0\n");pause;
@@ -19,7 +20,7 @@ void ler_end(void)
 
 int main(void)
 {
-	int c;
+	//int c;
 
 	printf("TESTE0: Configurando servidor\n");pause;
 		setup(er);

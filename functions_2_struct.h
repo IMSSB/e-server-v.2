@@ -196,7 +196,7 @@ char *filepath_gen(char *dir, char *file)
 char* dir_builder(int account_number,char*dir,char* file)
 {	//	Função para gerar o caminho do arquivo
 	char *ad = get_address(account_number,dir), *r;
-	r = strcat(strcat(filepath_gen(dir,""),ad),file);
+	r = strcat(strcat(strcat(filepath_gen(dir,""),ad),"/"),file);
 	free(ad);
 	return r;
 }
