@@ -16,7 +16,7 @@
 #include "functions_2_mail.h"
 
 #define cls system("CLS || clear");
-#define pause printf("\nDigite algo para continuar\n"); getchar();
+#define pause printf("\nDigite algo para continuar"); getchar();
 #define spc printf("  |");
 #define spc_m printf("              ");
 #define nl printf("\n");
@@ -179,16 +179,15 @@ void error_m(char *errormessage)
 
 char *filepath_gen(char *dir, char *file)
 { 	// 	Função para gerar ponteiro para char com o diretório
-	char *path=(char *) malloc(sizeof(char)*250);
-	printf("minitest\n");
-	sprintf(path, "%s",dir);
-	strcat(path,file);
-	return path;
+	char *path=(char *) malloc(sizeof(char)*250);	//	Alocando espaço para ponteiro que será retornado
+	sprintf(path, "%s",dir);	//	Colocando diretório fornecido no espaço alocado
+	strcat(path,file);			//	Concatenando com o nome do arquivo
+	return path;				//	Retornando o ponteiro
 }
 // Não se pode usar strcat em string constante, perdi um tempinho com isso.
 char* dir_builder(int account_number,char*dir,char* file)
 {	//	Função para gerar o caminho do arquivo
-	return strcat(strcat(strcat(dir,"/"),get_address(account_number,dir)),file);
+	return strcat(strcat(filepath_gen(dir,""),get_address(account_number,dir)),file);
 }
 
 //LISTA DE ENDEREÇOS GLOBAL
@@ -197,8 +196,7 @@ void create_address_list(char *dir) //
 	FILE *new;
 	addresses ad;
 	char *dir_ad=filepath_gen(dir,"addresses.bin");
-	printf("TEST1\n");
-	printf("TEST2: %s\n",dir_ad);
+
 	if(!(new=fopen(dir_ad,"wb")))
 		error_m("Error at file allocation");
 	else
