@@ -29,12 +29,11 @@
 
 // 	Temos que voltar o ponteiro dos arquivos depois das operações de leitura
 
-mkdir();
-
 typedef struct
 {
 	int num_addresses;
 	int next_address;
+	int anum_address;
 	char dir[100];
 }settings;
 
@@ -53,6 +52,12 @@ typedef struct
 	int next_LISTA_ENC;
 	int next_HORARIO;
 	int next_PALAVRA;
+	int anum_messages;
+	int anum_subjects;
+	int anum_emails;
+	int anum_LISTA_ENC;
+	int anum_HORARIO;
+	int anum_PALAVRA;
 
 }configuration;
 
@@ -183,13 +188,17 @@ char *filepath_gen(char *dir, char *file)
 { 	// 	Função para gerar ponteiro para char com o diretório
 	char *path=(char *) malloc(sizeof(char)*250);	//	Alocando espaço para ponteiro que será retornado
 	sprintf(path, "%s",dir);	//	Colocando diretório fornecido no espaço alocado
+	strcat(path,"/");			//	Concatenando com uma barra
 	strcat(path,file);			//	Concatenando com o nome do arquivo
 	return path;				//	Retornando o ponteiro
 }
 // Não se pode usar strcat em string constante, perdi um tempinho com isso.
 char* dir_builder(int account_number,char*dir,char* file)
 {	//	Função para gerar o caminho do arquivo
-	return strcat(strcat(filepath_gen(dir,""),get_address(account_number,dir)),file);
+	char *ad = get_address(account_number,dir), *r;
+	r = strcat(strcat(filepath_gen(dir,""),ad),file);
+	free(ad);
+	return r;
 }
 
 //LISTA DE ENDEREÇOS GLOBAL
@@ -229,14 +238,16 @@ void add_address(char *new,char *dir)
 	rewind(set);						//	Colocando a posição do fluxo de dados no ínicio
 	scroll=(s.next_address == -1)?s.num_addresses:s.next_address;	//	Definindo a posição em que o novo endereço será salvo no arquivo addresses.bin
 	printf("NEXT: %d\nNUM AD: %d",s.next_address,s.num_addresses);
-	fseek(ad,scroll*sizeof(addresses),SEEK_SET);							//	Deslocando a posição do buffer no arquivo addresses.bin
-	if(s.next_address!=-1)											//	caso haja blocos não utilizados a serem subscritos
+	fseek(ad,scroll*sizeof(addresses),SEEK_SET);				//	Deslocando a posição do buffer no arquivo addresses.bin
+	if(s.next_address!=-1)										//	caso haja blocos não utilizados a serem subscritos
 	{
 		fgetpos(ad,&c);								//	Guardando a posição atual do fluxo de dados
 		fread(&ads,sizeof(addresses),1,ad);			//	Lendo arquivo de endereços e armazenando na variável ad
 		sscanf(ads.address,"%d",&(s.next_address));	//	Atualizando o próximo a ser subscrito
 		fsetpos(ad,&c);								// 	Retornando a posição do fluxo de dados para a salva anteriormente
 	}
+	else
+		s.anum_address++;
 	sprintf(ads.address,"%s",new);			//	Guardando novo endereço
 	s.num_addresses++;						//	Incrementando o número de endereços
 	fwrite(&s,sizeof(settings),1,set);		//	Escrevendo alterações feitas nos arquivos
@@ -260,23 +271,25 @@ void remove_address(int scroll,char *dir)
 
 	if(!(set=fopen(dir_s,"r+b")))
 		error_m("Error at file oppening");
-	if(!(ad=fopen(dir_ad,"r+b")))
-		error_m("Error at file oppening");
-
 	fread(&s,sizeof(settings),1,set);
 	rewind(set);
-	fseek(ad,scroll*sizeof(addresses),SEEK_SET);
-	fgetpos(ad,&c);
-	fread(&ads,sizeof(addresses),1,ad);
-	fsetpos(ad,&c);
-	sprintf(&(ads.address[0]),"%d", s.next_address);
-	s.next_address=scroll;
-	s.num_addresses--;
-	fwrite(&s,sizeof(settings),1,set);//escrevendo alterações feitas
-	fwrite(&ads,sizeof(addresses),1,ad);
-	fclose(set);
-	fclose(ad);
+	if (scroll < s.anum_address && scroll >= 0)
+	{
+		if(!(ad=fopen(dir_ad,"r+b")))
+		error_m("Error at file oppening");
 
+		fseek(ad,scroll*sizeof(addresses),SEEK_SET);
+		fgetpos(ad,&c);
+		fread(&ads,sizeof(addresses),1,ad);
+		fsetpos(ad,&c);
+		sprintf(&(ads.address[0]),"%d", s.next_address);
+		s.next_address=scroll;
+		s.num_addresses--;
+		fwrite(&s,sizeof(settings),1,set);//escrevendo alterações feitas
+		fwrite(&ads,sizeof(addresses),1,ad);
+		fclose(ad);
+	}
+	fclose(set);
 	free(dir_ad);
 	free(dir_s);
 
@@ -314,6 +327,7 @@ void setup(char *dir)
 		sprintf(new.dir,"%s",dir);
 		new.num_addresses=0;
 		new.next_address=0;
+		new.anum_address=0;
 		fwrite(&new,sizeof(settings),1,set);
 		fclose(set);
 	}
@@ -324,10 +338,13 @@ void setup(char *dir)
 
 void create_config(int account_address,char *dir)
 {	// Função para criar o arquivo de Configuração do Usuário
-	char *address = dir_builder(account_address,dir,"/config.bin");
+	char *address = dir_builder(account_address,dir,"config.bin"), *ac, *aux;
 	FILE *config;
 	configuration new;
 
+	ac = get_address(account_address, dir);
+	aux = filepath_gen(dir,ac);
+	mkdir(aux);
 	if(!(config=fopen(address,"wb")))
 		error_m("Error at file allocation");
 	else
@@ -338,15 +355,27 @@ void create_config(int account_address,char *dir)
 		new.num_emails=0;
 		new.num_LISTA_ENC=0;
 		new.num_HORARIO=0;
+		new.num_PALAVRA=0;
+
 		new.next_message=0;
 		new.next_subject=0;
 		new.next_email=0;
 		new.next_LISTA_ENC=0;
 		new.next_HORARIO=0;
+		new.next_PALAVRA=0;
+
+		new.anum_messages=0;
+		new.anum_subjects=0;
+		new.anum_emails=0;
+		new.anum_LISTA_ENC=0;
+		new.anum_HORARIO=0;
+		new.anum_PALAVRA=0;
 
 		fwrite(&new,sizeof(configuration),1,config);
 		fclose(config);
 	}
+	free(ac);
+	free(aux);
 	free(address);
 
 	return;
@@ -354,8 +383,8 @@ void create_config(int account_address,char *dir)
 
 //LISTA DE TEXTOS
 void create_text_list(int account_address,char *dir)
-{	// Função para criar o arquivo da Lista de Textos do usuário
-	char *address=dir_builder(account_address,dir,"/text_list.bin");
+{	//	Função para criar o arquivo da Lista de Textos do usuário
+	char *address=dir_builder(account_address,dir,"text_list.bin");
 	FILE *text_list;
 	messages msg;
 
@@ -374,7 +403,7 @@ void create_text_list(int account_address,char *dir)
 
 void add_text(int account_address,char *dir,char *new)
 {	//	Função para adicionar um texto à Lista de Textos
-	char *address = dir_builder(account_address,dir,"/text_list.bin"),*config_address =dir_builder(account_address,dir,"/config.bin");
+	char *address = dir_builder(account_address,dir,"text_list.bin"),*config_address =dir_builder(account_address,dir,"/config.bin");
 	FILE *text_list,*config;
 	messages msg;
 	configuration c;
@@ -399,6 +428,8 @@ void add_text(int account_address,char *dir,char *new)
 			sscanf(msg.mail,"%d",&(c.next_message));
 			fsetpos(text_list,&p);
 		}
+		else
+			c.anum_messages++;
 		sprintf(msg.mail,"%s",new);
 		c.num_messages++;
 		fwrite(&c,sizeof(configuration),1,config);
@@ -415,20 +446,20 @@ void add_text(int account_address,char *dir,char *new)
 
 void remove_text(int account_address,char *dir,int scroll)//precisamos validar as remoções depois
 {	//	Função para remover um texto da Lista de Textos
-	char *list_address=dir_builder(account_address,dir,"/text_list.bin"),*config_address = dir_builder(account_address,dir,"/config.bin");
+	char *list_address=dir_builder(account_address,dir,"text_list.bin"),*config_address = dir_builder(account_address,dir,"/config.bin");
 	FILE *text_list,*config;
 	messages msg;
 	configuration c;
 
 	if(!(config=fopen(config_address,"r+b")))
 		error_m("Error at file oppening");
-	else
-	if(!(text_list=fopen(list_address,"r+b")))
-		error_m("Error at file oppening");
-	else
+	fread(&c,sizeof(configuration),1,config);
+	rewind(config);
+	if (scroll < c.anum_messages && scroll >=0)
 	{
-		fread(&c,sizeof(configuration),1,config);
-		rewind(config);
+		if(!(text_list=fopen(list_address,"r+b")))
+			error_m("Error at file oppening");
+
 		sprintf(msg.mail,"%d",c.next_message);
 		c.num_messages--;
 		c.next_message=scroll;
@@ -436,8 +467,8 @@ void remove_text(int account_address,char *dir,int scroll)//precisamos validar a
 		fwrite(&msg,sizeof(messages),1,text_list);
 		fwrite(&c,sizeof(configuration),1,config);
 		fclose(text_list);
-		fclose(config);
 	}
+	fclose(config);
 	free(list_address);
 	free(config_address);
 
@@ -446,7 +477,7 @@ void remove_text(int account_address,char *dir,int scroll)//precisamos validar a
 
 char* get_text(int account_address, char* dir,int scroll)
 {	//	Função que retorna um texto da Lista de Textos
-	char *address=dir_builder(account_address,dir,"/text_list.bin");
+	char *address=dir_builder(account_address,dir,"text_list.bin");
 	char *t=(char*)malloc(sizeof(char)*300);
 	messages read;
 	FILE *texts;
@@ -469,7 +500,7 @@ char* get_text(int account_address, char* dir,int scroll)
 //LISTA DE ASSUNTOS
 void create_subject_list(int account_address,char* dir)
 {	// Função para criar o arquivo da Lista de Assuntos do usuário
-	char *subjects_address=dir_builder(account_address,dir,"/subject_list.bin");//fazer uma função pra isso!!!
+	char *subjects_address=dir_builder(account_address,dir,"subject_list.bin");//fazer uma função pra isso!!!
 	FILE *subject_list;
 	subjects sub;
 
@@ -488,7 +519,7 @@ void create_subject_list(int account_address,char* dir)
 
 void add_subject(int account_address,char*dir,char *new)
 {	// Função para adicionar um assunto à Lista de Assuntos
-	char *address=dir_builder(account_address,dir,"/subject_list.bin"),*config_address=dir_builder(account_address,dir,"/config.bin");
+	char *address=dir_builder(account_address,dir,"subject_list.bin"),*config_address=dir_builder(account_address,dir,"/config.bin");
 	FILE *subject_list,*config;
 	configuration c;
 	subjects s;
@@ -513,6 +544,8 @@ void add_subject(int account_address,char*dir,char *new)
 			sscanf(s.subject,"%d",&(c.next_subject));
 			fsetpos(subject_list,&p);
 		}
+		else
+			c.anum_subjects++;
 		sprintf(s.subject,"%s",new);
 		c.num_subjects++;
 		fwrite(&c,sizeof(configuration),1,config);
@@ -528,29 +561,29 @@ void add_subject(int account_address,char*dir,char *new)
 
 void remove_subject(int account_address,char *dir,int scroll)
 {	// Função para remover um assunto da Lista de Assuntos
-	char *address=dir_builder(account_address,dir,"/subject_list.bin"),*config_address=dir_builder(account_address,dir,"/config.bin");
+	char *address=dir_builder(account_address,dir,"subject_list.bin"),*config_address=dir_builder(account_address,dir,"/config.bin");
 	FILE *subject_list,*config;
 	configuration c;
 	subjects s;
 
 	if(!(config=fopen(config_address,"r+b")))
 		error_m("Error at file oppening");
-	else
-	if(!(subject_list=fopen(address,"r+b")))
-		error_m("Error at file oppening");
-	else
+	fread(&c,sizeof(configuration),1,config);
+	rewind(config);
+	if (scroll < c.anum_subjects && scroll >=0)
 	{
-		fread(&c,sizeof(configuration),1,config);
-		rewind(config);
+		if(!(subject_list=fopen(address,"r+b")))
+		error_m("Error at file oppening");
+
 		sprintf(s.subject,"%d",c.next_subject);
 		c.num_subjects--;
 		c.next_subject=scroll;
 		fseek(subject_list,scroll*sizeof(subjects),SEEK_SET);
 		fwrite(&s,sizeof(subjects),1,subject_list);
 		fwrite(&c,sizeof(configuration),1,config);
-		fclose(config);
 		fclose(subject_list);
 	}
+	fclose(config);
 	free(address);
 	free(config_address);
 
@@ -559,7 +592,7 @@ void remove_subject(int account_address,char *dir,int scroll)
 
 char* get_subject(int account_address,char *dir,int scroll)
 {	//	Função que retorna um assunto da Lista de Assuntos dada sua posição (scroll)
-	char *address=dir_builder(account_address,dir,"/subject_list.bin");
+	char *address=dir_builder(account_address,dir,"subject_list.bin");
 	FILE *subject_list;
 	char *sub;
 	subjects s;
@@ -582,7 +615,7 @@ char* get_subject(int account_address,char *dir,int scroll)
 //LISTA DE EMAILS
 void create_email_list(int account_address,char *dir)
 {	// Função para criar o arquivo da Lista de Emails
-	char *address = dir_builder(account_address,dir,"/email_list.bin");
+	char *address = dir_builder(account_address,dir,"email_list.bin");
 	FILE *email_list;
 	SUB_NODO new;
 
@@ -601,7 +634,7 @@ void create_email_list(int account_address,char *dir)
 
 void add_email(int account_address,char *dir,int remetente,int destinatario, int assunto, int MSG, HORARIO data, int historico)
 { 	//	Função para adicionar um email na Lista de Emails
-	char *address=dir_builder(account_address,dir,"/email_list.bin"),*config_address=dir_builder(account_address,dir,"/config.bin");
+	char *address=dir_builder(account_address,dir,"email_list.bin"),*config_address=dir_builder(account_address,dir,"/config.bin");
 	FILE *email_list, *config; 	// 	Arquivos que serão abertos
 	configuration c; 			//	Manipulação da configuração
 	SUB_NODO e; 				//	Manipulação de email
@@ -626,6 +659,8 @@ void add_email(int account_address,char *dir,int remetente,int destinatario, int
 			c.next_email = e.remetente;							//
 			fsetpos(email_list,&p);
 		}
+		else
+			c.anum_emails++;
 		c.num_emails++;											//
 		e.remetente = remetente;								//
 		e.destinatario = destinatario;							//
@@ -647,21 +682,21 @@ void add_email(int account_address,char *dir,int remetente,int destinatario, int
 
 void remove_email(int account_address,char *dir,int scroll)
 {	//	Função para removar email da Lista de Emails dada sua posição (scroll)
-	char *address=dir_builder(account_address,dir,"/email_list.bin"),*config_address=dir_builder(account_address,dir,"/config.bin");
+	char *address=dir_builder(account_address,dir,"email_list.bin"),*config_address=dir_builder(account_address,dir,"/config.bin");
 	FILE *email_list, *config; 	// 	Arquivos que serão abertos
 	configuration c; 			//	Manipulação da configuração
 	SUB_NODO e; 				//	Manipulação de email
 	fpos_t p;
 
-	if (!(email_list=fopen(address,"r+b"))) 	// 	Abrindo o arquivo da Lista de Emails
+	if (!(config=fopen(config_address,"r+b"))) 	// 	Abrindo o arquivo da Lista de Emails
 		error_m("Error at file oppening"); 		// 	Mensagem de erro
-	else
-	if (!(config=fopen(config_address,"r+b"))) 	// 	Abrindo o arquivo de Configuração da Conta
-		error_m("Error at file oppening");		// 	Mensagem de erro
-	else
+	fread(&c,sizeof(configuration),1,config);				//
+	rewind(config);
+	if (scroll < c.anum_emails && scroll >=0 )
 	{
-		fread(&c,sizeof(configuration),1,config);				//
-		rewind(config);
+		if (!(email_list=fopen(address,"r+b"))) 	// 	Abrindo o arquivo de Configuração da Conta
+			error_m("Error at file oppening");		// 	Mensagem de erro
+
 		fseek(email_list,scroll*sizeof(SUB_NODO),SEEK_SET);								//
 		fgetpos(email_list,&p);
 		fread(&e,sizeof(SUB_NODO),1,email_list);				//
@@ -671,9 +706,9 @@ void remove_email(int account_address,char *dir,int scroll)
 		c.num_emails--;											//
 		fwrite(&c,sizeof(configuration),1,config);				//
 		fwrite(&e,sizeof(SUB_NODO),1,email_list);				//
-		fclose(config);											//
 		fclose(email_list);										//
 	}
+	fclose(config);			//
 	free(address);			//
 	free(config_address);	//
 
@@ -683,7 +718,7 @@ void remove_email(int account_address,char *dir,int scroll)
 //LISTA DE LISTAS ENCADEADAS DE EMAILS
 void create_LISTA_ENC(int account_address, char *dir)
 {	// Função para criar o arquivo da Lista de Listas Encadeadas de Emails
-	char* address = dir_builder(account_address,dir,"/lista_enc.bin");
+	char* address = dir_builder(account_address,dir,"lista_enc.bin");
 	FILE *lista_enc;
 	LISTA l;
 
@@ -702,13 +737,13 @@ void create_LISTA_ENC(int account_address, char *dir)
 
 void add_LISTA_ENC(int account_address, char *dir,int antecessor,int novo)
 {	//	Função para adicionar lista à Lista de Listas Encadeadas de Emails
-	char   *address = dir_builder(account_address,dir,"/lista_enc.bin"),*config_address=dir_builder(account_address,dir,"/config.bin");
+	char   *address = dir_builder(account_address,dir,"lista_enc.bin"),*config_address=dir_builder(account_address,dir,"/config.bin");
 	FILE *lista_enc,*config;
 	LISTA a;
 	configuration c;
 	int scroll,aux=-1;
 	fpos_t p;
-
+	// FUTURO: FAZER SUPOSIÇÃO DA POSIÇÃO NA LISTA
 	if(!(config=fopen(config_address,"r+b")))
 		error_m("Error at file oppening");
 	else
@@ -737,6 +772,9 @@ void add_LISTA_ENC(int account_address, char *dir,int antecessor,int novo)
 		fsetpos(lista_enc,&p);
 		if(c.next_LISTA_ENC!=-1)
 			c.next_LISTA_ENC=a.next;
+		else
+			c.anum_LISTA_ENC++;
+		c.num_LISTA_ENC++;
 		a.next=aux;
 		a.address = novo;
 		fwrite(&a,sizeof(LISTA),1,lista_enc);
@@ -761,11 +799,11 @@ void remove_LISTA_ENC(int account_address, char *dir,int antecessor,int atual)
 
 	if(!(config=fopen(config_address,"r+b")))
 		error_m("Error at file oppening");
-	else
-	if(!(lista_enc=fopen(address,"r+b")))
-		error_m("Error at file oppening");
-	else
+	if(atual < c.anum_LISTA_ENC && atual >= 0)
 	{
+		if(!(lista_enc=fopen(address,"r+b")))
+			error_m("Error at file oppening");
+
 		fread(&c,sizeof(configuration),1,config);
 		rewind(config);
 		fseek(lista_enc,atual*sizeof(LISTA),SEEK_SET);
@@ -797,7 +835,7 @@ void remove_LISTA_ENC(int account_address, char *dir,int antecessor,int atual)
 //LISTA DE HORÁRIOS
 void create_horario_list(int account_address, char *dir)
 {	// Função para criar arquivo da Lista de Horários
-	char *address = dir_builder(account_address,dir,"/horario_list.bin");
+	char *address = dir_builder(account_address,dir,"horario_list.bin");
 	FILE *horarios;
 	HORARIO a;
 
@@ -816,7 +854,7 @@ void create_horario_list(int account_address, char *dir)
 
 void add_horario(int account_address, char *dir,HORARIO novo)
 {	// Função para adicionar horário à Lista de Horários
-	char *address = dir_builder(account_address,dir,"/horario_list.bin"),*config_address=dir_builder(account_address,dir,"/config.bin");
+	char *address = dir_builder(account_address,dir,"horario_list.bin"),*config_address=dir_builder(account_address,dir,"config.bin");
 	FILE *horarios,*config;
 	HORARIO a;
 	configuration c;
@@ -839,6 +877,8 @@ void add_horario(int account_address, char *dir,HORARIO novo)
 		fsetpos(horarios,&p);
 		if(c.next_HORARIO!=-1)
 			c.next_HORARIO=a.data[0];
+		else
+			c.anum_HORARIO++;
 		c.num_HORARIO++;
 		for(scroll=0;scroll<6;scroll++)
 			a.data[scroll]=novo.data[scroll];
@@ -855,20 +895,20 @@ void add_horario(int account_address, char *dir,HORARIO novo)
 
 void remove_horario(int account_address, char *dir,int scroll)
 {	// Função para remover horário da Lista de Horários
-	char *address = dir_builder(account_address,dir,"/horario_list.bin"),*config_address=dir_builder(account_address,dir,"/config.bin");
+	char *address = dir_builder(account_address,dir,"horario_list.bin"),*config_address=dir_builder(account_address,dir,"config.bin");
 	FILE *horarios,*config;
 	HORARIO a;
 	configuration c;
 
 	if(!(config=fopen(config_address,"r+b")))
 		error_m("Error at file oppening");
-	else
-	if(!(horarios=fopen(address,"r+b")))
-		error_m("Error at file oppening");
-	else
+	fread(&c,sizeof(configuration),1,config);
+	rewind(config);
+	if(scroll < c.anum_HORARIO && scroll > 0)
 	{
-		fread(&c,sizeof(configuration),1,config);
-		rewind(config);
+		if(!(horarios=fopen(address,"r+b")))
+			error_m("Error at file oppening");
+
 		a.data[0]=c.next_HORARIO;
 		c.next_HORARIO=scroll;
 		c.num_HORARIO--;
@@ -876,8 +916,8 @@ void remove_horario(int account_address, char *dir,int scroll)
 		fwrite(&c,sizeof(configuration),1,config);
 		fwrite(&a,sizeof(HORARIO),1,horarios);
 		fclose(horarios);
-		fclose(config);
 	}
+	fclose(config);
 	free(address);
 	free(config_address);
 
@@ -887,7 +927,7 @@ void remove_horario(int account_address, char *dir,int scroll)
 //LISTA DE PALAVRAS
 void create_word_list(int account_address,char *dir)
 {	//	Função para criar o arquivo da Lista de Palavras
-	char *address = dir_builder(account_address,dir,"/word_list.bin");
+	char *address = dir_builder(account_address,dir,"word_list.bin");
 	FILE *word_list;
 	PALAVRA w;
 
@@ -904,7 +944,7 @@ void create_word_list(int account_address,char *dir)
 
 void add_word(int account_address,char *dir, char *new)
 {	// 	Função para adicionar palavra da Lista de Palavras
-	char *address = dir_builder(account_address,dir,"/word_list.bin"),*config_address=dir_builder(account_address,dir,"/config.bin");
+	char *address = dir_builder(account_address,dir,"word_list.bin"),*config_address=dir_builder(account_address,dir,"config.bin");
 	FILE *word_list,*config;
 	PALAVRA w;
 	configuration c;
@@ -932,6 +972,8 @@ void add_word(int account_address,char *dir, char *new)
 			sscanf(w.key,"%d",&(c.next_PALAVRA));
 			fsetpos(word_list,&p);
 		}
+		else
+			c.anum_PALAVRA++;
 		sprintf(w.key,"%s",new);
 		c.num_PALAVRA++;
 		fwrite(&w,sizeof(PALAVRA),1,word_list);
@@ -952,15 +994,15 @@ void remove_word(int account_address,char *dir, int scroll)
 	PALAVRA w;
 	configuration c;
 
-	if (!(word_list=fopen(address,"r+b")))
-		error_m("Error at file oppening");
-	else
 	if (!(config=fopen(config_address,"r+b")))
 		error_m("Error at file oppening");
-	else
+	fread(&c,sizeof(configuration),1,config);
+	rewind(config);
+	if (scroll < c.anum_PALAVRA && scroll >0)
 	{
-		fread(&c,sizeof(configuration),1,config);
-		rewind(config);
+		if (!(word_list=fopen(address,"r+b")))
+			error_m("Error at file oppening");
+
 		sprintf(w.key,"%d",c.next_PALAVRA);
 		c.num_PALAVRA--;
 		c.next_PALAVRA=scroll;
@@ -968,8 +1010,8 @@ void remove_word(int account_address,char *dir, int scroll)
 		fwrite(&w,sizeof(PALAVRA),1,word_list);
 		fwrite(&c,sizeof(PALAVRA),1,config);
 		fclose(word_list);
-		fclose(config);
 	}
+	fclose(config);
 	free(address);
 	free(config_address);
 

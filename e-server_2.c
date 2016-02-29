@@ -34,6 +34,12 @@ int main(void)
 	printf("TESTE1.5: Adicionando endereço\n");pause;
 		add_address("adolfo@e-server.com",er);
 	ler_end();
+	printf("TESTE2.0: Criando config Adolfo\n");pause;
+		create_config(0,er);
+	printf("TESTE2.0: Criando config Ricardo\n");pause;
+		create_config(1,er);
+
+
 	printf("TESTE_FINAL\n");
 	return 0;
 }
