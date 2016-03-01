@@ -175,6 +175,11 @@ void remove_horario(int account_address, char *dir,int scroll);
 void create_word_list(int account_address,char *dir);
 void add_word(int account_address,char *dir, char *new);
 void remove_word(int account_address,char *dir, int scroll);
+void create_tree(int account_address, char *dir,char *name);
+void add_NODO_tree(int account_address, char *dir,char *name,int key,int SUB_NODO);
+void remove_key_tree(int account_address, char *dir,char *name,int key);
+void remove_SUB_NODO_tree(int account_address, char *dir,char *name,int key,int SUB_NODO);
+int* Busca_NODO_tree(int account_address, char *dir,char *name,int key);
 int horario_igual(HORARIO a,HORARIO b);
 int horario_maior(HORARIO a,HORARIO b);
 int horario_menor(HORARIO a,HORARIO b);
@@ -1044,7 +1049,12 @@ void remove_word(int account_address,char *dir, int scroll)
 
 	return;
 }
-
+//FUNÇÕES DA ARVORE
+void create_tree(int account_address, char *dir,char *name);
+void add_NODO_tree(int account_address, char *dir,char *name,int key,int SUB_NODO);
+void remove_key_tree(int account_address, char *dir,char *name,int key);
+void remove_SUB_NODO_tree(int account_address, char *dir,char *name,int key,int SUB_NODO);
+int* Busca_NODO_tree(int account_address, char *dir,char *name,int key);
 
 //FUNÇÕES DE COMPARAÇÃO DE HORÁRIO
 int horario_igual(HORARIO a,HORARIO b)
