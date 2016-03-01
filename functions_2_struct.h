@@ -24,6 +24,8 @@
 #define line nl; printf("____________________________________________________________"); nl;
 #define x 10
 #define k 64
+#define windus "C:/Users/Ruan/Desktop/T/"
+#define ubuntus "/home/ricardo/e-server"
 //#define dir \e-server-v2\data\ //Diretório no Windows
 //#define dir /e-server-v2/data/ //Diretório no Linux
 
@@ -142,8 +144,11 @@ typedef struct
 }LISTA;
 
 //ESCOPO DAS FUNÇÕES
+char* detecta_os();
+void ler_end(char *er);
 void error_m(char *errormessage);
 char* dir_builder(int account_number,char*dir,char* file);
+char *filepath_gen(char *dir, char *file);
 void create_address_list(char *dir);
 void add_address(char *new,char *dir);
 void remove_address(int scroll,char *dir);
@@ -176,7 +181,27 @@ int horario_menor(HORARIO a,HORARIO b);
 int horario_menor_igual(HORARIO a,HORARIO b);
 int horario_maior_igual(HORARIO a,HORARIO b);
 
+void ler_end(char *er)
+{
+	printf("TESTE1.x.1: Lendo endereço 0\n");pause;
+			printf("Endereço lido: %s\n",get_address(0,er));
+	printf("TESTE1.x.2: Lendo endereço 1\n");pause;
+		printf("Endereço lido: %s\n",get_address(1,er));
 
+}
+char* detecta_os()
+{
+	FILE *X;
+	char *a=filepath_gen(ubuntus,"teste.bin");
+
+	X = fopen(a,"wbx");
+	if(X)
+	remove(a);
+	free(a);
+
+	return X?ubuntus:windus;
+
+}
 void error_m(char *errormessage)
 { 	/* Função para facilitar exibição de mensagens de erro */
     printf("\n%s",errormessage);
@@ -745,7 +770,7 @@ void add_LISTA_ENC(int account_address, char *dir,int antecessor,int novo)
 	configuration c;
 	int scroll,aux=-1;
 	fpos_t p;
-	// FUTURO: FAZER SUPOSIÇÃO DA POSIÇÃO NA LISTA
+	// FUTURO: FAZER SUPOSIÇÃO DA POSIÇÃO NA LISTA QUANDO não houver antecessor
 	if(!(config=fopen(config_address,"r+b")))
 		error_m("Error at file oppening");
 	else
