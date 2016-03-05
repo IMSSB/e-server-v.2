@@ -14,8 +14,6 @@
 #include <string.h>
 #include <time.h>
 #include <sys/stat.h>
-#include "functions_2_mail.h"
-
 #define cls system("CLS || clear");
 #define pause printf("\nDigite algo para continuar"); getchar();
 #define spc printf("  |");
@@ -121,12 +119,13 @@ typedef struct
 	char num_chaves;	// Escolha do tipo char devido ao tamanho máximo escalado para o programa, 64 filhos e 63 chaves.
 	char num_filhos;	// Número de Filhos. Também pode indicar se o NODO é uma folha ou não, 0 = folha.
 
-}NODO;	//	B, B# ou B+? já passou da hora!!
-		// 	B, PORRA!
+}NODO;
 
 typedef struct
 {
-	int arvoreb;
+	int raiz;
+	int num_NODOS;
+	int num_SUB_NODOS;
 
 }ARVOREB;
 
@@ -176,10 +175,12 @@ void create_word_list(int account_address,char *dir);
 void add_word(int account_address,char *dir, char *new);
 void remove_word(int account_address,char *dir, int scroll);
 void create_tree(int account_address, char *dir,char *name);
-void add_NODO_tree(int account_address, char *dir,char *name,int key,int SUB_NODO);
+void add_key_tree(int account_address, char *dir,char *name,int key,int SUB_NODO);
 void remove_key_tree(int account_address, char *dir,char *name,int key);
+int Busca_NODO_tree(int account_address, char *dir,char *name,int key);
+void add_SUB_NODO_tree(int account_address, char *dir,char *name,int key);
 void remove_SUB_NODO_tree(int account_address, char *dir,char *name,int key,int SUB_NODO);
-int* Busca_NODO_tree(int account_address, char *dir,char *name,int key);
+int compara_infos(int account_address, char *dir,char *name,int a,int b);
 int horario_igual(HORARIO a,HORARIO b);
 int horario_maior(HORARIO a,HORARIO b);
 int horario_menor(HORARIO a,HORARIO b);
@@ -1021,7 +1022,7 @@ void add_word(int account_address,char *dir, char *new)
 
 void remove_word(int account_address,char *dir, int scroll)
 {	// 	Função para remover palavra da Lista de Palavras
-	char *address = dir_builder(account_address,dir,"/word_list.bin"),*config_address=dir_builder(account_address,dir,"/config.bin");
+	char *address = dir_builder(account_address,dir,"word_list.bin"),*config_address=dir_builder(account_address,dir,"config.bin");
 	FILE *word_list,*config;
 	PALAVRA w;
 	configuration c;
@@ -1050,13 +1051,149 @@ void remove_word(int account_address,char *dir, int scroll)
 	return;
 }
 //FUNÇÕES DA ARVORE
-void create_tree(int account_address, char *dir,char *name);
-void add_NODO_tree(int account_address, char *dir,char *name,int key,int SUB_NODO);
-void remove_key_tree(int account_address, char *dir,char *name,int key);
-void remove_SUB_NODO_tree(int account_address, char *dir,char *name,int key,int SUB_NODO);
-int* Busca_NODO_tree(int account_address, char *dir,char *name,int key);
+void create_tree(int account_address, char *dir,char *name)
+{
+	char *address, *sub_address, *a, *sa;
+	FILE *tree, *nodo_list;
+	ARVOREB new;
+	NODO nnew;
+
+	a = filepath_gen("tree_",name);
+	sa = filepath_gen("tree_L_",name);
+	address = dir_builder(account_address,dir,a);
+	sub_address	= dir_builder(account_address,dir,sa);
+
+	if (!(tree = fopen(address,"wb")))
+		error_m("Error at file allocation");
+	if (!(nodo_list = fopen(sub_address,"wb")))
+		error_m("Error at file allocation");
+	new.num_NODOS=0;
+	new.num_SUB_NODOS=0;
+	new.raiz=-1;
+	nnew.num_chaves=0;
+	nnew.num_filhos=0;
+	nnew.pai=-1;
+	fwrite(&nnew,sizeof(NODO),1,nodo_list);
+	fwrite(&new,sizeof(ARVOREB),1,tree);
+
+	fclose(tree);
+	fclose(nodo_list);
+
+	free(a);
+	free(sa);
+	free(address);
+	free(sub_address);
+
+	return;
+}
+void add_key_tree(int account_address, char *dir,char *name,int key,int SUB_NODO)
+{
+	char *address, *sub_address, *a, *sa;
+	FILE *tree, *nodo_list;
+	ARVOREB new;
+	NODO nnew;
+	int c,scroll,aux,aux2,aux3;
+
+	a = filepath_gen("tree_",name);
+	sa = filepath_gen("tree_L_",name);
+	address = dir_builder(account_address,dir,a);
+	sub_address	= dir_builder(account_address,dir,sa);
+
+	if (!(tree = fopen(address,"r+b")))
+		error_m("Error at file allocation");
+	if (!(nodo_list = fopen(sub_address,"r+b")))
+		error_m("Error at file allocation");
+	fread(&new,sizeof(ARVOREB),1,tree);
+	rewind(tree);
+
+	scroll=new.raiz;
+	if(new.raiz==-1)
+	{
+
+	}
+	else
+	while(1)
+	{
+		fseek(nodo_list,sizeof(NODO)*scroll,SEEK_SET);
+		fread(&nnew,sizeof(NODO),1,nodo_list);
+
+		for(c=0;c<nnew.num_chaves && 1 > compara_infos(account_address,dir,name,nnew.chaves[c],key);c++);
+		if(!nnew.num_filhos && nnew.num_chaves< k-1)//Caso basico
+		{
+			aux=nnew.chaves[c];
+			aux3=c;
+			nnew.chaves[c++] = key;
+			for(;c<nnew.num_chaves;c++)
+			{
+				aux2=nnew.chaves[c];
+				nnew.chaves[c]=aux;
+				aux=aux2;
+			}
+			c=aux3;
+			aux=nnew.addresses[c];
+			nnew.addresses[c++] = key;
+			for(;c<nnew.num_chaves;c++)
+			{
+				aux2=nnew.addresses[c];
+				nnew.addresses[c]=aux;
+				aux=aux2;
+			}
+			nnew.num_chaves++;
+			fseek(nodo_list,sizeof(NODO)*scroll,SEEK_SET);
+			fwrite(&nnew,sizeof(NODO),1,nodo_list);
+			return;
+		}
+		else
+		if(1)//A bagaça fuder...
+		{}
+		else
+			scroll=nnew.filhos[c];
+
+	}
+
+	new.num_NODOS++; // condicional
+	new.num_SUB_NODOS++;
+	fwrite(&new,sizeof(ARVOREB),1,tree);
+
+	fclose(tree);
+	fclose(nodo_list);
+
+	free(a);
+	free(sa);
+	free(address);
+	free(sub_address);
+
+	return;
+}
+void remove_key_tree(int account_address, char *dir,char *name,int key)
+{
+
+
+}
+int Busca_NODO_tree(int account_address, char *dir,char *name,int key)
+{
+	int primeiro=0;
+
+	return primeiro;
+}
+
+//OPS! LISTA ENCADEADA
+void add_SUB_NODO_tree(int account_address, char *dir,char *name,int key)
+{
+
+
+}
+void remove_SUB_NODO_tree(int account_address, char *dir,char *name,int key,int SUB_NODO)
+{
+
+
+}
 
 //FUNÇÕES DE COMPARAÇÃO DE HORÁRIO
+int compara_infos(int account_address, char *dir,char *name,int a,int b)
+{
+	return 0;
+}
 int horario_igual(HORARIO a,HORARIO b)
 {
 	int c;
