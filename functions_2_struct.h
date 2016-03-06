@@ -26,6 +26,7 @@
 #define line nl; printf("____________________________________________________________"); nl;
 #define x 10	// Limite de histórico
 #define k 64	// Ordem - Use número par - Número de Chaves será k-1 e o número de filhos será k
+#define min_chaves ((k/2)-1)
 #define windus "C:/Users/Ruan/Desktop/T/"
 #define ubuntus "/home/ricardo/e-server"
 //#define dir \e-server-v2\data\ //Diretório no Windows
@@ -182,6 +183,7 @@ void add_word(int account_address,char *dir, char *new);
 void remove_word(int account_address,char *dir, int scroll);
 void create_tree(int account_address, char *dir,char *name);
 void split_tree(FILE *tree,FILE *nodo_list,int pai,int scroll);
+int merge_nodo(FILE *tree,FILE *nodo_list,int pai,int scroll);
 void add_key_tree(int account_address, char *dir,char *name,int key,int SUB_NODO);
 void remove_key_tree(int account_address, char *dir,char *name,int key);
 int Busca_NODO_tree(int account_address, char *dir,char *name,int key);
@@ -1136,8 +1138,8 @@ void split_tree(FILE *tree,FILE *nodo_list,int pai,int scroll)
 		pain.num_chaves=1;
 		pain.ne_folha=1;
 		pain.filhos[0]=smith;
-		pain.chaves[0]=son1.chaves[k/2-1];
-		pain.addresses[0]=son1.addresses[k/2-1];
+		pain.chaves[0]=son1.chaves[min_chaves];
+		pain.addresses[0]=son1.addresses[min_chaves];
 	}
 
 	smith = (AVB.next_NODO == -1)?AVB.num_NODOS:AVB.next_NODO;
@@ -1161,7 +1163,7 @@ void split_tree(FILE *tree,FILE *nodo_list,int pai,int scroll)
 	if (son1.ne_folha)
 		son2.filhos[c-(k/2)] = son1.filhos[c];
 	son2.ne_folha = son1.ne_folha;
-	son1.num_chaves = son2.num_chaves = (k/2)-1; // Só funciona para ordem par
+	son1.num_chaves = son2.num_chaves = min_chaves; // Só funciona para ordem par
 
 	if(pai+1)
 	{
@@ -1176,8 +1178,8 @@ void split_tree(FILE *tree,FILE *nodo_list,int pai,int scroll)
 			pain.chaves[c]=pain.chaves[c-1];
 		}
 			pain.filhos[scroll]=smith;
-			pain.chaves[scroll]=son1.chaves[k/2-1];
-			pain.addresses[scroll]=son1.addresses[k/2-1];
+			pain.chaves[scroll]=son1.chaves[min_chaves];
+			pain.addresses[scroll]=son1.addresses[min_chaves];
 
 	}
 	else // Criar nodo no arquivo para ser o pai
@@ -1199,6 +1201,13 @@ void split_tree(FILE *tree,FILE *nodo_list,int pai,int scroll)
 
 	return;
 }
+
+int merge_nodo(FILE *tree,FILE *nodo_list,int pai,int scroll)
+{	//	Função para juntar dois NODOs irmãos, retorna o tipo da junção. 0 = Só passou um elemento, 1 = Junção dos irmãos com o pai.
+	//
+	return 0;
+}
+
 void add_key_tree(int account_address, char *dir,char *name,int key,int SUB_NODO)
 {
 	char *address, *sub_address, *a, *sa;
@@ -1226,7 +1235,6 @@ void add_key_tree(int account_address, char *dir,char *name,int key,int SUB_NODO
 		nnew.num_chaves++;
 		nnew.addresses[0]=SUB_NODO;
 		cdn=0;
-
 	}
 	else
 	while(cdn)
@@ -1240,11 +1248,9 @@ void add_key_tree(int account_address, char *dir,char *name,int key,int SUB_NODO
 			rewind(tree);
 			fread(&new,sizeof(ARVOREB),1,tree);
 			rewind(tree);
-			scroll=nnew.pai?nnew.pai:new.raiz;
+			scroll=nnew.pai+1?nnew.pai:new.raiz;
 			fseek(nodo_list,sizeof(NODO)*scroll,SEEK_SET);
 			fread(&nnew,sizeof(NODO),1,nodo_list);
-
-
 		}
 
 		for(c=0;c<nnew.num_chaves && 1 > compara_infos(account_address,dir,name,nnew.chaves[c],key);c++);
@@ -1273,7 +1279,7 @@ void add_key_tree(int account_address, char *dir,char *name,int key,int SUB_NODO
 			cdn=0;
 		}
 		//GENIAL CORMEN <3
-		else
+		else	// 	Garante que haja filhos, por causa do if acima
 			scroll=nnew.filhos[c];
 
 	}
@@ -1294,9 +1300,68 @@ void add_key_tree(int account_address, char *dir,char *name,int key,int SUB_NODO
 	return;
 }
 void remove_key_tree(int account_address, char *dir,char *name,int key)
-{
+{	//	Remover chave da árvore, só chamado caso todos os SUB_NODOS da chave tenham sido removidos
+	char *address, *sub_address, *a, *sa;
+	FILE *tree, *nodo_list;
+	ARVOREB new;
+	NODO nnew;
+	int c,scroll,aux,aux2,aux3,cdn=1;
+
+	a = filepath_gen("tree_",name);
+	sa = filepath_gen("tree_L_",name);
+	address = dir_builder(account_address,dir,a);
+	sub_address	= dir_builder(account_address,dir,sa);
+
+	if (!(tree = fopen(address,"r+b")))
+		error_m("Error at file allocation");
+	if (!(nodo_list = fopen(sub_address,"r+b")))
+		error_m("Error at file allocation");
+	fread(&new,sizeof(ARVOREB),1,tree);
+	rewind(tree);
 
 
+	if((scroll=new.raiz)==-1)
+		cdn=0;
+	while(cdn)
+	{
+		fseek(nodo_list,sizeof(NODO)*scroll,SEEK_SET);
+		fread(&nnew,sizeof(NODO),1,nodo_list);
+
+		if (nnew.num_chaves == min_chaves && nnew.pai+1)
+		{
+			aux2 = merge_nodo(tree,nodo_list,nnew.pai,scroll);
+			rewind(tree);
+			fread(&new,sizeof(ARVOREB),1,tree);
+			rewind(tree);
+			scroll=nnew.pai?nnew.pai:new.raiz;	// definir após definir merge_nodo
+			fseek(nodo_list,sizeof(NODO)*scroll,SEEK_SET);
+			fread(&nnew,sizeof(NODO),1,nodo_list);
+		}
+
+		for(c=0;c<nnew.num_chaves && 1 > (aux=compara_infos(account_address,dir,name,nnew.chaves[c],key)) && aux;c++);
+		if(!aux)
+		{
+
+		}
+		else
+			scroll=nnew.filhos[c];
+	}
+
+
+
+
+	fwrite(&new,sizeof(ARVOREB),1,tree);
+	fwrite(&nnew,sizeof(NODO),1,nodo_list);
+
+	fclose(tree);
+	fclose(nodo_list);
+
+	free(a);
+	free(sa);
+	free(address);
+	free(sub_address);
+
+	return;
 }
 int Busca_NODO_tree(int account_address, char *dir,char *name,int key)
 {
