@@ -14,14 +14,18 @@
 #include <string.h>
 #include <time.h>
 #include <sys/stat.h>
+#ifdef __linux__
+#else
+	#include <direct.h>
+#endif
 #define cls system("CLS || clear");
 #define pause printf("\nDigite algo para continuar"); getchar();
 #define spc printf("  |");
 #define spc_m printf("              ");
 #define nl printf("\n");
 #define line nl; printf("____________________________________________________________"); nl;
-#define x 10
-#define k 64
+#define x 10	// Limite de histórico
+#define k 64	// Ordem - Use número par - Número de Chaves será k-1 e o número de filhos será k
 #define windus "C:/Users/Ruan/Desktop/T/"
 #define ubuntus "/home/ricardo/e-server"
 //#define dir \e-server-v2\data\ //Diretório no Windows
@@ -200,16 +204,11 @@ void ler_end(char *er)
 }
 char* detecta_os()
 {
-	FILE *X;
-	char *a=filepath_gen(ubuntus,"teste.bin");
-
-	X = fopen(a,"wbx");
-	if(X)
-	remove(a);
-	free(a);
-
-	return X?ubuntus:windus;
-
+	#ifdef __linux
+		return ubuntus;
+	#else
+		return windus;
+	#endif
 }
 void error_m(char *errormessage)
 { 	/* Função para facilitar exibição de mensagens de erro */
@@ -380,7 +379,13 @@ void create_config(int account_address,char *dir)
 
 	ac = get_address(account_address, dir);
 	aux = filepath_gen(dir,ac);
-	mkdir(aux,S_IRWXU);
+
+	#ifdef __linux
+		mkdir(aux, S_IRWXU);
+	#else
+		_mkdir(aux);
+	#endif
+
 	if(!(config=fopen(address,"wb")))
 		error_m("Error at file allocation");
 	else
@@ -1097,24 +1102,24 @@ void split_tree(FILE *tree,FILE *nodo_list,int pai,int scroll)
 {
 	NODO pain,son1,son2;
 	ARVOREB AVB;
-	int c,smith,felipe;
+	int c,felipe,smith;
 	fpos_t p,f1,f2;
 
 	rewind(tree);
-	fread(&AVB,sizeof(ARVOREB),1,tree);
-	if(pai+1)
+	fread(&AVB,sizeof(ARVOREB),1,tree); 	//	Lê o arquivo de configuração da árvore
+	if(pai+1)	// 	Caso o NODO a ser dividido tenha pai
 	{
-		fseek(nodo_list,sizeof(NODO)*pai,SEEK_SET);
-		fgetpos(nodo_list,&p);
-		fread(&pain,sizeof(NODO),1,nodo_list);
-		fseek(nodo_list,sizeof(NODO)*pain.filhos[scroll],SEEK_SET);
-		fgetpos(nodo_list,&f1);
+		fseek(nodo_list,sizeof(NODO)*pai,SEEK_SET); // Procura a posição do pai no arquivo
+		fgetpos(nodo_list,&p);	//	Guarda a posição de gravação do Pai
+		fread(&pain,sizeof(NODO),1,nodo_list);	//
+		fseek(nodo_list,sizeof(NODO)*pain.filhos[scroll],SEEK_SET);	// Procura posição do filho cheio, que vai ser o Filho 1
+		fgetpos(nodo_list,&f1);	//	Guarda a posição de gravação do Filho 1
 		fread(&son1,sizeof(NODO),1,nodo_list);
 	}
-	else
+	else	//	Se o NODO a ser dividido não tiver pai (Caso for raiz)
 	{
 		fseek(nodo_list,sizeof(NODO)*AVB.raiz,SEEK_SET);
-		fgetpos(nodo_list,&f1);
+		fgetpos(nodo_list,&f1);	//	Guarda a posição de gravação do Filho 1
 		fread(&son1,sizeof(NODO),1,nodo_list);
 		smith = (AVB.next_NODO == -1)?AVB.num_NODOS:AVB.next_NODO;
 		fseek(nodo_list,sizeof(NODO)*smith,SEEK_SET);
@@ -1229,7 +1234,7 @@ void add_key_tree(int account_address, char *dir,char *name,int key,int SUB_NODO
 		fseek(nodo_list,sizeof(NODO)*scroll,SEEK_SET);
 		fread(&nnew,sizeof(NODO),1,nodo_list);
 
-		if(nnew.num_chaves==k-1)
+		if(nnew.num_chaves==k-1) // 	Divisão de NODO cheio
 		{
 			split_tree(tree,nodo_list,nnew.pai,scroll);
 			rewind(tree);
@@ -1243,7 +1248,7 @@ void add_key_tree(int account_address, char *dir,char *name,int key,int SUB_NODO
 		}
 
 		for(c=0;c<nnew.num_chaves && 1 > compara_infos(account_address,dir,name,nnew.chaves[c],key);c++);
-		if(!nnew.ne_folha && nnew.num_chaves< k-1)//Caso basico
+		if(!nnew.ne_folha)//Caso basico
 		{
 			aux=nnew.chaves[c];
 			aux3=c;
