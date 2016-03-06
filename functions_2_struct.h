@@ -117,7 +117,7 @@ typedef struct
 	int filhos[k]; 		// NODOS
 	int pai;
 	char num_chaves;	// Escolha do tipo char devido ao tamanho máximo escalado para o programa, 64 filhos e 63 chaves.
-	char num_filhos;	// Número de Filhos. Também pode indicar se o NODO é uma folha ou não, 0 = folha.
+	char ne_folha;	// Número de Filhos. Também pode indicar se o NODO é uma folha ou não, 0 = folha.
 
 }NODO;
 
@@ -125,6 +125,8 @@ typedef struct
 {
 	int raiz;
 	int num_NODOS;
+	int anum_NODOS;
+	int next_NODO;
 	int num_SUB_NODOS;
 
 }ARVOREB;
@@ -175,6 +177,7 @@ void create_word_list(int account_address,char *dir);
 void add_word(int account_address,char *dir, char *new);
 void remove_word(int account_address,char *dir, int scroll);
 void create_tree(int account_address, char *dir,char *name);
+void split_tree(FILE *tree,FILE *nodo_list,int pai,int scroll);
 void add_key_tree(int account_address, char *dir,char *name,int key,int SUB_NODO);
 void remove_key_tree(int account_address, char *dir,char *name,int key);
 int Busca_NODO_tree(int account_address, char *dir,char *name,int key);
@@ -1070,9 +1073,13 @@ void create_tree(int account_address, char *dir,char *name)
 	new.num_NODOS=0;
 	new.num_SUB_NODOS=0;
 	new.raiz=-1;
+	new.anum_NODOS=0;
+	new.next_NODO=-1;
 	nnew.num_chaves=0;
-	nnew.num_filhos=0;
+	nnew.ne_folha=0;
 	nnew.pai=-1;
+
+
 	fwrite(&nnew,sizeof(NODO),1,nodo_list);
 	fwrite(&new,sizeof(ARVOREB),1,tree);
 
@@ -1086,13 +1093,114 @@ void create_tree(int account_address, char *dir,char *name)
 
 	return;
 }
+void split_tree(FILE *tree,FILE *nodo_list,int pai,int scroll)
+{
+	NODO pain,son1,son2;
+	ARVOREB AVB;
+	int c,smith,felipe;
+	fpos_t p,f1,f2;
+
+	rewind(tree);
+	fread(&AVB,sizeof(ARVOREB),1,tree);
+	if(pai+1)
+	{
+		fseek(nodo_list,sizeof(NODO)*pai,SEEK_SET);
+		fgetpos(nodo_list,&p);
+		fread(&pain,sizeof(NODO),1,nodo_list);
+		fseek(nodo_list,sizeof(NODO)*pain.filhos[scroll],SEEK_SET);
+		fgetpos(nodo_list,&f1);
+		fread(&son1,sizeof(NODO),1,nodo_list);
+	}
+	else
+	{
+		fseek(nodo_list,sizeof(NODO)*AVB.raiz,SEEK_SET);
+		fgetpos(nodo_list,&f1);
+		fread(&son1,sizeof(NODO),1,nodo_list);
+		smith = (AVB.next_NODO == -1)?AVB.num_NODOS:AVB.next_NODO;
+		fseek(nodo_list,sizeof(NODO)*smith,SEEK_SET);
+		fgetpos(nodo_list,&p);
+		fread(&pain,sizeof(NODO),1,nodo_list);
+		if (AVB.next_NODO+1)
+			AVB.next_NODO = pain.pai; // Possibilitar isso na remoção
+		else
+			AVB.anum_NODOS++;
+
+		AVB.num_NODOS++;
+		felipe = smith;
+		pain.pai=-1;
+		pain.num_chaves=1;
+		pain.ne_folha=1;
+		pain.filhos[0]=smith;
+		pain.chaves[0]=son1.chaves[k/2-1];
+		pain.addresses[0]=son1.addresses[k/2-1];
+	}
+
+	smith = (AVB.next_NODO == -1)?AVB.num_NODOS:AVB.next_NODO;
+	fseek(nodo_list,sizeof(NODO)*smith,SEEK_SET);
+	fgetpos(nodo_list,&f2);
+	fread(&son2,sizeof(NODO),1,nodo_list);
+	if (AVB.next_NODO+1)
+		AVB.next_NODO = son2.pai;
+	else
+		AVB.anum_NODOS++;
+
+	AVB.num_NODOS++;
+
+	for(c=k/2;c<k-1;c++)
+	{
+		son2.chaves[c-(k/2)] = son1.chaves[c];
+		son2.addresses[c-(k/2)] = son1.addresses[c];
+		if (son1.ne_folha)
+			son2.filhos[c-(k/2)] = son1.filhos[c];
+	}
+	if (son1.ne_folha)
+		son2.filhos[c-(k/2)] = son1.filhos[c];
+	son2.ne_folha = son1.ne_folha;
+	son1.num_chaves = son2.num_chaves = (k/2)-1; // Só funciona para ordem par
+
+	if(pai+1)
+	{
+		son1.pai = son2.pai = pai;
+		if (son1.ne_folha)
+			pain.filhos[k-1]=pain.filhos[k-2];
+		for (c=k-2;c>scroll;c--)
+		{
+			if (son1.ne_folha)
+				pain.filhos[c]=pain.filhos[c-1];
+			pain.addresses[c]=pain.addresses[c-1];
+			pain.chaves[c]=pain.chaves[c-1];
+		}
+			pain.filhos[scroll]=smith;
+			pain.chaves[scroll]=son1.chaves[k/2-1];
+			pain.addresses[scroll]=son1.addresses[k/2-1];
+
+	}
+	else // Criar nodo no arquivo para ser o pai
+	{
+		son1.pai = son2.pai = felipe;
+		pain.filhos[1]=smith;
+	}
+
+
+
+	fsetpos(nodo_list,&p);
+	fwrite(&pain,sizeof(NODO),1,nodo_list);
+	fsetpos(nodo_list,&f1);
+	fwrite(&son1,sizeof(NODO),1,nodo_list);
+	fsetpos(nodo_list,&f2);
+	fwrite(&son2,sizeof(NODO),1,nodo_list);
+	rewind(tree);
+	fwrite(&AVB,sizeof(NODO),1,nodo_list);
+
+	return;
+}
 void add_key_tree(int account_address, char *dir,char *name,int key,int SUB_NODO)
 {
 	char *address, *sub_address, *a, *sa;
 	FILE *tree, *nodo_list;
 	ARVOREB new;
 	NODO nnew;
-	int c,scroll,aux,aux2,aux3;
+	int c,scroll,aux,aux2,aux3,cdn=1;
 
 	a = filepath_gen("tree_",name);
 	sa = filepath_gen("tree_L_",name);
@@ -1109,16 +1217,33 @@ void add_key_tree(int account_address, char *dir,char *name,int key,int SUB_NODO
 	scroll=new.raiz;
 	if(new.raiz==-1)
 	{
+		nnew.chaves[0]=key;
+		nnew.num_chaves++;
+		nnew.addresses[0]=SUB_NODO;
+		cdn=0;
 
 	}
 	else
-	while(1)
+	while(cdn)
 	{
 		fseek(nodo_list,sizeof(NODO)*scroll,SEEK_SET);
 		fread(&nnew,sizeof(NODO),1,nodo_list);
 
+		if(nnew.num_chaves==k-1)
+		{
+			split_tree(tree,nodo_list,nnew.pai,scroll);
+			rewind(tree);
+			fread(&new,sizeof(ARVOREB),1,tree);
+			rewind(tree);
+			scroll=nnew.pai?nnew.pai:new.raiz;
+			fseek(nodo_list,sizeof(NODO)*scroll,SEEK_SET);
+			fread(&nnew,sizeof(NODO),1,nodo_list);
+
+
+		}
+
 		for(c=0;c<nnew.num_chaves && 1 > compara_infos(account_address,dir,name,nnew.chaves[c],key);c++);
-		if(!nnew.num_filhos && nnew.num_chaves< k-1)//Caso basico
+		if(!nnew.ne_folha && nnew.num_chaves< k-1)//Caso basico
 		{
 			aux=nnew.chaves[c];
 			aux3=c;
@@ -1131,7 +1256,7 @@ void add_key_tree(int account_address, char *dir,char *name,int key,int SUB_NODO
 			}
 			c=aux3;
 			aux=nnew.addresses[c];
-			nnew.addresses[c++] = key;
+			nnew.addresses[c++] = SUB_NODO;
 			for(;c<nnew.num_chaves;c++)
 			{
 				aux2=nnew.addresses[c];
@@ -1140,12 +1265,9 @@ void add_key_tree(int account_address, char *dir,char *name,int key,int SUB_NODO
 			}
 			nnew.num_chaves++;
 			fseek(nodo_list,sizeof(NODO)*scroll,SEEK_SET);
-			fwrite(&nnew,sizeof(NODO),1,nodo_list);
-			return;
+			cdn=0;
 		}
-		else
-		if(1)//A bagaça fuder...
-		{}
+		//GENIAL CORMEN <3
 		else
 			scroll=nnew.filhos[c];
 
@@ -1154,6 +1276,7 @@ void add_key_tree(int account_address, char *dir,char *name,int key,int SUB_NODO
 	new.num_NODOS++; // condicional
 	new.num_SUB_NODOS++;
 	fwrite(&new,sizeof(ARVOREB),1,tree);
+	fwrite(&nnew,sizeof(NODO),1,nodo_list);
 
 	fclose(tree);
 	fclose(nodo_list);
