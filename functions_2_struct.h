@@ -1201,12 +1201,36 @@ void split_tree(FILE *tree,FILE *nodo_list,int pai,int scroll)
 
 	return;
 }
-
-int merge_nodo(FILE *tree,FILE *nodo_list,int pai,int scroll)
+//Decisão de projeto
+/*int merge_nodo(FILE *tree,FILE *nodo_list,int pai,int scroll)
 {	//	Função para juntar dois NODOs irmãos, retorna o tipo da junção. 0 = Só passou um elemento, 1 = Junção dos irmãos com o pai.
-	//
+	NODO pain,son1,son2;
+	ARVOREB AVB;
+	int c,felipe,smith;
+	fpos_t p,f1,f2;
+
+	rewind(tree);
+	fread(&AVB,sizeof(ARVOREB),1,tree); 	//	Lê o arquivo de configuração da árvore
+	fseek(nodo_list,sizeof(NODO)*pai,SEEK_SET);
+	fread(&pain,sizeof(NODO),1,nodo_list);
+	fseek(nodo_list,sizeof(NODO)*pain.filhos[scroll],SEEK_SET);
+	fread(&son1,sizeof(NODO),1,nodo_list);
+	felipe=scroll;
+	felipe+=(scroll+1 <= pain.num_chaves)?1:-1;
+	fseek(nodo_list,sizeof(NODO)*pain.filhos[scroll+1],SEEK_SET);
+	fread(&son2,sizeof(NODO),1,nodo_list);
+	if(son2.num_chaves< k/2)
+	{
+		//Junta tudo
+	}
+
+
+
+
+
+
 	return 0;
-}
+}*/
 
 void add_key_tree(int account_address, char *dir,char *name,int key,int SUB_NODO)
 {
@@ -1299,7 +1323,8 @@ void add_key_tree(int account_address, char *dir,char *name,int key,int SUB_NODO
 
 	return;
 }
-void remove_key_tree(int account_address, char *dir,char *name,int key)
+//Decisão de projeto
+/*void remove_key_tree(int account_address, char *dir,char *name,int key)
 {	//	Remover chave da árvore, só chamado caso todos os SUB_NODOS da chave tenham sido removidos
 	char *address, *sub_address, *a, *sa;
 	FILE *tree, *nodo_list;
@@ -1362,7 +1387,7 @@ void remove_key_tree(int account_address, char *dir,char *name,int key)
 	free(sub_address);
 
 	return;
-}
+}*/
 int Busca_NODO_tree(int account_address, char *dir,char *name,int key)
 {
 	int primeiro=0;
