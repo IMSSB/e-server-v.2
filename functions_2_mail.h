@@ -9,6 +9,12 @@
 #define FUNCTIONS_2_H_
 #include "functions_2_struct.h"
 
-#endif /* FUNCTIONS_2_H_ */
+void create_account(char *dir,char *user,char *password);
 
-//Mudanças
+void create_account(char *dir,char *user,char *password)
+{
+	CONTA novaConta;
+
+}
+
+#endif /* FUNCTIONS_2_H_ */

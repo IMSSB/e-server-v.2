@@ -10,8 +10,18 @@
 int main(void)
 {
 	//int c;
+	HORARIO hora;
+
 	char *er =detecta_os();
+	printf("\n|| Bem vindo ao E-Server v.2.0\n ||");
+	/*printf("\nString: %s -\n",get_text(1,er,2));
+	add_text(1,er,"FML BOYS");
+
+	//remove_text(1,er,2);/**/
+	/*
 	printf("TESTE0: Configurando servidor\n");pause;
+
+
 		setup(er);
 	printf("TESTE1.0: Criando lista de endereços\n");pause;
 		create_address_list(er);
@@ -31,6 +41,43 @@ int main(void)
 	printf("TESTE2.0: Criando config Ricardo\n");pause;
 		create_config(1,er);
 
+
+	*/
+
+	/*printf("Criando lista de Mensagens");
+		create_text_list(1,er);
+		add_text(1,er,"hehehehhehehehehehhehe, teste mano");
+		add_text(1,er,"bora ver se funciona");
+		add_text(1,er,"tem que funcionar");
+		add_text(1,er,"é isso");
+	*/
+
+	printf("Criando lista de Assuntos");
+		create_subject_list(1,er);
+		add_subject(1,er,"ASSUNTO 1");
+
+
+	printf("Criando lista de Horários");
+		create_horario_list(1,er);
+		hora.data[0] = 1;
+		hora.data[1] = 1;
+		hora.data[2] = 1990;
+		hora.data[3] = 12;
+		hora.data[4] = 50;
+		hora.data[5] = 29;
+		add_horario(1,er,hora);
+
+	printf("Criando lista de Palavras");
+		create_word_list(1,er);
+		add_word(1,er,"Palavra 1");
+
+	printf("Criando lista de Emails");
+		create_email_list(1,er);
+		add_email(1,er,0,1,0,0,0,0);
+
+	printf("Criando lista de Listas Encadeadas de Emails");
+		create_LISTA_ENC(1,er);
+		add_LISTA_ENC(1,er,-1,0);
 
 	printf("TESTE_FINAL\n");
 	return 0;

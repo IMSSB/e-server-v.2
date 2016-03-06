@@ -14,10 +14,10 @@
 #include <string.h>
 #include <time.h>
 #include <sys/stat.h>
-#ifdef __linux__
-#else
-	#include <direct.h>
+#ifndef __linux__ // Verifica se o sistema atual não é Linux
+	#include <direct.h> 	//	Inclui biblioteca específica do Windows se não for
 #endif
+
 #define cls system("CLS || clear");
 #define pause printf("\nDigite algo para continuar"); getchar();
 #define spc printf("  |");
@@ -29,8 +29,6 @@
 #define min_chaves ((k/2)-1)
 #define windus "C:/Users/Ruan/Desktop/T/"
 #define ubuntus "/home/ricardo/e-server"
-//#define dir \e-server-v2\data\ //Diretório no Windows
-//#define dir /e-server-v2/data/ //Diretório no Linux
 
 // 	Temos que voltar o ponteiro dos arquivos depois das operações de leitura
 
@@ -86,8 +84,8 @@ typedef struct
 
 typedef struct //O resto das informações não serve pra busca
 {
-	//int dia,mes,ano,horas,minutos,segundos;
-	int data[6];//data ordenada por relevancia (ano,mes,dia,hora,minuto,segundo)
+	//int dia,mês,ano,horas,minutos,segundos;
+	int data[6];//data ordenada por relevância (ano,mês,dia,hora,minuto,segundo)
 
 }HORARIO;
 
@@ -97,7 +95,7 @@ typedef struct
 	int destinatario;
 	int assunto;
 	int MSG;
-	HORARIO data;
+	int data;
 	int historico; 		// PARA RICARDO E RUAN DO FUTURO: A ESTRUTURA RETRO ALUDIDA
 						// REFERENCIARÁ UM SUBNODO, E ASSIM EM DIANTE, ENCADEANDO. COM CADEADOS.
 }SUB_NODO;
@@ -112,8 +110,8 @@ typedef struct
        int trash;
        int sent;
 
-}CONTA;//Conta deve ser uma arvore pois seria totalmente incompreensivel
-//usar metodos tão sofisticados de busca pra tudo exceto pra achar as contas
+}CONTA;//Conta deve ser uma arvore pois seria totalmente incompreensível
+//usar métodos tão sofisticados de busca pra tudo exceto pra achar as contas
 
 typedef struct
 {
@@ -170,7 +168,7 @@ void add_subject(int account_address,char *dir,char *new);
 void remove_subject(int account_address,char *dir,int scroll);
 char* get_subject(int account_address,char *dir,int scroll);
 void create_email_list(int account_address,char *dir);
-void add_email(int account_address,char *dir,int remetente,int destinatario, int assunto, int MSG, HORARIO data, int historico);
+void add_email(int account_address,char *dir,int remetente,int destinatario, int assunto, int MSG, int data, int historico);
 void remove_email(int account_address,char *dir,int scroll);
 void create_LISTA_ENC(int account_address, char *dir);
 void add_LISTA_ENC(int account_address, char *dir,int ultimo,int novo);
@@ -186,8 +184,8 @@ void split_tree(FILE *tree,FILE *nodo_list,int pai,int scroll);
 int merge_nodo(FILE *tree,FILE *nodo_list,int pai,int scroll);
 void add_key_tree(int account_address, char *dir,char *name,int key,int SUB_NODO);
 void remove_key_tree(int account_address, char *dir,char *name,int key);
-int Busca_NODO_tree(int account_address, char *dir,char *name,int key);
-void add_SUB_NODO_tree(int account_address, char *dir,char *name,int key);
+int busca_SUB_NODO_tree(int account_address, char *dir,char *name,int key);
+void add_SUB_NODO_tree(int account_address, char *dir,char *name,int key,int SUB_NODO);
 void remove_SUB_NODO_tree(int account_address, char *dir,char *name,int key,int SUB_NODO);
 int compara_infos(int account_address, char *dir,char *name,int a,int b);
 int horario_igual(HORARIO a,HORARIO b);
@@ -196,6 +194,7 @@ int horario_menor(HORARIO a,HORARIO b);
 int horario_menor_igual(HORARIO a,HORARIO b);
 int horario_maior_igual(HORARIO a,HORARIO b);
 
+// FUNÇÕES DE TESTE INTERNO
 void ler_end(char *er)
 {
 	printf("TESTE1.x.1: Lendo endereço 0\n");pause;
@@ -204,14 +203,17 @@ void ler_end(char *er)
 		printf("Endereço lido: %s\n",get_address(1,er));
 
 }
+
 char* detecta_os()
 {
-	#ifdef __linux
+	#ifdef __linux__
 		return ubuntus;
 	#else
 		return windus;
 	#endif
 }
+
+// 	FUNÇÕES ÚTEIS
 void error_m(char *errormessage)
 { 	/* Função para facilitar exibição de mensagens de erro */
     printf("\n%s",errormessage);
@@ -228,6 +230,7 @@ char *filepath_gen(char *dir, char *file)
 	return path;				//	Retornando o ponteiro
 }
 // Não se pode usar strcat em string constante, perdi um tempinho com isso.
+
 char* dir_builder(int account_number,char*dir,char* file)
 {	//	Função para gerar o caminho do arquivo
 	char *ad = get_address(account_number,dir), *r;
@@ -241,17 +244,17 @@ char* dir_builder(int account_number,char*dir,char* file)
 //LISTA DE ENDEREÇOS GLOBAL
 void create_address_list(char *dir) //
 {	// Função para criar o arquivo da Lista de Endereços
-	FILE *new;
-	addresses ad;
-	char *dir_ad=filepath_gen(dir,"addresses.bin");
+	FILE *new;			//	Declarando ponteiro para arquivo que será criado
+	addresses ad;		//	Declarando variável addresses para ser escrita no arquivo
+	char *dir_ad=filepath_gen(dir,"addresses.bin");		//	Gerando caminho para o arquivo
 
-	if(!(new=fopen(dir_ad,"wb")))
-		error_m("Error at file allocation");
+	if(!(new=fopen(dir_ad,"wb")))	//	Criando arquivo
+		error_m("Error at file allocation");	//	Mensagem de erro se o arquivo não conseguir ser criado/subscrito
 	else
 	{
-		sprintf(&(ad.address[0]),"%d",-1);//Tinha esquecido disso kkkk
-		fwrite(&ad,sizeof(addresses),1,new);
-		fclose(new);
+		sprintf(&(ad.address[0]),"%d",-1);	//	Colocando "-1" na variável para indicar que ainda não há nenhum endereço
+		fwrite(&ad,sizeof(addresses),1,new);	//	Escrevendo no arquivo
+		fclose(new);	// 	Fechando arquivo
 	}
 
 	return;
@@ -264,12 +267,12 @@ void add_address(char *new,char *dir)
 	char *dir_ad=filepath_gen(dir,"addresses.bin");
 	settings s;
 	addresses ads;
-	int scroll;		//	Variáveis auxliares
+	int scroll;		//	Variáveis auxiliares
 	fpos_t c;
 	if(!(set=fopen(dir_s,"r+b")))				// Confirmando abertura dos arquivos de settings e addresses
-		error_m("Error at file oppening");
+		error_m("Error at file opening");
 	if(!(ad=fopen(dir_ad,"r+b")))
-		error_m("Error at file oppening");
+		error_m("Error at file opening");
 
 	fread(&s,sizeof(settings),1,set);	//	Lendo arquivo de configurações e armazenando na variável s
 	rewind(set);						//	Colocando a posição do fluxo de dados no ínicio
@@ -307,13 +310,13 @@ void remove_address(int scroll,char *dir)
 	fpos_t c;
 
 	if(!(set=fopen(dir_s,"r+b")))
-		error_m("Error at file oppening");
+		error_m("Error at file opening");
 	fread(&s,sizeof(settings),1,set);
 	rewind(set);
 	if (scroll < s.anum_address && scroll >= 0)
 	{
 		if(!(ad=fopen(dir_ad,"r+b")))
-		error_m("Error at file oppening");
+		error_m("Error at file opening");
 
 		fseek(ad,scroll*sizeof(addresses),SEEK_SET);
 		fgetpos(ad,&c);
@@ -340,7 +343,7 @@ char* get_address(int scroll,char *dir)
 	addresses ads;
 
 	if(!(ad=fopen(dir_ad,"rb")))
-		error_m("Error at file oppening");
+		error_m("Error at file opening");
 
 	fseek(ad,scroll*sizeof(addresses),SEEK_SET);
 	fread(&ads,sizeof(addresses),1,ad);
@@ -454,10 +457,10 @@ void add_text(int account_address,char *dir,char *new)
 	fpos_t p;
 
 	if(!(config=fopen(config_address,"r+b")))
-		error_m("Error at file oppening");
+		error_m("Error at file opening");
 	else
 	if(!(text_list=fopen(address,"r+b")))
-		error_m("Error at file oppening");
+		error_m("Error at file opening");
 	else
 	{
 		fread(&c,sizeof(configuration),1,config);
@@ -495,15 +498,15 @@ void remove_text(int account_address,char *dir,int scroll)//precisamos validar a
 	configuration c;
 
 	if(!(config=fopen(config_address,"r+b")))
-		error_m("Error at file oppening");
+		error_m("Error at file opening");
 	fread(&c,sizeof(configuration),1,config);
 	rewind(config);
 	if (scroll < c.anum_messages && scroll >=0)
 	{
 		if(!(text_list=fopen(list_address,"r+b")))
-			error_m("Error at file oppening");
-
+			error_m("Error at file opening");
 		sprintf(msg.mail,"%d",c.next_message);
+
 		c.num_messages--;
 		c.next_message=scroll;
 		fseek(text_list,scroll*sizeof(messages),SEEK_SET);
@@ -526,7 +529,7 @@ char* get_text(int account_address, char* dir,int scroll)
 	FILE *texts;
 
 	if(!(texts=fopen(address,"rb")))
-		error_m("Eror at file oppening");
+		error_m("Eror at file opening");
 	else
 	{
 		fseek(texts,scroll*sizeof(messages),SEEK_SET);
@@ -570,10 +573,10 @@ void add_subject(int account_address,char*dir,char *new)
 	fpos_t p;
 
 	if(!(config=fopen(config_address,"r+b")))
-		error_m("Error at file oppening");
+		error_m("Error at file opening");
 	else
 	if(!(subject_list=fopen(address,"r+b")))
-		error_m("Error at file oppening");
+		error_m("Error at file opening");
 	else
 	{
 		fread(&c,sizeof(configuration),1,config);
@@ -610,13 +613,13 @@ void remove_subject(int account_address,char *dir,int scroll)
 	subjects s;
 
 	if(!(config=fopen(config_address,"r+b")))
-		error_m("Error at file oppening");
+		error_m("Error at file opening");
 	fread(&c,sizeof(configuration),1,config);
 	rewind(config);
 	if (scroll < c.anum_subjects && scroll >=0)
 	{
 		if(!(subject_list=fopen(address,"r+b")))
-		error_m("Error at file oppening");
+		error_m("Error at file opening");
 
 		sprintf(s.subject,"%d",c.next_subject);
 		c.num_subjects--;
@@ -641,7 +644,7 @@ char* get_subject(int account_address,char *dir,int scroll)
 	subjects s;
 
 	if(!(subject_list=fopen(address,"rb")))
-		error_m("Error at file oppening");
+		error_m("Error at file opening");
 	else
 	{
 		sub=(char*)malloc(sizeof(char)*100);
@@ -675,7 +678,7 @@ void create_email_list(int account_address,char *dir)
 	return;
 }
 
-void add_email(int account_address,char *dir,int remetente,int destinatario, int assunto, int MSG, HORARIO data, int historico)
+void add_email(int account_address,char *dir,int remetente,int destinatario, int assunto, int MSG, int data, int historico)
 { 	//	Função para adicionar um email na Lista de Emails
 	char *address=dir_builder(account_address,dir,"email_list.bin"),*config_address=dir_builder(account_address,dir,"/config.bin");
 	FILE *email_list, *config; 	// 	Arquivos que serão abertos
@@ -685,10 +688,10 @@ void add_email(int account_address,char *dir,int remetente,int destinatario, int
 	fpos_t p;
 
 	if (!(email_list=fopen(address,"r+b"))) 	// 	Abrindo o arquivo da Lista de Emails
-		error_m("Error at file oppening"); 		// 	Mensagem de erro
+		error_m("Error at file opening"); 		// 	Mensagem de erro
 	else
 	if (!(config=fopen(config_address,"r+b"))) 	// 	Abrindo o arquivo de Configuração da Conta
-		error_m("Error at file oppening");		// 	Mensagem de erro
+		error_m("Error at file opening");		// 	Mensagem de erro
 	else
 	{
 		fread(&c,sizeof(configuration),1,config);				//
@@ -709,8 +712,7 @@ void add_email(int account_address,char *dir,int remetente,int destinatario, int
 		e.destinatario = destinatario;							//
 		e.assunto = assunto;									//
 		e.MSG = MSG;											//
-		for (scroll = 0;scroll < 6; scroll++)					//
-			e.data.data[scroll] = data.data[scroll];			//
+		e.data = data;
 		e.historico = historico;								//
 		fwrite(&c,sizeof(configuration),1,config);				//
 		fwrite(&e,sizeof(SUB_NODO),1,email_list);				//
@@ -732,13 +734,13 @@ void remove_email(int account_address,char *dir,int scroll)
 	fpos_t p;
 
 	if (!(config=fopen(config_address,"r+b"))) 	// 	Abrindo o arquivo da Lista de Emails
-		error_m("Error at file oppening"); 		// 	Mensagem de erro
+		error_m("Error at file opening"); 		// 	Mensagem de erro
 	fread(&c,sizeof(configuration),1,config);				//
 	rewind(config);
 	if (scroll < c.anum_emails && scroll >=0 )
 	{
 		if (!(email_list=fopen(address,"r+b"))) 	// 	Abrindo o arquivo de Configuração da Conta
-			error_m("Error at file oppening");		// 	Mensagem de erro
+			error_m("Error at file opening");		// 	Mensagem de erro
 
 		fseek(email_list,scroll*sizeof(SUB_NODO),SEEK_SET);								//
 		fgetpos(email_list,&p);
@@ -769,7 +771,7 @@ void create_LISTA_ENC(int account_address, char *dir)
 		error_m("Error at file allocation");
 	else
 	{
-		l.next=l.address==-1;
+		l.next=l.address=-1;
 		fwrite(&l,sizeof(LISTA),1,lista_enc);
 		fclose(lista_enc);
 	}
@@ -788,10 +790,10 @@ void add_LISTA_ENC(int account_address, char *dir,int antecessor,int novo)
 	fpos_t p;
 	// FUTURO: FAZER SUPOSIÇÃO DA POSIÇÃO NA LISTA QUANDO não houver antecessor
 	if(!(config=fopen(config_address,"r+b")))
-		error_m("Error at file oppening");
+		error_m("Error at file opening");
 	else
 	if(!(lista_enc=fopen(address,"r+b")))
-		error_m("Error at file oppening");
+		error_m("Error at file opening");
 	else
 	{
 		fread(&c,sizeof(configuration),1,config);
@@ -841,11 +843,11 @@ void remove_LISTA_ENC(int account_address, char *dir,int antecessor,int atual)
 	fpos_t p;
 
 	if(!(config=fopen(config_address,"r+b")))
-		error_m("Error at file oppening");
+		error_m("Error at file opening");
 	if(atual < c.anum_LISTA_ENC && atual >= 0)
 	{
 		if(!(lista_enc=fopen(address,"r+b")))
-			error_m("Error at file oppening");
+			error_m("Error at file opening");
 
 		fread(&c,sizeof(configuration),1,config);
 		rewind(config);
@@ -905,10 +907,10 @@ void add_horario(int account_address, char *dir,HORARIO novo)
 	fpos_t p;
 
 	if(!(config=fopen(config_address,"r+b")))
-		error_m("Error at file oppening");
+		error_m("Error at file opening");
 	else
 	if(!(horarios=fopen(address,"r+b")))
-		error_m("Error at file oppening");
+		error_m("Error at file opening");
 	else
 	{
 		fread(&c,sizeof(configuration),1,config);
@@ -944,13 +946,13 @@ void remove_horario(int account_address, char *dir,int scroll)
 	configuration c;
 
 	if(!(config=fopen(config_address,"r+b")))
-		error_m("Error at file oppening");
+		error_m("Error at file opening");
 	fread(&c,sizeof(configuration),1,config);
 	rewind(config);
 	if(scroll < c.anum_HORARIO && scroll > 0)
 	{
 		if(!(horarios=fopen(address,"r+b")))
-			error_m("Error at file oppening");
+			error_m("Error at file opening");
 
 		a.data[0]=c.next_HORARIO;
 		c.next_HORARIO=scroll;
@@ -995,10 +997,10 @@ void add_word(int account_address,char *dir, char *new)
 	fpos_t p;
 
 	if (!(word_list=fopen(address,"r+b")))
-		error_m("Error at file oppening");
+		error_m("Error at file opening");
 	else
 	if (!(config=fopen(config_address,"r+b")))
-		error_m("Error at file oppening");
+		error_m("Error at file opening");
 	else
 	{
 		fread(&c,sizeof(configuration),1,config);
@@ -1038,13 +1040,13 @@ void remove_word(int account_address,char *dir, int scroll)
 	configuration c;
 
 	if (!(config=fopen(config_address,"r+b")))
-		error_m("Error at file oppening");
+		error_m("Error at file opening");
 	fread(&c,sizeof(configuration),1,config);
 	rewind(config);
 	if (scroll < c.anum_PALAVRA && scroll >0)
 	{
 		if (!(word_list=fopen(address,"r+b")))
-			error_m("Error at file oppening");
+			error_m("Error at file opening");
 
 		sprintf(w.key,"%d",c.next_PALAVRA);
 		c.num_PALAVRA--;
@@ -1100,8 +1102,9 @@ void create_tree(int account_address, char *dir,char *name)
 
 	return;
 }
+
 void split_tree(FILE *tree,FILE *nodo_list,int pai,int scroll)
-{
+{	//	Função para dividir nós cheios durante inserção
 	NODO pain,son1,son2;
 	ARVOREB AVB;
 	int c,felipe,smith;
@@ -1231,9 +1234,9 @@ void split_tree(FILE *tree,FILE *nodo_list,int pai,int scroll)
 
 	return 0;
 }*/
-
+;
 void add_key_tree(int account_address, char *dir,char *name,int key,int SUB_NODO)
-{
+{	// Função para adicionar chaves na árvore
 	char *address, *sub_address, *a, *sa;
 	FILE *tree, *nodo_list;
 	ARVOREB new;
@@ -1246,9 +1249,9 @@ void add_key_tree(int account_address, char *dir,char *name,int key,int SUB_NODO
 	sub_address	= dir_builder(account_address,dir,sa);
 
 	if (!(tree = fopen(address,"r+b")))
-		error_m("Error at file allocation");
+		error_m("Error at file opening");
 	if (!(nodo_list = fopen(sub_address,"r+b")))
-		error_m("Error at file allocation");
+		error_m("Error at file opening");
 	fread(&new,sizeof(ARVOREB),1,tree);
 	rewind(tree);
 
@@ -1323,6 +1326,7 @@ void add_key_tree(int account_address, char *dir,char *name,int key,int SUB_NODO
 
 	return;
 }
+
 //Decisão de projeto
 /*void remove_key_tree(int account_address, char *dir,char *name,int key)
 {	//	Remover chave da árvore, só chamado caso todos os SUB_NODOS da chave tenham sido removidos
@@ -1338,9 +1342,9 @@ void add_key_tree(int account_address, char *dir,char *name,int key,int SUB_NODO
 	sub_address	= dir_builder(account_address,dir,sa);
 
 	if (!(tree = fopen(address,"r+b")))
-		error_m("Error at file allocation");
+		error_m("Error at file opening");
 	if (!(nodo_list = fopen(sub_address,"r+b")))
-		error_m("Error at file allocation");
+		error_m("Error at file opening");
 	fread(&new,sizeof(ARVOREB),1,tree);
 	rewind(tree);
 
@@ -1388,19 +1392,111 @@ void add_key_tree(int account_address, char *dir,char *name,int key,int SUB_NODO
 
 	return;
 }*/
-int Busca_NODO_tree(int account_address, char *dir,char *name,int key)
-{
-	int primeiro=0;
+;
 
-	return primeiro;
+int busca_SUB_NODO_tree(int account_address, char *dir,char *name,int key)
+{
+	char *address, *sub_address, *a, *sa;
+	FILE *tree, *nodo_list;
+	ARVOREB new;
+	NODO nnew;
+	int c,scroll,aux,cdn,achou;
+
+	a = filepath_gen("tree_",name);
+	sa = filepath_gen("tree_L_",name);
+	address = dir_builder(account_address,dir,a);
+	sub_address	= dir_builder(account_address,dir,sa);
+
+	if (!(tree = fopen(address,"r+b")))
+		error_m("Error at file opening");
+	if (!(nodo_list = fopen(sub_address,"r+b")))
+		error_m("Error at file opening");
+	fread(&new,sizeof(ARVOREB),1,tree);
+	rewind(tree);
+
+	scroll = new.raiz;
+	while(cdn)
+	{
+		fseek(nodo_list,sizeof(NODO)*scroll,SEEK_SET);
+		fread(&nnew,sizeof(NODO),1,nodo_list);
+
+		for(c=0;c<nnew.num_chaves && 1 > (aux=compara_infos(account_address,dir,name,nnew.chaves[c],key));c++);
+		if (!aux)
+		{
+			achou = nnew.addresses[c];
+			cdn = 0;
+		}
+		else
+		if (!nnew.ne_folha)
+		{
+			achou = -1;
+			cdn = 0;
+		}
+		else
+			scroll = nnew.filhos[c];
+	}
+	fclose(tree);
+	fclose(nodo_list);
+
+	free(a);
+	free(sa);
+	free(address);
+	free(sub_address);
+
+	return achou;
 }
 
 //OPS! LISTA ENCADEADA
-void add_SUB_NODO_tree(int account_address, char *dir,char *name,int key)
+void add_SUB_NODO_tree(int account_address, char *dir,char *name,int key,int SUB_NODO)
 {
+	char *address, *sub_address = dir_builder(account_address,dir,"lista_enc.bin"), *a;
+	FILE *tree, *sub_nodo_list;
+	ARVOREB new;
 
+	a = filepath_gen("tree_",name);
+	address = dir_builder(account_address,dir,a);
 
+	if (!(tree = fopen(address,"r+b")))
+		error_m("Error at file opening");
+
+	fread(&new,sizeof(ARVOREB),1,tree);
+	rewind(tree);
+
+	int pos = busca_SUB_NODO_tree(account_address,dir,name,key);
+	if (pos == -1)
+		add_key_tree(account_address,dir,name,key,SUB_NODO);
+	else
+	{
+		LISTA primeiro;
+		int scroll = pos, aux=1;
+		if (!(sub_nodo_list = fopen(sub_address,"r+b")))
+			error_m("Error at file opening");
+
+		for (;aux;)
+		{
+			fseek(sub_nodo_list,sizeof(LISTA)*scroll,SEEK_SET);
+			fread(&primeiro,sizeof(LISTA),1,sub_nodo_list);
+			if (primeiro.next+1)
+				scroll = primeiro.next;
+			else
+				aux = 0;
+		}
+		add_LISTA_ENC(account_address,dir,scroll,SUB_NODO);
+	}
+
+	new.num_SUB_NODOS++;
+	fwrite(&new,sizeof(ARVOREB),1,tree);
+
+	fclose(tree);
+	fclose(sub_nodo_list);
+
+	free(a);
+	free(address);
+	free(sub_address);
+
+	return;
 }
+
 void remove_SUB_NODO_tree(int account_address, char *dir,char *name,int key,int SUB_NODO)
 {
 
