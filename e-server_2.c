@@ -83,6 +83,7 @@ int main(void)
 		create_tree(1,er,"messages.bin");
 		add_SUB_NODO_tree(1,er,"messages.bin",0,0);
 
+
 	printf("TESTE_FINAL\n");
 	return 0;
 }

@@ -1252,25 +1252,27 @@ void add_key_tree(int account_address, char *dir,char *name,int key,int SUB_NODO
 	ARVOREB new;
 	NODO nnew;
 	int c,scroll,aux,aux2,aux3,cdn=1;
-
+	printf("\nKey tree 1\n");
 	a = merge_string("tree_",name);
 	sa = merge_string("tree_L_",name);
 	address = dir_builder(account_address,dir,a);
 	sub_address	= dir_builder(account_address,dir,sa);
-
+	printf("\nKey tree 2\n");
 	if (!(tree = fopen(address,"r+b")))
 		error_m("Error at file opening");
 	if (!(nodo_list = fopen(sub_address,"r+b")))
 		error_m("Error at file opening");
 	fread(&new,sizeof(ARVOREB),1,tree);
 	rewind(tree);
-
+	printf("\nKey tree 3\n");
 	scroll=new.raiz;
 	if(new.raiz==-1)
-	{
+	{	printf("\nEntrou em condição raiz =-1\n");
 		nnew.chaves[0]=key;
 		nnew.num_chaves++;
 		nnew.addresses[0]=SUB_NODO;
+		new.raiz=new.next_NODO==-1?new.num_NODOS:new.next_NODO;
+		new.num_NODOS++;
 		cdn=0;
 	}
 	else
@@ -1320,8 +1322,6 @@ void add_key_tree(int account_address, char *dir,char *name,int key,int SUB_NODO
 			scroll=nnew.filhos[c];
 
 	}
-
-	new.num_NODOS++; // condicional
 	new.num_SUB_NODOS++;
 	fwrite(&new,sizeof(ARVOREB),1,tree);
 	fwrite(&nnew,sizeof(NODO),1,nodo_list);
@@ -1493,17 +1493,22 @@ void add_SUB_NODO_tree(int account_address, char *dir,char *name,int key,int SUB
 				aux = 0;
 		}
 		add_LISTA_ENC(account_address,dir,scroll,SUB_NODO);
+		fclose(sub_nodo_list);
 	}
 
 	new.num_SUB_NODOS++;
 	fwrite(&new,sizeof(ARVOREB),1,tree);
 	printf("\nChegou aqui 5\n");
 	fclose(tree);
-	fclose(sub_nodo_list);
+	printf("\nChegou aqui 5.1\n");
 
+	printf("\nChegou aqui 5.2\n");
 	free(a);
+	printf("\nChegou aqui 5.3\n");
 	free(address);
+	printf("\nChegou aqui 5.4\n");
 	free(sub_address);
+	printf("\nChegou aqui 5.5\n");
 
 	return;
 }
@@ -1517,7 +1522,7 @@ void remove_SUB_NODO_tree(int account_address, char *dir,char *name,int key,int 
 //FUNÇÕES DE COMPARAÇÃO DE HORÁRIO
 int compara_infos(int account_address, char *dir,char *name,int a,int b)
 {
-	return 0;
+	return 1;
 }
 int horario_igual(HORARIO a,HORARIO b)
 {
