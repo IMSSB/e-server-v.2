@@ -1270,7 +1270,8 @@ void add_key_tree(int account_address, char *dir,char *name,int key,int SUB_NODO
 	{	printf("\nEntrou em condição raiz =-1\n");
 		nnew.chaves[0]=key;
 		nnew.num_chaves=1;
-		nnew.addresses[0]=SUB_NODO;
+		add_LISTA_ENC();
+		nnew.addresses[0]=SUB_NODO;//Aqui deve ser o endereço da lista
 		nnew.pai=-1;
 		nnew.ne_folha=0;
 		new.raiz=new.next_NODO==-1?new.num_NODOS:new.next_NODO;
@@ -1309,7 +1310,7 @@ void add_key_tree(int account_address, char *dir,char *name,int key,int SUB_NODO
 			}
 			c=aux3;
 			aux=nnew.addresses[c];
-			nnew.addresses[c++] = SUB_NODO;
+			nnew.addresses[c++] = SUB_NODO;//MESMA COISA AQUI
 			for(;c<nnew.num_chaves;c++)
 			{
 				aux2=nnew.addresses[c];
@@ -1433,20 +1434,24 @@ int busca_SUB_NODO_tree(int account_address, char *dir,char *name,int key)
 		fseek(nodo_list,sizeof(NODO)*scroll,SEEK_SET);
 		fread(&nnew,sizeof(NODO),1,nodo_list);
 
-		for(c=0;c<nnew.num_chaves && 1 > (aux=compara_infos(account_address,dir,name,nnew.chaves[c],key));c++);
+		for(c=0;c<nnew.num_chaves && 1 > (aux=compara_infos(account_address,dir,name,nnew.chaves[c],key)) && aux;c++);
+		printf("\n AUX = %d",aux);
 		if (!aux)
-		{
+		{	printf("\nPF 1");
 			achou = nnew.addresses[c];
 			cdn = 0;
 		}
 		else
-		if (!nnew.ne_folha)
-		{
+		if (!nnew.ne_folha)//É FOLHA!
+		{	printf("\nPF 2");
 			achou = -1;
 			cdn = 0;
 		}
 		else
+		{
 			scroll = nnew.filhos[c];
+			printf("\nPF 3");
+		}
 	}
 	fclose(tree);
 	fclose(nodo_list);

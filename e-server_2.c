@@ -21,8 +21,7 @@ int main(void)
 	add_text(1,er,"FML BOYS");
 
 	//remove_text(1,er,2);/*/
-	/*
-	printf("TESTE0: Configurando servidor\n");pause;
+/*	printf("TESTE0: Configurando servidor\n");pause;
 
 
 		setup(er);
@@ -45,20 +44,19 @@ int main(void)
 		create_config(1,er);
 
 
-	*/
 
-	/*printf("Criando lista de Mensagens");
+	printf("Criando lista de Mensagens");
 		create_text_list(1,er);
 		add_text(1,er,"hehehehhehehehehehhehe, teste mano");
 		add_text(1,er,"bora ver se funciona");
 		add_text(1,er,"tem que funcionar");
 		add_text(1,er,"é isso");
-	*/
-	/*
+
 	printf("Criando lista de Assuntos\n");
 		create_subject_list(1,er);
 		add_subject(1,er,"ASSUNTO 1");
-
+		add_subject(1,er,"ASSUNTO 2");
+		add_subject(1,er,"ASSUNTO 3");
 
 	printf("Criando lista de Horários\n");
 		create_horario_list(1,er);
@@ -69,6 +67,8 @@ int main(void)
 		hora.data[4] = 50;
 		hora.data[5] = 29;
 		add_horario(1,er,hora);
+		add_horario(1,er,hora);
+		add_horario(1,er,hora);
 
 	printf("Criando lista de Palavras\n");
 		create_word_list(1,er);
@@ -77,17 +77,20 @@ int main(void)
 	printf("Criando lista de Emails\n");
 		create_email_list(1,er);
 		add_email(1,er,0,1,0,0,0,0);
+		add_email(1,er,0,1,1,1,1,1);
+		add_email(1,er,0,1,2,2,2,2);
 
 	printf("Criando lista de Listas Encadeadas de Emails\n");
 		create_LISTA_ENC(1,er);
 		add_LISTA_ENC(1,er,-1,0);
-		*/
+*/
 	printf("Criando árvore de Assuntos\n");
 	//create_tree(1,er,"subjects.bin");
-	add_SUB_NODO_tree(1,er,"subjects.bin",0,2);
-	//add_SUB_NODO_tree(1,er,"subjects.bin",1,1);
-	//add_email(1,er,0,1,1,1,1,1);
-	//add_subject(1,er,"ASSUNTO 2");
+	//add_SUB_NODO_tree(1,er,"subjects.bin",0,87);
+	//add_SUB_NODO_tree(1,er,"subjects.bin",1,397);
+	//add_SUB_NODO_tree(1,er,"subjects.bin",2,476);
+
+
 
 
 	novo = fopen(dir_builder(1,er,"tree_L_subjects.bin"),"r+b");
@@ -95,9 +98,12 @@ int main(void)
 	printf("\nchave[0] = %d\n", nodo.chaves[0]);
 	printf("\nchave[1] = %d\n", nodo.chaves[1]);
 	printf("\nchave[2] = %d\n", nodo.chaves[2]);
+	printf("\nchave[3] = %d\n", nodo.chaves[3]);
 	printf("addresses[0] = %d\n", nodo.addresses[0]);
 	printf("addresses[1] = %d\n", nodo.addresses[1]);
 	printf("addresses[2] = %d\n", nodo.addresses[2]);
+	printf("addresses[3] = %d\n", nodo.addresses[3]);
+
 	printf("pai = %d\n", nodo.pai);
 	printf("num_chaves = %d\n", nodo.num_chaves);
 	printf("não é folha = %d\n", nodo.ne_folha);
