@@ -1272,6 +1272,7 @@ void add_key_tree(int account_address, char *dir,char *name,int key,int SUB_NODO
 		nnew.num_chaves++;
 		nnew.addresses[0]=SUB_NODO;
 		new.raiz=new.next_NODO==-1?new.num_NODOS:new.next_NODO;
+		printf("new.raiz = %d\nnew.next_NODO = %d\nnew.num_NODOS = %d\n",new.raiz,new.next_NODO,new.num_NODOS);
 		new.num_NODOS++;
 		cdn=0;
 	}
@@ -1462,6 +1463,7 @@ void add_SUB_NODO_tree(int account_address, char *dir,char *name,int key,int SUB
 	char *address, *sub_address = dir_builder(account_address,dir,"lista_enc.bin"), *a;
 	FILE *tree, *sub_nodo_list;
 	ARVOREB new;
+	int pos;
 
 	a = merge_string("tree_",name);
 
@@ -1470,10 +1472,8 @@ void add_SUB_NODO_tree(int account_address, char *dir,char *name,int key,int SUB
 	if (!(tree = fopen(address,"r+b")))
 		error_m("Error at file opening");
 
-	fread(&new,sizeof(ARVOREB),1,tree);
-	rewind(tree);
 	printf("\nChegou aqui 3\n");
-	int pos = busca_SUB_NODO_tree(account_address,dir,name,key);
+	pos = busca_SUB_NODO_tree(account_address,dir,name,key);
 	if (pos == -1)
 		add_key_tree(account_address,dir,name,key,SUB_NODO);
 	else
@@ -1495,7 +1495,9 @@ void add_SUB_NODO_tree(int account_address, char *dir,char *name,int key,int SUB
 		add_LISTA_ENC(account_address,dir,scroll,SUB_NODO);
 		fclose(sub_nodo_list);
 	}
-
+	rewind(tree);
+	fread(&new,sizeof(ARVOREB),1,tree);
+	rewind(tree);
 	new.num_SUB_NODOS++;
 	fwrite(&new,sizeof(ARVOREB),1,tree);
 	printf("\nChegou aqui 5\n");
