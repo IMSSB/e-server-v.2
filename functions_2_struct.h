@@ -172,7 +172,7 @@ void create_email_list(int account_address,char *dir);
 void add_email(int account_address,char *dir,int remetente,int destinatario, int assunto, int MSG, int data, int historico);
 void remove_email(int account_address,char *dir,int scroll);
 void create_LISTA_ENC(int account_address, char *dir);
-void add_LISTA_ENC(int account_address, char *dir,int ultimo,int novo);
+int add_LISTA_ENC(int account_address, char *dir,int ultimo,int novo);
 void remove_LISTA_ENC(int account_address, char *dir,int anterior,int atual);//A chamada desta função deve ser feita dentro da arvore onde é posível ter essas informações
 void create_horario_list(int account_address, char *dir);
 void add_horario(int account_address, char *dir,HORARIO novo);
@@ -790,7 +790,7 @@ void create_LISTA_ENC(int account_address, char *dir)
 	return;
 }
 
-void add_LISTA_ENC(int account_address, char *dir,int antecessor,int novo)
+int add_LISTA_ENC(int account_address, char *dir,int antecessor,int novo)
 {	//	Função para adicionar lista à Lista de Listas Encadeadas de Emails
 	char   *address = dir_builder(account_address,dir,"lista_enc.bin"),*config_address=dir_builder(account_address,dir,"/config.bin");
 	FILE *lista_enc,*config;
@@ -817,9 +817,7 @@ void add_LISTA_ENC(int account_address, char *dir,int antecessor,int novo)
 			fsetpos(lista_enc,&p);
 			aux = a.next;
 			a.next = scroll;
-			fwrite(&a,sizeof(LISTA),1,lista_enc);	//	Não tem que voltar uma posição antes de escrever?
-													//	Se não vai estar gravando uma posição na frente
-													// 	da posição original de a. - FIZ A ALTERAÇÃO
+			fwrite(&a,sizeof(LISTA),1,lista_enc);
 		}
 		fseek(lista_enc,scroll*sizeof(LISTA),SEEK_SET);
 		fgetpos(lista_enc,&p);
@@ -840,7 +838,7 @@ void add_LISTA_ENC(int account_address, char *dir,int antecessor,int novo)
 	free(address);
 	free(config_address);
 
-	return;
+	return (scroll-1);
 }
 
 void remove_LISTA_ENC(int account_address, char *dir,int antecessor,int atual)
@@ -1270,8 +1268,7 @@ void add_key_tree(int account_address, char *dir,char *name,int key,int SUB_NODO
 	{	printf("\nEntrou em condição raiz =-1\n");
 		nnew.chaves[0]=key;
 		nnew.num_chaves=1;
-		add_LISTA_ENC();
-		nnew.addresses[0]=SUB_NODO;//Aqui deve ser o endereço da lista
+		nnew.addresses[0]=add_LISTA_ENC(account_address,dir,-1,SUB_NODO);//Aqui deve ser o endereço da lista
 		nnew.pai=-1;
 		nnew.ne_folha=0;
 		new.raiz=new.next_NODO==-1?new.num_NODOS:new.next_NODO;
@@ -1297,7 +1294,7 @@ void add_key_tree(int account_address, char *dir,char *name,int key,int SUB_NODO
 		}
 
 		for(c=0;c<nnew.num_chaves && 1 > compara_infos(account_address,dir,name,nnew.chaves[c],key);c++);
-		if(!nnew.ne_folha)//Caso basico
+		if(!nnew.ne_folha)//Caso básico
 		{
 			aux=nnew.chaves[c];
 			aux3=c;
@@ -1310,7 +1307,7 @@ void add_key_tree(int account_address, char *dir,char *name,int key,int SUB_NODO
 			}
 			c=aux3;
 			aux=nnew.addresses[c];
-			nnew.addresses[c++] = SUB_NODO;//MESMA COISA AQUI
+			nnew.addresses[c++] = add_LISTA_ENC(account_address,dir,-1,SUB_NODO);//MESMA COISA AQUI
 			for(;c<nnew.num_chaves;c++)
 			{
 				aux2=nnew.addresses[c];
@@ -1501,11 +1498,11 @@ void add_SUB_NODO_tree(int account_address, char *dir,char *name,int key,int SUB
 		}
 		add_LISTA_ENC(account_address,dir,scroll,SUB_NODO);
 		fclose(sub_nodo_list);
+		new.num_SUB_NODOS++;
 	}
 	rewind(tree);
 	fread(&new,sizeof(ARVOREB),1,tree);
 	rewind(tree);
-	new.num_SUB_NODOS++;
 	fwrite(&new,sizeof(ARVOREB),1,tree);
 	printf("\nChegou aqui 5\n");
 	fclose(tree);

@@ -5,23 +5,45 @@
  *      Author: ricardo
  */
 #include "functions_2_mail.h"
+void testar_estrutura(char *er){
+	FILE *new,*tree;
+	LISTA lista;
+	NODO nodo;
+	ARVOREB avb;
+	new = fopen(dir_builder(1,er,"tree_L_subjects.bin"),"rb");
+	fread(&nodo,sizeof(NODO),1,new);
+	tree = fopen(dir_builder(1,er,"tree_subjects.bin"),"rb");
+	fread(&avb,sizeof(ARVOREB),1,tree);
+	printf("\nchave[0] = %d\n", nodo.chaves[0]);
+	printf("\nchave[1] = %d\n", nodo.chaves[1]);
+	printf("\nchave[2] = %d\n", nodo.chaves[2]);
+	printf("\nchave[3] = %d\n", nodo.chaves[3]);
+	printf("addresses[0] = %d\n", nodo.addresses[0]);
+	printf("addresses[1] = %d\n", nodo.addresses[1]);
+	printf("addresses[2] = %d\n", nodo.addresses[2]);
+	printf("addresses[3] = %d\n", nodo.addresses[3]);
 
+	printf("pai = %d\n", nodo.pai);
+	printf("num_chaves = %d\n", nodo.num_chaves);
+	printf("num_SUB_NODOS = %d\n", avb.num_SUB_NODOS);
+	printf("não é folha = %d\n", nodo.ne_folha);
+
+	fclose(new);
+	fclose(tree);
+}
 
 int main(void)
 {
 	//int c;
 	HORARIO hora;
-	FILE *novo;
-	LISTA lista;
-	NODO nodo;
-	ARVOREB avb;
+
 	char *er =detecta_os();
 	printf("\n|| Bem vindo ao E-Server v.2.0\n ||");
 	/*printf("\nString: %s -\n",get_text(1,er,2));
 	add_text(1,er,"FML BOYS");
 
 	//remove_text(1,er,2);/*/
-/*	printf("TESTE0: Configurando servidor\n");pause;
+/**/printf("TESTE0: Configurando servidor\n");pause;
 
 
 		setup(er);
@@ -83,32 +105,24 @@ int main(void)
 	printf("Criando lista de Listas Encadeadas de Emails\n");
 		create_LISTA_ENC(1,er);
 		add_LISTA_ENC(1,er,-1,0);
-*/
+
 	printf("Criando árvore de Assuntos\n");
-	//create_tree(1,er,"subjects.bin");
-	//add_SUB_NODO_tree(1,er,"subjects.bin",0,87);
-	//add_SUB_NODO_tree(1,er,"subjects.bin",1,397);
-	//add_SUB_NODO_tree(1,er,"subjects.bin",2,476);
+	create_tree(1,er,"subjects.bin");
+	add_SUB_NODO_tree(1,er,"subjects.bin",0,0);
+	testar_estrutura(er);
+	add_SUB_NODO_tree(1,er,"subjects.bin",1,1);
+	testar_estrutura(er);
+	add_SUB_NODO_tree(1,er,"subjects.bin",2,2);
+	testar_estrutura(er);
+/**/
+	add_SUB_NODO_tree(1,er,"subjects.bin",1,900);
+	testar_estrutura(er);
 
 
 
-
-	novo = fopen(dir_builder(1,er,"tree_L_subjects.bin"),"r+b");
-	fread(&nodo,sizeof(NODO),1,novo);
-	printf("\nchave[0] = %d\n", nodo.chaves[0]);
-	printf("\nchave[1] = %d\n", nodo.chaves[1]);
-	printf("\nchave[2] = %d\n", nodo.chaves[2]);
-	printf("\nchave[3] = %d\n", nodo.chaves[3]);
-	printf("addresses[0] = %d\n", nodo.addresses[0]);
-	printf("addresses[1] = %d\n", nodo.addresses[1]);
-	printf("addresses[2] = %d\n", nodo.addresses[2]);
-	printf("addresses[3] = %d\n", nodo.addresses[3]);
-
-	printf("pai = %d\n", nodo.pai);
-	printf("num_chaves = %d\n", nodo.num_chaves);
-	printf("não é folha = %d\n", nodo.ne_folha);
 
 	printf("TESTE_FINAL\n");
+
 	return 0;
 }
 
