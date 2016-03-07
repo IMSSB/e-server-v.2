@@ -152,7 +152,8 @@ char* detecta_os();
 void ler_end(char *er);
 void error_m(char *errormessage);
 char* dir_builder(int account_number,char*dir,char* file);
-char *filepath_gen(char *dir, char *file);
+char* filepath_gen(char *dir, char *file);
+char* merge_string(char *string1, char *string2);
 void create_address_list(char *dir);
 void add_address(char *new,char *dir);
 void remove_address(int scroll,char *dir);
@@ -221,7 +222,8 @@ void error_m(char *errormessage)
     exit(1);
 }
 
-char *filepath_gen(char *dir, char *file)
+
+char* filepath_gen(char *dir, char *file)
 { 	// 	Função para gerar ponteiro para char com o diretório
 	char *path=(char *) malloc(sizeof(char)*250);	//	Alocando espaço para ponteiro que será retornado
 	sprintf(path, "%s",dir);	//	Colocando diretório fornecido no espaço alocado
@@ -239,6 +241,14 @@ char* dir_builder(int account_number,char*dir,char* file)
 	printf("\nAd = %s \n r= %s",ad,r);
 	free(ad);
 	return r;
+}
+
+char* merge_string(char *string1, char *string2)
+{
+	char *merged = (char *) malloc(sizeof(char)*(strlen(string1)+strlen(string2)+1));
+	sprintf(merged,"%s",string1);
+	strcat(merged,string2);
+	return merged;
 }
 
 //LISTA DE ENDEREÇOS GLOBAL
@@ -1070,11 +1080,11 @@ void create_tree(int account_address, char *dir,char *name)
 	ARVOREB new;
 	NODO nnew;
 
-	a = filepath_gen("tree_",name);
-	sa = filepath_gen("tree_L_",name);
+	a = merge_string("tree_",name);
+	sa = merge_string("tree_L_",name);
 	address = dir_builder(account_address,dir,a);
 	sub_address	= dir_builder(account_address,dir,sa);
-
+	printf("\nChegou aqui 1\n");
 	if (!(tree = fopen(address,"wb")))
 		error_m("Error at file allocation");
 	if (!(nodo_list = fopen(sub_address,"wb")))
@@ -1088,7 +1098,7 @@ void create_tree(int account_address, char *dir,char *name)
 	nnew.ne_folha=0;
 	nnew.pai=-1;
 
-
+	printf("\nChegou aqui 2\n");
 	fwrite(&nnew,sizeof(NODO),1,nodo_list);
 	fwrite(&new,sizeof(ARVOREB),1,tree);
 
@@ -1243,8 +1253,8 @@ void add_key_tree(int account_address, char *dir,char *name,int key,int SUB_NODO
 	NODO nnew;
 	int c,scroll,aux,aux2,aux3,cdn=1;
 
-	a = filepath_gen("tree_",name);
-	sa = filepath_gen("tree_L_",name);
+	a = merge_string("tree_",name);
+	sa = merge_string("tree_L_",name);
 	address = dir_builder(account_address,dir,a);
 	sub_address	= dir_builder(account_address,dir,sa);
 
@@ -1336,8 +1346,8 @@ void add_key_tree(int account_address, char *dir,char *name,int key,int SUB_NODO
 	NODO nnew;
 	int c,scroll,aux,aux2,aux3,cdn=1;
 
-	a = filepath_gen("tree_",name);
-	sa = filepath_gen("tree_L_",name);
+	a = merge_string("tree_",name);
+	sa = merge_string("tree_L_",name);
 	address = dir_builder(account_address,dir,a);
 	sub_address	= dir_builder(account_address,dir,sa);
 
@@ -1402,8 +1412,8 @@ int busca_SUB_NODO_tree(int account_address, char *dir,char *name,int key)
 	NODO nnew;
 	int c,scroll,aux,cdn,achou;
 
-	a = filepath_gen("tree_",name);
-	sa = filepath_gen("tree_L_",name);
+	a = merge_string("tree_",name);
+	sa = merge_string("tree_L_",name);
 	address = dir_builder(account_address,dir,a);
 	sub_address	= dir_builder(account_address,dir,sa);
 
@@ -1453,7 +1463,8 @@ void add_SUB_NODO_tree(int account_address, char *dir,char *name,int key,int SUB
 	FILE *tree, *sub_nodo_list;
 	ARVOREB new;
 
-	a = filepath_gen("tree_",name);
+	a = merge_string("tree_",name);
+
 	address = dir_builder(account_address,dir,a);
 
 	if (!(tree = fopen(address,"r+b")))
@@ -1461,7 +1472,7 @@ void add_SUB_NODO_tree(int account_address, char *dir,char *name,int key,int SUB
 
 	fread(&new,sizeof(ARVOREB),1,tree);
 	rewind(tree);
-
+	printf("\nChegou aqui 3\n");
 	int pos = busca_SUB_NODO_tree(account_address,dir,name,key);
 	if (pos == -1)
 		add_key_tree(account_address,dir,name,key,SUB_NODO);
@@ -1471,7 +1482,7 @@ void add_SUB_NODO_tree(int account_address, char *dir,char *name,int key,int SUB
 		int scroll = pos, aux=1;
 		if (!(sub_nodo_list = fopen(sub_address,"r+b")))
 			error_m("Error at file opening");
-
+		printf("\nChegou aqui 4\n");
 		for (;aux;)
 		{
 			fseek(sub_nodo_list,sizeof(LISTA)*scroll,SEEK_SET);
@@ -1486,7 +1497,7 @@ void add_SUB_NODO_tree(int account_address, char *dir,char *name,int key,int SUB
 
 	new.num_SUB_NODOS++;
 	fwrite(&new,sizeof(ARVOREB),1,tree);
-
+	printf("\nChegou aqui 5\n");
 	fclose(tree);
 	fclose(sub_nodo_list);
 

@@ -17,7 +17,7 @@ int main(void)
 	/*printf("\nString: %s -\n",get_text(1,er,2));
 	add_text(1,er,"FML BOYS");
 
-	//remove_text(1,er,2);/**/
+	//remove_text(1,er,2);/*/
 	/*
 	printf("TESTE0: Configurando servidor\n");pause;
 
@@ -51,33 +51,37 @@ int main(void)
 		add_text(1,er,"tem que funcionar");
 		add_text(1,er,"é isso");
 	*/
-
-	printf("Criando lista de Assuntos");
+	/*
+	printf("Criando lista de Assuntos\n");
 		create_subject_list(1,er);
 		add_subject(1,er,"ASSUNTO 1");
 
 
-	printf("Criando lista de Horários");
+	printf("Criando lista de Horários\n");
 		create_horario_list(1,er);
-		hora.data[0] = 1;
+		hora.data[0] = 1990;
 		hora.data[1] = 1;
-		hora.data[2] = 1990;
+		hora.data[2] = 1;
 		hora.data[3] = 12;
 		hora.data[4] = 50;
 		hora.data[5] = 29;
 		add_horario(1,er,hora);
 
-	printf("Criando lista de Palavras");
+	printf("Criando lista de Palavras\n");
 		create_word_list(1,er);
 		add_word(1,er,"Palavra 1");
 
-	printf("Criando lista de Emails");
+	printf("Criando lista de Emails\n");
 		create_email_list(1,er);
 		add_email(1,er,0,1,0,0,0,0);
 
-	printf("Criando lista de Listas Encadeadas de Emails");
+	printf("Criando lista de Listas Encadeadas de Emails\n");
 		create_LISTA_ENC(1,er);
 		add_LISTA_ENC(1,er,-1,0);
+		*/
+	printf("Criando árvore de Mensagens\n");
+		create_tree(1,er,"messages.bin");
+		add_SUB_NODO_tree(1,er,"messages.bin",0,0);
 
 	printf("TESTE_FINAL\n");
 	return 0;
