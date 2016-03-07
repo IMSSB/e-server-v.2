@@ -11,7 +11,10 @@ int main(void)
 {
 	//int c;
 	HORARIO hora;
-
+	FILE *novo;
+	LISTA lista;
+	NODO nodo;
+	ARVOREB avb;
 	char *er =detecta_os();
 	printf("\n|| Bem vindo ao E-Server v.2.0\n ||");
 	/*printf("\nString: %s -\n",get_text(1,er,2));
@@ -79,10 +82,25 @@ int main(void)
 		create_LISTA_ENC(1,er);
 		add_LISTA_ENC(1,er,-1,0);
 		*/
-	printf("Criando árvore de Mensagens\n");
-		//create_tree(1,er,"messages.bin");
-		add_SUB_NODO_tree(1,er,"messages.bin",0,0);
+	printf("Criando árvore de Assuntos\n");
+	//create_tree(1,er,"subjects.bin");
+	add_SUB_NODO_tree(1,er,"subjects.bin",0,2);
+	//add_SUB_NODO_tree(1,er,"subjects.bin",1,1);
+	//add_email(1,er,0,1,1,1,1,1);
+	//add_subject(1,er,"ASSUNTO 2");
 
+
+	novo = fopen(dir_builder(1,er,"tree_L_subjects.bin"),"r+b");
+	fread(&nodo,sizeof(NODO),1,novo);
+	printf("\nchave[0] = %d\n", nodo.chaves[0]);
+	printf("\nchave[1] = %d\n", nodo.chaves[1]);
+	printf("\nchave[2] = %d\n", nodo.chaves[2]);
+	printf("addresses[0] = %d\n", nodo.addresses[0]);
+	printf("addresses[1] = %d\n", nodo.addresses[1]);
+	printf("addresses[2] = %d\n", nodo.addresses[2]);
+	printf("pai = %d\n", nodo.pai);
+	printf("num_chaves = %d\n", nodo.num_chaves);
+	printf("não é folha = %d\n", nodo.ne_folha);
 
 	printf("TESTE_FINAL\n");
 	return 0;

@@ -1269,8 +1269,10 @@ void add_key_tree(int account_address, char *dir,char *name,int key,int SUB_NODO
 	if(new.raiz==-1)
 	{	printf("\nEntrou em condição raiz =-1\n");
 		nnew.chaves[0]=key;
-		nnew.num_chaves++;
+		nnew.num_chaves=1;
 		nnew.addresses[0]=SUB_NODO;
+		nnew.pai=-1;
+		nnew.ne_folha=0;
 		new.raiz=new.next_NODO==-1?new.num_NODOS:new.next_NODO;
 		printf("new.raiz = %d\nnew.next_NODO = %d\nnew.num_NODOS = %d\n",new.raiz,new.next_NODO,new.num_NODOS);
 		new.num_NODOS++;
@@ -1411,7 +1413,7 @@ int busca_SUB_NODO_tree(int account_address, char *dir,char *name,int key)
 	FILE *tree, *nodo_list;
 	ARVOREB new;
 	NODO nnew;
-	int c,scroll,aux,cdn,achou;
+	int c,scroll,aux,cdn,achou=-1;
 
 	a = merge_string("tree_",name);
 	sa = merge_string("tree_L_",name);
@@ -1426,7 +1428,7 @@ int busca_SUB_NODO_tree(int account_address, char *dir,char *name,int key)
 	rewind(tree);
 
 	scroll = new.raiz;
-	while(cdn)
+	while(cdn && new.raiz+1)
 	{
 		fseek(nodo_list,sizeof(NODO)*scroll,SEEK_SET);
 		fread(&nnew,sizeof(NODO),1,nodo_list);
@@ -1521,9 +1523,68 @@ void remove_SUB_NODO_tree(int account_address, char *dir,char *name,int key,int 
 
 }
 
-//FUNÇÕES DE COMPARAÇÃO DE HORÁRIO
+//FUNÇÕES DE COMPARAÇÃO
 int compara_infos(int account_address, char *dir,char *name,int a,int b)
 {
+	char *address;
+	FILE *list;
+
+	if (!strcmp(name,"messages.bin"))
+	{
+		messages A,B;
+		address = dir_builder(account_address,dir,"text_list.bin");
+		if (!(list = fopen(address,"rb")))
+			error_m("Error at file opening");
+		fseek(list,sizeof(messages)*a,SEEK_SET);
+		fread(&A,sizeof(messages),1,list);
+		fseek(list,sizeof(messages)*b,SEEK_SET);
+		fread(&B,sizeof(messages),1,list);
+		fclose(list);
+		return (strcmp(A.mail,B.mail));
+	}
+	else
+	if (!strcmp(name,"subjects.bin"))
+	{
+		subjects A,B;
+		address = dir_builder(account_address,dir,"subject_list.bin");
+		if (!(list = fopen(address,"rb")))
+			error_m("Error at file opening");
+		fseek(list,sizeof(subjects)*a,SEEK_SET);
+		fread(&A,sizeof(subjects),1,list);
+		fseek(list,sizeof(subjects)*b,SEEK_SET);
+		fread(&B,sizeof(subjects),1,list);
+		fclose(list);
+		return (strcmp(A.subject,B.subject));
+	}
+	else
+	if (!strcmp(name,"PALAVRA.bin"))
+	{
+		PALAVRA A,B;
+		address = dir_builder(account_address,dir,"word_list.bin");
+		if (!(list = fopen(address,"rb")))
+			error_m("Error at file opening");
+		fseek(list,sizeof(PALAVRA)*a,SEEK_SET);
+		fread(&A,sizeof(PALAVRA),1,list);
+		fseek(list,sizeof(PALAVRA)*b,SEEK_SET);
+		fread(&B,sizeof(PALAVRA),1,list);
+		fclose(list);
+		return (strcmp(A.key,B.key));
+	}
+	else
+	if (!strcmp(name,"HORARIO.bin"))
+	{
+		HORARIO A,B;
+		address = dir_builder(account_address,dir,"horario_list.bin");
+		if (!(list = fopen(address,"rb")))
+			error_m("Error at file opening");
+		fseek(list,sizeof(PALAVRA)*a,SEEK_SET);
+		fread(&A,sizeof(PALAVRA),1,list);
+		fseek(list,sizeof(PALAVRA)*b,SEEK_SET);
+		fread(&B,sizeof(PALAVRA),1,list);
+		fclose(list);
+		return horario_menor(A,B)?-1:(horario_igual(A,B)?0:1);
+	}
+
 	return 1;
 }
 int horario_igual(HORARIO a,HORARIO b)
