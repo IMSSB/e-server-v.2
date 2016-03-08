@@ -22,10 +22,10 @@
 #define pause printf("\nDigite algo para continuar"); getchar();
 #define spc printf("  |");
 #define spc_m printf("              ");
-#define nl printf("\n");
+#define breakline printf("\n");
 #define line nl; printf("____________________________________________________________"); nl;
 #define x 10	// Limite de histórico
-#define k 64	// Ordem - Use número par - Número de Chaves será k-1 e o número de filhos será k
+#define k 6	// Ordem - Use número par - Número de Chaves será k-1 e o número de filhos será k
 #define min_chaves ((k/2)-1)
 #define windus "C:/Users/Ruan/Desktop/T/"
 #define ubuntus "/home/ricardo/e-server"
@@ -104,11 +104,11 @@ typedef struct
 {
        int user;
        int password;
-       int inbox; //Todos vão conter o valor no qual está no vetor o NODO que corresponde
+       /*int inbox; //Todos vão conter o valor no qual está no vetor o NODO que corresponde
        int outbox;
        int read;
        int trash;
-       int sent;
+       int sent;*/
 
 }CONTA;//Conta deve ser uma arvore pois seria totalmente incompreensível
 //usar métodos tão sofisticados de busca pra tudo exceto pra achar as contas
@@ -155,40 +155,40 @@ char* dir_builder(int account_number,char*dir,char* file);
 char* filepath_gen(char *dir, char *file);
 char* merge_string(char *string1, char *string2);
 void create_address_list(char *dir);
-void add_address(char *new,char *dir);
+int add_address(char *new,char *dir);
 void remove_address(int scroll,char *dir);
 char* get_address(int scroll,char *dir);
 void setup(char *dir);
 void create_config(int account_address,char *dir);
 void create_text_list(int account_address,char *dir);
-void add_text(int account_address,char *dir,char *new);
+int add_text(int account_address,char *dir,char *new);
 void remove_text(int account_address,char *dir,int scroll);
 char* get_text(int account_address, char* dir,int scroll);
 void create_subject_list(int account_address,char* dir);
-void add_subject(int account_address,char *dir,char *new);
+int add_subject(int account_address,char *dir,char *new);
 void remove_subject(int account_address,char *dir,int scroll);
 char* get_subject(int account_address,char *dir,int scroll);
 void create_email_list(int account_address,char *dir);
-void add_email(int account_address,char *dir,int remetente,int destinatario, int assunto, int MSG, int data, int historico);
+int add_email(int account_address,char *dir,int remetente,int destinatario, int assunto, int MSG, int data, int historico);
 void remove_email(int account_address,char *dir,int scroll);
 void create_LISTA_ENC(int account_address, char *dir);
 int add_LISTA_ENC(int account_address, char *dir,int ultimo,int novo);
 void remove_LISTA_ENC(int account_address, char *dir,int anterior,int atual);//A chamada desta função deve ser feita dentro da arvore onde é posível ter essas informações
 void create_horario_list(int account_address, char *dir);
-void add_horario(int account_address, char *dir,HORARIO novo);
+int add_horario(int account_address, char *dir,HORARIO novo);
 void remove_horario(int account_address, char *dir,int scroll);
 void create_word_list(int account_address,char *dir);
-void add_word(int account_address,char *dir, char *new);
+int add_word(int account_address,char *dir, char *new);
 void remove_word(int account_address,char *dir, int scroll);
-void create_tree(int account_address, char *dir,char *name);
+void create_tree(int account_address, char *dir,char *folder, char *type);
 void split_tree(FILE *tree,FILE *nodo_list,int pai,int scroll);
 int merge_nodo(FILE *tree,FILE *nodo_list,int pai,int scroll);
-void add_key_tree(int account_address, char *dir,char *name,int key,int SUB_NODO);
-void remove_key_tree(int account_address, char *dir,char *name,int key);
-int busca_SUB_NODO_tree(int account_address, char *dir,char *name,int key);
-void add_SUB_NODO_tree(int account_address, char *dir,char *name,int key,int SUB_NODO);
-void remove_SUB_NODO_tree(int account_address, char *dir,char *name,int key,int SUB_NODO);
-int compara_infos(int account_address, char *dir,char *name,int a,int b);
+void add_key_tree(int account_address, char *dir,char *folder,char *type,int key,int SUB_NODO);
+void remove_key_tree(int account_address, char *dir,char *folder,char *type,int key);
+int busca_SUB_NODO_tree(int account_address, char *dir,char *folder,char *type,int key);
+void add_SUB_NODO_tree(int account_address, char *dir,char *folder,char *type,int key,int SUB_NODO);
+void remove_SUB_NODO_tree(int account_address, char *dir,char *folder, char *type,int key,int SUB_NODO);
+int compara_infos(int account_address, char *dir,char *type,int a,int b);
 int horario_igual(HORARIO a,HORARIO b);
 int horario_maior(HORARIO a,HORARIO b);
 int horario_menor(HORARIO a,HORARIO b);
@@ -270,7 +270,7 @@ void create_address_list(char *dir) //
 	return;
 }
 
-void add_address(char *new,char *dir)
+int add_address(char *new,char *dir)
 {	//	Função para adicionar um endereço na Lista de Endereços
 	FILE *set,*ad;
 	char *dir_s=filepath_gen(dir,"settings.bin");
@@ -308,7 +308,7 @@ void add_address(char *new,char *dir)
 	free(dir_ad);	// Liberando ponteiros
 	free(dir_s);
 
-	return;
+	return scroll;
 }
 
 void remove_address(int scroll,char *dir)
@@ -457,7 +457,7 @@ void create_text_list(int account_address,char *dir)
 	return;
 }
 
-void add_text(int account_address,char *dir,char *new)
+int add_text(int account_address,char *dir,char *new)
 {	//	Função para adicionar um texto à Lista de Textos
 	char *address = dir_builder(account_address,dir,"text_list.bin"),*config_address =dir_builder(account_address,dir,"/config.bin");
 	FILE *text_list,*config;
@@ -497,7 +497,7 @@ void add_text(int account_address,char *dir,char *new)
 	free(address);
 	free(config_address);
 
-	return;
+	return scroll;
 }
 
 void remove_text(int account_address,char *dir,int scroll)//precisamos validar as remoções depois
@@ -573,7 +573,7 @@ void create_subject_list(int account_address,char* dir)
 	return;
 }
 
-void add_subject(int account_address,char*dir,char *new)
+int add_subject(int account_address,char*dir,char *new)
 {	// Função para adicionar um assunto à Lista de Assuntos
 	char *address=dir_builder(account_address,dir,"subject_list.bin"),*config_address=dir_builder(account_address,dir,"/config.bin");
 	FILE *subject_list,*config;
@@ -612,7 +612,7 @@ void add_subject(int account_address,char*dir,char *new)
 	free(address);
 	free(config_address);
 
-	return;
+	return scroll;
 }
 
 void remove_subject(int account_address,char *dir,int scroll)
@@ -688,7 +688,7 @@ void create_email_list(int account_address,char *dir)
 	return;
 }
 
-void add_email(int account_address,char *dir,int remetente,int destinatario, int assunto, int MSG, int data, int historico)
+int add_email(int account_address,char *dir,int remetente,int destinatario, int assunto, int MSG, int data, int historico)
 { 	//	Função para adicionar um email na Lista de Emails
 	char *address=dir_builder(account_address,dir,"email_list.bin"),*config_address=dir_builder(account_address,dir,"/config.bin");
 	FILE *email_list, *config; 	// 	Arquivos que serão abertos
@@ -732,7 +732,7 @@ void add_email(int account_address,char *dir,int remetente,int destinatario, int
 	free(address);			//
 	free(config_address);	//
 
-	return;
+	return scroll;
 }
 
 void remove_email(int account_address,char *dir,int scroll)
@@ -838,7 +838,7 @@ int add_LISTA_ENC(int account_address, char *dir,int antecessor,int novo)
 	free(address);
 	free(config_address);
 
-	return (scroll-1);
+	return (scroll);
 }
 
 void remove_LISTA_ENC(int account_address, char *dir,int antecessor,int atual)
@@ -905,13 +905,13 @@ void create_horario_list(int account_address, char *dir)
 	return;
 }
 
-void add_horario(int account_address, char *dir,HORARIO novo)
+int add_horario(int account_address, char *dir,HORARIO novo)
 {	// Função para adicionar horário à Lista de Horários
 	char *address = dir_builder(account_address,dir,"horario_list.bin"),*config_address=dir_builder(account_address,dir,"config.bin");
 	FILE *horarios,*config;
 	HORARIO a;
 	configuration c;
-	int scroll;
+	int scroll,cont;
 	fpos_t p;
 
 	if(!(config=fopen(config_address,"r+b")))
@@ -933,8 +933,8 @@ void add_horario(int account_address, char *dir,HORARIO novo)
 		else
 			c.anum_HORARIO++;
 		c.num_HORARIO++;
-		for(scroll=0;scroll<6;scroll++)
-			a.data[scroll]=novo.data[scroll];
+		for(cont=0;cont<6;cont++)
+			a.data[cont]=novo.data[cont];
 		fwrite(&c,sizeof(configuration),1,config);
 		fwrite(&a,sizeof(HORARIO),1,horarios);
 		fclose(horarios);
@@ -943,7 +943,7 @@ void add_horario(int account_address, char *dir,HORARIO novo)
 	free(address);
 	free(config_address);
 
-	return;
+	return scroll;
 }
 
 void remove_horario(int account_address, char *dir,int scroll)
@@ -995,7 +995,7 @@ void create_word_list(int account_address,char *dir)
 	return;
 }
 
-void add_word(int account_address,char *dir, char *new)
+int add_word(int account_address,char *dir, char *new)
 {	// 	Função para adicionar palavra da Lista de Palavras
 	char *address = dir_builder(account_address,dir,"word_list.bin"),*config_address=dir_builder(account_address,dir,"config.bin");
 	FILE *word_list,*config;
@@ -1037,7 +1037,7 @@ void add_word(int account_address,char *dir, char *new)
 	free(address);
 	free(config_address);
 
-	return;
+	return scroll;
 }
 
 void remove_word(int account_address,char *dir, int scroll)
@@ -1071,15 +1071,15 @@ void remove_word(int account_address,char *dir, int scroll)
 	return;
 }
 //FUNÇÕES DA ARVORE
-void create_tree(int account_address, char *dir,char *name)
+void create_tree(int account_address, char *dir,char *folder, char *type)
 {
 	char *address, *sub_address, *a, *sa;
 	FILE *tree, *nodo_list;
 	ARVOREB new;
 	NODO nnew;
 
-	a = merge_string("tree_",name);
-	sa = merge_string("tree_L_",name);
+	a = merge_string(folder,merge_string("tree_",type));
+	sa = merge_string(folder,merge_string("tree_L_",type));
 	address = dir_builder(account_address,dir,a);
 	sub_address	= dir_builder(account_address,dir,sa);
 	printf("\nChegou aqui 1\n");
@@ -1243,7 +1243,7 @@ void split_tree(FILE *tree,FILE *nodo_list,int pai,int scroll)
 	return 0;
 }*/
 ;
-void add_key_tree(int account_address, char *dir,char *name,int key,int SUB_NODO)
+void add_key_tree(int account_address, char *dir,char *folder, char *type,int key,int SUB_NODO)
 {	// Função para adicionar chaves na árvore
 	char *address, *sub_address, *a, *sa;
 	FILE *tree, *nodo_list;
@@ -1251,8 +1251,8 @@ void add_key_tree(int account_address, char *dir,char *name,int key,int SUB_NODO
 	NODO nnew;
 	int c,scroll,aux,aux2,aux3,cdn=1;
 	printf("\nKey tree 1\n");
-	a = merge_string("tree_",name);
-	sa = merge_string("tree_L_",name);
+	a = merge_string(folder,merge_string("tree_",type));
+	sa = merge_string(folder,merge_string("tree_L_",type));
 	address = dir_builder(account_address,dir,a);
 	sub_address	= dir_builder(account_address,dir,sa);
 	printf("\nKey tree 2\n");
@@ -1293,7 +1293,7 @@ void add_key_tree(int account_address, char *dir,char *name,int key,int SUB_NODO
 			fread(&nnew,sizeof(NODO),1,nodo_list);
 		}
 
-		for(c=0;c<nnew.num_chaves && 1 > compara_infos(account_address,dir,name,nnew.chaves[c],key);c++);
+		for(c=0;c<nnew.num_chaves && 1 > compara_infos(account_address,dir,type,nnew.chaves[c],key);c++);
 		if(!nnew.ne_folha)//Caso básico
 		{
 			aux=nnew.chaves[c];
@@ -1405,16 +1405,16 @@ void add_key_tree(int account_address, char *dir,char *name,int key,int SUB_NODO
 }*/
 ;
 
-int busca_SUB_NODO_tree(int account_address, char *dir,char *name,int key)
+int busca_SUB_NODO_tree(int account_address, char *dir,char *folder, char *type,int key)
 {
 	char *address, *sub_address, *a, *sa;
 	FILE *tree, *nodo_list;
 	ARVOREB new;
 	NODO nnew;
-	int c,scroll,aux,cdn,achou=-1;
+	int c,scroll,aux,cdn=1,achou=-1;
 
-	a = merge_string("tree_",name);
-	sa = merge_string("tree_L_",name);
+	a = merge_string(folder,merge_string("tree_",type));
+	sa = merge_string(folder,merge_string("tree_L_",type));
 	address = dir_builder(account_address,dir,a);
 	sub_address	= dir_builder(account_address,dir,sa);
 
@@ -1426,12 +1426,13 @@ int busca_SUB_NODO_tree(int account_address, char *dir,char *name,int key)
 	rewind(tree);
 
 	scroll = new.raiz;
+	printf("\n----> Aqui cara");
 	while(cdn && new.raiz+1)
 	{
 		fseek(nodo_list,sizeof(NODO)*scroll,SEEK_SET);
 		fread(&nnew,sizeof(NODO),1,nodo_list);
-
-		for(c=0;c<nnew.num_chaves && 1 > (aux=compara_infos(account_address,dir,name,nnew.chaves[c],key)) && aux;c++);
+		printf("\n----> Em baixo, cara");
+		for(c=0;c<nnew.num_chaves && 1 > (aux=compara_infos(account_address,dir,type,nnew.chaves[c],key)) && aux;c++);
 		printf("\n AUX = %d",aux);
 		if (!aux)
 		{	printf("\nPF 1");
@@ -1462,30 +1463,31 @@ int busca_SUB_NODO_tree(int account_address, char *dir,char *name,int key)
 }
 
 //OPS! LISTA ENCADEADA
-void add_SUB_NODO_tree(int account_address, char *dir,char *name,int key,int SUB_NODO)
+void add_SUB_NODO_tree(int account_address, char *dir,char *folder, char *type,int key,int SUB_NODO)
 {
 	char *address, *sub_address = dir_builder(account_address,dir,"lista_enc.bin"), *a;
 	FILE *tree, *sub_nodo_list;
 	ARVOREB new;
 	int pos;
 
-	a = merge_string("tree_",name);
+	a = merge_string(folder,merge_string("tree_",type));
 
 	address = dir_builder(account_address,dir,a);
 
-	if (!(tree = fopen(address,"r+b")))
-		error_m("Error at file opening");
-
 	printf("\nChegou aqui 3\n");
-	pos = busca_SUB_NODO_tree(account_address,dir,name,key);
+	pos = busca_SUB_NODO_tree(account_address,dir,folder,type,key);
 	if (pos == -1)
-		add_key_tree(account_address,dir,name,key,SUB_NODO);
+		add_key_tree(account_address,dir,folder,type,key,SUB_NODO);
 	else
 	{
 		LISTA primeiro;
 		int scroll = pos, aux=1;
+		if (!(tree = fopen(address,"r+b")))
+				error_m("Error at file opening");
 		if (!(sub_nodo_list = fopen(sub_address,"r+b")))
 			error_m("Error at file opening");
+		fread(&new,sizeof(ARVOREB),1,tree);
+		rewind(tree);
 		printf("\nChegou aqui 4\n");
 		for (;aux;)
 		{
@@ -1497,18 +1499,12 @@ void add_SUB_NODO_tree(int account_address, char *dir,char *name,int key,int SUB
 				aux = 0;
 		}
 		add_LISTA_ENC(account_address,dir,scroll,SUB_NODO);
-		fclose(sub_nodo_list);
 		new.num_SUB_NODOS++;
-	}
-	rewind(tree);
-	fread(&new,sizeof(ARVOREB),1,tree);
-	rewind(tree);
-	fwrite(&new,sizeof(ARVOREB),1,tree);
-	printf("\nChegou aqui 5\n");
-	fclose(tree);
-	printf("\nChegou aqui 5.1\n");
 
-	printf("\nChegou aqui 5.2\n");
+		fwrite(&new,sizeof(ARVOREB),1,tree);
+		fclose(sub_nodo_list);
+		fclose(tree);
+	}
 	free(a);
 	printf("\nChegou aqui 5.3\n");
 	free(address);
@@ -1519,19 +1515,19 @@ void add_SUB_NODO_tree(int account_address, char *dir,char *name,int key,int SUB
 	return;
 }
 
-void remove_SUB_NODO_tree(int account_address, char *dir,char *name,int key,int SUB_NODO)
+void remove_SUB_NODO_tree(int account_address, char *dir,char *folder, char *type,int key,int SUB_NODO)
 {
 
 
 }
 
 //FUNÇÕES DE COMPARAÇÃO
-int compara_infos(int account_address, char *dir,char *name,int a,int b)
+int compara_infos(int account_address, char *dir,char *tipo,int a,int b)
 {
 	char *address;
 	FILE *list;
 
-	if (!strcmp(name,"messages.bin"))
+	if (!strcmp(tipo,"messages.bin"))
 	{
 		messages A,B;
 		address = dir_builder(account_address,dir,"text_list.bin");
@@ -1545,7 +1541,7 @@ int compara_infos(int account_address, char *dir,char *name,int a,int b)
 		return (strcmp(A.mail,B.mail));
 	}
 	else
-	if (!strcmp(name,"subjects.bin"))
+	if (!strcmp(tipo,"subjects.bin"))
 	{
 		subjects A,B;
 		address = dir_builder(account_address,dir,"subject_list.bin");
@@ -1559,7 +1555,7 @@ int compara_infos(int account_address, char *dir,char *name,int a,int b)
 		return (strcmp(A.subject,B.subject));
 	}
 	else
-	if (!strcmp(name,"PALAVRA.bin"))
+	if (!strcmp(tipo,"PALAVRA.bin"))
 	{
 		PALAVRA A,B;
 		address = dir_builder(account_address,dir,"word_list.bin");
@@ -1573,7 +1569,7 @@ int compara_infos(int account_address, char *dir,char *name,int a,int b)
 		return (strcmp(A.key,B.key));
 	}
 	else
-	if (!strcmp(name,"HORARIO.bin"))
+	if (!strcmp(tipo,"HORARIO.bin"))
 	{
 		HORARIO A,B;
 		address = dir_builder(account_address,dir,"horario_list.bin");
