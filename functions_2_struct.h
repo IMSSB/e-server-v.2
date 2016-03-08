@@ -1150,7 +1150,7 @@ void split_tree(FILE *tree,FILE *nodo_list,int pai,int scroll)
 			AVB.anum_NODOS++;
 
 		AVB.num_NODOS++;
-		felipe = smith;
+		felipe = smith;//Felipe é endereço do pai
 		pain.pai=-1;
 		pain.num_chaves=1;
 		pain.ne_folha=1;
@@ -1203,6 +1203,7 @@ void split_tree(FILE *tree,FILE *nodo_list,int pai,int scroll)
 	{
 		son1.pai = son2.pai = felipe;
 		pain.filhos[1]=smith;
+		AVB.raiz=felipe;//Acho que isso resolve
 	}
 
 

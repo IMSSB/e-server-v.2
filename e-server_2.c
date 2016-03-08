@@ -51,6 +51,7 @@ int main(void)
 	add_text(1,er,"FML BOYS");
 
 	//remove_text(1,er,2);/*/
+
 printf("TESTE0: Configurando servidor\n");pause;
 
 
@@ -65,20 +66,20 @@ printf("TESTE0: Configurando servidor\n");pause;
 
 
 
-	printf("Adicionando Mensagens");
+	printf("\nAdicionando Mensagens\n");
 		add_text(1,er,"hehehehhehehehehehhehe, teste mano");
 		add_text(1,er,"bora ver se funciona");
 		add_text(1,er,"tem que funcionar");
 		add_text(1,er,"é isso");
 
-	printf("Adicionando Assuntos\n");
+	printf("\nAdicionando Assuntos\n\n");
 	for (c=0;c<10;c++)
 	{
 		sprintf(ass,"%s %d","ASSUNTO",c);
 		add_subject(1,er,ass);
 	}
 
-	printf("Adicionando Horários\n");
+	printf("\nAdicionando Horários\n\n");
 		hora.data[0] = 1990;
 		hora.data[1] = 1;
 		hora.data[2] = 1;
@@ -108,18 +109,18 @@ printf("TESTE0: Configurando servidor\n");pause;
 	testar_estrutura(er);
 	add_SUB_NODO_tree(1,er,"","subjects.bin",2,2);
 	testar_estrutura(er);
-	/*
+
 	add_SUB_NODO_tree(1,er,"","subjects.bin",3,900);
 	testar_estrutura(er);
 	add_SUB_NODO_tree(1,er,"","subjects.bin",4,1000);
 	testar_estrutura(er);
 	add_SUB_NODO_tree(1,er,"","subjects.bin",5,888);
 	testar_estrutura(er);
-	//add_SUB_NODO_tree(1,er,"","subjects.bin",6,28388);
+	add_SUB_NODO_tree(1,er,"","subjects.bin",6,28388);
 	testar_estrutura(er);
-	//add_SUB_NODO_tree(1,er,"","subjects.bin",7,5555);
+	add_SUB_NODO_tree(1,er,"","subjects.bin",7,5555);
 	testar_estrutura(er);
-	/**/
+
 	print_email(1,er,0);
 	testar_estrutura(er);
 	printf("TESTE_FINAL\n");
