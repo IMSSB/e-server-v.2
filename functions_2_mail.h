@@ -36,7 +36,7 @@ void create_account(char *dir,char *user,char *password)
 	create_tree(account_address,dir,"","PALAVRA.bin");
 
 	folder = dir_builder(account_address,dir,"inbox/");
-	mkdir(folder);
+	make_dir(folder);
 	create_tree(account_address,dir,"inbox/","subjects.bin");
 	create_tree(account_address,dir,"inbox/","messages.bin");
 	create_tree(account_address,dir,"inbox/","HORARIO.bin");
@@ -44,7 +44,7 @@ void create_account(char *dir,char *user,char *password)
 	free(folder);
 
 	folder = dir_builder(account_address,dir,"outbox/");
-	mkdir(folder);
+	make_dir(folder);
 	create_tree(account_address,dir,"outbox/","subjects.bin");
 	create_tree(account_address,dir,"outbox/","messages.bin");
 	create_tree(account_address,dir,"outbox/","HORARIO.bin");
@@ -52,7 +52,7 @@ void create_account(char *dir,char *user,char *password)
 	free(folder);
 
 	folder = dir_builder(account_address,dir,"read/");
-	mkdir(folder);
+	make_dir(folder);
 	create_tree(account_address,dir,"read/","subjects.bin");
 	create_tree(account_address,dir,"read/","messages.bin");
 	create_tree(account_address,dir,"read/","HORARIO.bin");
@@ -60,7 +60,7 @@ void create_account(char *dir,char *user,char *password)
 	free(folder);
 
 	folder = dir_builder(account_address,dir,"trash/");
-	mkdir(folder);
+	make_dir(folder);
 	create_tree(account_address,dir,"trash/","subjects.bin");
 	create_tree(account_address,dir,"trash/","messages.bin");
 	create_tree(account_address,dir,"trash/","HORARIO.bin");
@@ -68,7 +68,7 @@ void create_account(char *dir,char *user,char *password)
 	free(folder);
 
 	folder = dir_builder(account_address,dir,"sent/");
-	mkdir(folder);
+	make_dir(folder);
 	create_tree(account_address,dir,"sent/","subjects.bin");
 	create_tree(account_address,dir,"sent/","messages.bin");
 	create_tree(account_address,dir,"sent/","HORARIO.bin");

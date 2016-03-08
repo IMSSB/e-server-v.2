@@ -30,6 +30,7 @@
 #define windus "C:/Users/Ruan/Desktop/T/"
 #define ubuntus "/home/ricardo/e-server"
 
+
 // 	Temos que voltar o ponteiro dos arquivos depois das operações de leitura
 
 typedef struct
@@ -151,6 +152,7 @@ typedef struct
 char* detecta_os();
 void ler_end(char *er);
 void error_m(char *errormessage);
+void make_dir(char *aux);
 char* dir_builder(int account_number,char*dir,char* file);
 char* filepath_gen(char *dir, char *file);
 char* merge_string(char *string1, char *string2);
@@ -213,7 +215,15 @@ char* detecta_os()
 		return windus;
 	#endif
 }
-
+//Função para resolver ambiguidade de modos entre sistemas operacionais
+void make_dir(char *aux)
+{
+	#ifdef __linux
+		mkdir(aux, S_IRWXU);
+	#else
+		_mkdir(aux);
+	#endif
+}
 // 	FUNÇÕES ÚTEIS
 void error_m(char *errormessage)
 { 	/* Função para facilitar exibição de mensagens de erro */
@@ -395,11 +405,7 @@ void create_config(int account_address,char *dir)
 	ac = get_address(account_address, dir);
 	aux = filepath_gen(dir,ac);
 
-	#ifdef __linux
-		mkdir(aux, S_IRWXU);
-	#else
-		_mkdir(aux);
-	#endif
+	make_dir(aux);
 
 	if(!(config=fopen(address,"wb")))
 		error_m("Error at file allocation");

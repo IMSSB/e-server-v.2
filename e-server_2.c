@@ -51,7 +51,7 @@ int main(void)
 	add_text(1,er,"FML BOYS");
 
 	//remove_text(1,er,2);/*/
-/*printf("TESTE0: Configurando servidor\n");pause;
+printf("TESTE0: Configurando servidor\n");pause;
 
 
 		setup(er);
