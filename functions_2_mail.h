@@ -198,20 +198,23 @@ void setup()
 			return;
 		}
 	}
-	else
-		if (!(set = fopen("settings.bin","wb")))
-			error_m("Error at file allocation");
 
 	printf("Digite o caminho completo para o diretório em que o servidor de e-mails irá funcionar: (Ex: C:\\E-Server\\\n");
 	breakline;
 	caminho = ler('\n');
 
 	make_dir(caminho);
-	setup_server(caminho);
-	create_address_list(caminho);
-	sprintf(config.dir,"%s",caminho);
-	rewind(set);
-	fwrite(&config,sizeof(settings),1,set);
+	if (opcao == 1)
+	{
+		sprintf(config.dir,"%s",caminho);
+		rewind(set);
+		fwrite(&config,sizeof(settings),1,set);
+	}
+	else {
+		setup_server(caminho);
+		create_address_list(caminho);
+	}
+
 	fclose(set);
 
 	printf("Servidor configurado corretamente na pasta: %s",caminho);
@@ -277,7 +280,7 @@ void criar_conta(char *dir)
 	user = ler('\n');
 	printf("Digite a senha para a conta"); breakline;
 	password = ler('\n');
-	printf("--->%s\n",dir);
+
 	pause;
 	create_account(dir,user,password);
 	printf("Conta de e-mail criada com sucesso!"); breakline;
