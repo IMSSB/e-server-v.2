@@ -5,45 +5,29 @@
  *      Author: ricardo
  */
 #include "functions_2_mail.h"
-void testar_estrutura(char *er){
+void testar_estrutura(char *er)
+{
 	FILE *new,*tree;
 	LISTA lista;
 	NODO nodo;
 	ARVOREB avb;
 	new = fopen(dir_builder(1,er,"tree_L_subjects.bin"),"rb");
-	fseek(new,sizeof(NODO)*1,SEEK_SET);
+	fseek(new,sizeof(NODO)*3,SEEK_SET);
 	fread(&nodo,sizeof(NODO),1,new);
 	tree = fopen(dir_builder(1,er,"tree_subjects.bin"),"rb");
 	fread(&avb,sizeof(ARVOREB),1,tree);
-	printf("\nchave[0] = %d\n", nodo.chaves[0]);
-	printf("\nchave[1] = %d\n", nodo.chaves[1]);
-	printf("\nchave[2] = %d\n", nodo.chaves[2]);
-	printf("\nchave[3] = %d\n", nodo.chaves[3]);
-	printf("\nchave[4] = %d\n", nodo.chaves[4]);
-	printf("addresses[0] = %d\n", nodo.addresses[0]);
-	printf("addresses[1] = %d\n", nodo.addresses[1]);
-	printf("addresses[2] = %d\n", nodo.addresses[2]);
-	printf("addresses[3] = %d\n", nodo.addresses[3]);
-	printf("addresses[4] = %d\n", nodo.addresses[4]);
-
-	printf("pai = %d\n", nodo.pai);
-	printf("num_chaves = %d\n", nodo.num_chaves);
-	printf("não é folha = %d\n", nodo.ne_folha);
-
-	printf("AVB - raiz = %d\n", avb.raiz);
-	printf("AVB - num_NODOS = %d\n", avb.num_NODOS);
-	printf("AVB - num_SUB_NODOS = %d\n", avb.num_SUB_NODOS);
-	printf("AVB - next_NODO = %d\n", avb.next_NODO);
-
+	print_nodo(nodo);
+	print_arvoreb(avb);
 	fclose(new);
 	fclose(tree);
 }
+
 
 int main(void)
 {
 	int c;
 	HORARIO hora;
-	char *ass =(int *)malloc(sizeof(char)*100);
+	char *ass =(char *)malloc(sizeof(char)*100);
 
 	char *er =detecta_os();
 	printf("\n|| Bem vindo ao E-Server v.2.0\n ||");
@@ -54,7 +38,7 @@ int main(void)
 
 printf("TESTE0: Configurando servidor\n");pause;
 
-
+	/**
 		setup(er);
 	printf("TESTE1.0: Criando lista de endereços\n");pause;
 		create_address_list(er);
@@ -120,7 +104,17 @@ printf("TESTE0: Configurando servidor\n");pause;
 	testar_estrutura(er);
 	add_SUB_NODO_tree(1,er,"","subjects.bin",7,5555);
 	testar_estrutura(er);
-
+	/**
+	for (c=10;c<40;c++)
+	{
+		sprintf(ass,"%s %d","ASSUNTO",c);
+		add_subject(1,er,ass);
+	}/**
+	add_SUB_NODO_tree(1,er,"","subjects.bin",11,100);
+	add_SUB_NODO_tree(1,er,"","subjects.bin",12,100);
+	add_SUB_NODO_tree(1,er,"","subjects.bin",13,100);
+	add_SUB_NODO_tree(1,er,"","subjects.bin",15,100);
+	*/
 	print_email(1,er,0);
 	testar_estrutura(er);
 	printf("TESTE_FINAL\n");

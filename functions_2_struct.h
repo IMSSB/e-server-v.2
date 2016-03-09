@@ -23,7 +23,7 @@
 #define spc printf("  |");
 #define spc_m printf("              ");
 #define breakline printf("\n");
-#define line nl; printf("____________________________________________________________"); nl;
+#define line breakline; printf("____________________________________________________________"); breakline;
 #define x 10	// Limite de histórico
 #define k 6	// Ordem - Use número par - Número de Chaves será k-1 e o número de filhos será k
 #define min_chaves ((k/2)-1)
@@ -151,6 +151,8 @@ typedef struct
 //ESCOPO DAS FUNÇÕES
 char* detecta_os();
 void ler_end(char *er);
+void print_nodo(NODO nodo);
+void prin_arvoreb(ARVOREB avb);
 void error_m(char *errormessage);
 void make_dir(char *aux);
 char* dir_builder(int account_number,char*dir,char* file);
@@ -214,6 +216,36 @@ char* detecta_os()
 	#else
 		return windus;
 	#endif
+}
+
+void print_nodo(NODO nodo){
+	printf("\nchave[0] = %d\n", nodo.chaves[0]);
+	printf("chave[1] = %d\n", nodo.chaves[1]);
+	printf("chave[2] = %d\n", nodo.chaves[2]);
+	printf("chave[3] = %d\n", nodo.chaves[3]);
+	printf("chave[4] = %d\n", nodo.chaves[4]);
+	printf("addresses[0] = %d\n", nodo.addresses[0]);
+	printf("addresses[1] = %d\n", nodo.addresses[1]);
+	printf("addresses[2] = %d\n", nodo.addresses[2]);
+	printf("addresses[3] = %d\n", nodo.addresses[3]);
+	printf("addresses[4] = %d\n", nodo.addresses[4]);
+	printf("\nfilho[0] = %d\n", nodo.filhos[0]);
+	printf("filho[1] = %d\n", nodo.filhos[1]);
+	printf("filho[2] = %d\n", nodo.filhos[2]);
+	printf("filho[3] = %d\n", nodo.filhos[3]);
+	printf("filho[4] = %d\n", nodo.filhos[4]);
+	breakline;
+	printf("pai = %d\n", nodo.pai);
+	printf("num_chaves = %d\n", nodo.num_chaves);
+	printf("não é folha = %d\n", nodo.ne_folha);
+}
+void print_arvoreb(ARVOREB avb)
+{
+	printf("AVB - raiz = %d\n", avb.raiz);
+	printf("AVB - num_NODOS = %d\n", avb.num_NODOS);
+	printf("AVB - anum_NODOS = %d\n", avb.anum_NODOS);
+	printf("AVB - num_SUB_NODOS = %d\n", avb.num_SUB_NODOS);
+	printf("AVB - next_NODO = %d\n", avb.next_NODO);
 }
 //Função para resolver ambiguidade de modos entre sistemas operacionais
 void make_dir(char *aux)
@@ -1128,6 +1160,7 @@ void split_tree(FILE *tree,FILE *nodo_list,int pai,int scroll)
 	fread(&AVB,sizeof(ARVOREB),1,tree); 	//	Lê o arquivo de configuração da árvore
 	if(pai+1)	// 	Caso o NODO a ser dividido tenha pai
 	{
+		printf("\n---> CASO TENHA PAI)\nscroll = %d\n",scroll);
 		fseek(nodo_list,sizeof(NODO)*pai,SEEK_SET); // Procura a posição do pai no arquivo
 		fgetpos(nodo_list,&p);	//	Guarda a posição de gravação do Pai
 		fread(&pain,sizeof(NODO),1,nodo_list);	//
@@ -1137,6 +1170,7 @@ void split_tree(FILE *tree,FILE *nodo_list,int pai,int scroll)
 	}
 	else	//	Se o NODO a ser dividido não tiver pai (Caso for raiz)
 	{
+		printf("\n---> CASO NÃO TENHA PAI)\n");
 		fseek(nodo_list,sizeof(NODO)*AVB.raiz,SEEK_SET);
 		fgetpos(nodo_list,&f1);	//	Guarda a posição de gravação do Filho 1
 		fread(&son1,sizeof(NODO),1,nodo_list);
@@ -1154,7 +1188,7 @@ void split_tree(FILE *tree,FILE *nodo_list,int pai,int scroll)
 		pain.pai=-1;
 		pain.num_chaves=1;
 		pain.ne_folha=1;
-		pain.filhos[0]=smith;
+		pain.filhos[0]=AVB.raiz;
 		pain.chaves[0]=son1.chaves[min_chaves];
 		pain.addresses[0]=son1.addresses[min_chaves];
 	}
@@ -1185,28 +1219,38 @@ void split_tree(FILE *tree,FILE *nodo_list,int pai,int scroll)
 	if(pai+1)
 	{
 		son1.pai = son2.pai = pai;
-		if (son1.ne_folha)
+		//if (son1.ne_folha)
 			pain.filhos[k-1]=pain.filhos[k-2];
 		for (c=k-2;c>scroll;c--)
 		{
-			if (son1.ne_folha)
+			//if (son1.ne_folha)
 				pain.filhos[c]=pain.filhos[c-1];
 			pain.addresses[c]=pain.addresses[c-1];
 			pain.chaves[c]=pain.chaves[c-1];
 		}
-			pain.filhos[scroll]=smith;
-			pain.chaves[scroll]=son1.chaves[min_chaves];
-			pain.addresses[scroll]=son1.addresses[min_chaves];
-
+		pain.filhos[scroll+1]=smith;
+		pain.chaves[scroll]=son1.chaves[min_chaves];
+		pain.addresses[scroll]=son1.addresses[min_chaves];
+		pain.num_chaves++;
 	}
 	else // Criar nodo no arquivo para ser o pai
 	{
 		son1.pai = son2.pai = felipe;
 		pain.filhos[1]=smith;
 		AVB.raiz=felipe;//Acho que isso resolve
+		printf("\nAVB.raiz = %d\n", AVB.raiz);
 	}
-
-
+	line;
+	breakline;
+	printf("PAIN:\n");
+	print_nodo(pain);
+	breakline;
+	printf("SON 1:\n");
+	print_nodo(son1);
+	breakline;
+	printf("SON 2:\n");
+	print_nodo(son2);
+	line;
 
 	fsetpos(nodo_list,&p);
 	fwrite(&pain,sizeof(NODO),1,nodo_list);
@@ -1215,7 +1259,7 @@ void split_tree(FILE *tree,FILE *nodo_list,int pai,int scroll)
 	fsetpos(nodo_list,&f2);
 	fwrite(&son2,sizeof(NODO),1,nodo_list);
 	rewind(tree);
-	fwrite(&AVB,sizeof(NODO),1,nodo_list);
+	fwrite(&AVB,sizeof(NODO),1,tree);
 
 	return;
 }
@@ -1256,7 +1300,7 @@ void add_key_tree(int account_address, char *dir,char *folder, char *type,int ke
 	FILE *tree, *nodo_list;
 	ARVOREB new;
 	NODO nnew;
-	int c,scroll,aux,aux2,aux3,cdn=1;
+	int c=0,scroll,aux,aux2,aux3,cdn=1;
 	printf("\nKey tree 1\n");
 	a = merge_string(folder,merge_string("tree_",type));
 	sa = merge_string(folder,merge_string("tree_L_",type));
@@ -1291,8 +1335,10 @@ void add_key_tree(int account_address, char *dir,char *folder, char *type,int ke
 
 		if(nnew.num_chaves==k-1) // 	Divisão de NODO cheio
 		{
-			split_tree(tree,nodo_list,nnew.pai,scroll);
+			printf("\n---> DIVISÃO)\n");
+			split_tree(tree,nodo_list,nnew.pai,c);
 			rewind(tree);
+			printf("\nnewraiz = %d\n", new.raiz);
 			fread(&new,sizeof(ARVOREB),1,tree);
 			rewind(tree);
 			scroll=nnew.pai+1?nnew.pai:new.raiz;

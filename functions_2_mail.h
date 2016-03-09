@@ -137,7 +137,7 @@ void print_email(int account_address,char *dir,int email_pos)
 	printf("Assunto: %s\n",assunto.subject);
 	printf("%s\n",mensagem.mail);
 
-	//	Implementar impressão do histórico (recurssão?)
+	//	Implementar impressão do histórico (recursão?)
 	// 	Melhorar formatação da impressão
 }
 
