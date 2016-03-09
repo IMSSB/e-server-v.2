@@ -29,17 +29,12 @@ int main(void)
 	HORARIO hora;
 	char *ass =(char *)malloc(sizeof(char)*100);
 
-	char *er =detecta_os();
-	printf("\n|| Bem vindo ao E-Server v.2.0\n ||");
-	/*printf("\nString: %s -\n",get_text(1,er,2));
-	add_text(1,er,"FML BOYS");
-
-	//remove_text(1,er,2);/*/
-
-printf("TESTE0: Configurando servidor\n");pause;
+	setlocale(LC_ALL,"Portuguese");
+	project_presentation();
+	menu();
 
 	/**
-		setup(er);
+		setup_server(er);
 	printf("TESTE1.0: Criando lista de endereços\n");pause;
 		create_address_list(er);
 
@@ -114,11 +109,11 @@ printf("TESTE0: Configurando servidor\n");pause;
 	add_SUB_NODO_tree(1,er,"","subjects.bin",12,100);
 	add_SUB_NODO_tree(1,er,"","subjects.bin",13,100);
 	add_SUB_NODO_tree(1,er,"","subjects.bin",15,100);
-	*/
+
 	print_email(1,er,0);
 	testar_estrutura(er);
 	printf("TESTE_FINAL\n");
-
+*/
 	return 0;
 }
 

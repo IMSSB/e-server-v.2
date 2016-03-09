@@ -38,7 +38,7 @@ typedef struct
 	int num_addresses;
 	int next_address;
 	int anum_address;
-	char dir[100];
+	char dir[200];
 }settings;
 
 typedef struct
@@ -162,7 +162,7 @@ void create_address_list(char *dir);
 int add_address(char *new,char *dir);
 void remove_address(int scroll,char *dir);
 char* get_address(int scroll,char *dir);
-void setup(char *dir);
+void setup_server(char *dir);
 void create_config(int account_address,char *dir);
 void create_text_list(int account_address,char *dir);
 int add_text(int account_address,char *dir,char *new);
@@ -284,6 +284,28 @@ char* dir_builder(int account_number,char*dir,char* file)
 	free(ad);
 	return r;
 }
+char* ler(char modo)
+{
+	char *lido=NULL;
+	int c = 0;
+	#ifdef __linux__
+		__fpurge(stdin);
+	#else
+		fflush(stdin);
+	#endif
+	do
+	{
+		lido = (char *) realloc(lido,sizeof(char)*(c+1));
+		if (!lido)
+			error_m("Erro ao ler");
+		lido[c] = getchar();
+		c++;
+	}
+	while (lido[c-1]-modo);
+	lido[c-1] = '\0';
+
+	return lido;
+}
 
 char* merge_string(char *string1, char *string2)
 {
@@ -315,13 +337,12 @@ void create_address_list(char *dir) //
 int add_address(char *new,char *dir)
 {	//	Função para adicionar um endereço na Lista de Endereços
 	FILE *set,*ad;
-	char *dir_s=filepath_gen(dir,"settings.bin");
 	char *dir_ad=filepath_gen(dir,"addresses.bin");
 	settings s;
 	addresses ads;
 	int scroll;		//	Variáveis auxiliares
 	fpos_t c;
-	if(!(set=fopen(dir_s,"r+b")))				// Confirmando abertura dos arquivos de settings e addresses
+	if(!(set=fopen("settings.bin","r+b")))				// Confirmando abertura dos arquivos de settings e addresses
 		error_m("Error at file opening");
 	if(!(ad=fopen(dir_ad,"r+b")))
 		error_m("Error at file opening");
@@ -348,7 +369,6 @@ int add_address(char *new,char *dir)
 	fclose(ad);
 
 	free(dir_ad);	// Liberando ponteiros
-	free(dir_s);
 
 	return scroll;
 }
@@ -356,12 +376,12 @@ int add_address(char *new,char *dir)
 void remove_address(int scroll,char *dir)
 {	//	Função para remover um endereço da Lista de Endereços
 	FILE *set,*ad;
-	char *dir_s=filepath_gen(dir,"settings.bin"),*dir_ad=filepath_gen(dir,"addresses.bin");
+	char *dir_ad=filepath_gen(dir,"addresses.bin");
 	settings s;
 	addresses ads;
 	fpos_t c;
 
-	if(!(set=fopen(dir_s,"r+b")))
+	if(!(set=fopen("settings.bin","r+b")))
 		error_m("Error at file opening");
 	fread(&s,sizeof(settings),1,set);
 	rewind(set);
@@ -383,7 +403,6 @@ void remove_address(int scroll,char *dir)
 	}
 	fclose(set);
 	free(dir_ad);
-	free(dir_s);
 
 	return;
 }
@@ -406,13 +425,12 @@ char* get_address(int scroll,char *dir)
 }
 
 //CONFIGURAÇÃO
-void setup(char *dir)
-{	//	Função de configuração geral do Servidor
+void setup_server(char *dir)
+{	//	Função para configuração geral do Servidor
 	FILE *set;
 	settings new;
-	char *dir_s = filepath_gen(dir,"settings.bin");
 
-	if(!(set=fopen(dir_s,"wb")))
+	if(!(set=fopen("settings.bin","wb")))
 		error_m("Error at file allocation");
 	else
 	{
@@ -423,7 +441,6 @@ void setup(char *dir)
 		fwrite(&new,sizeof(settings),1,set);
 		fclose(set);
 	}
-	free(dir_s);
 
 	return;
 }
