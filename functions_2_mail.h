@@ -20,13 +20,10 @@ void formated_message(char *string);
 
 void create_account(char *dir,char *user,char *password)
 {
-	CONTA novaConta;
-	int account_address = add_address(user,dir);
+	int account_address = add_address(dir,user,password);
 	char *folder;
-	//novaConta.user = add_word(account_address,dir,user);
-	//novaConta.password = add_word(account_address,dir,password);
 
-	create_config(account_address,dir);
+	create_config(dir,account_address);
 
 	create_LISTA_ENC(account_address,dir);
 	create_email_list(account_address,dir);
@@ -35,49 +32,49 @@ void create_account(char *dir,char *user,char *password)
 	create_text_list(account_address,dir);
 	create_horario_list(account_address,dir);
 
-	create_tree(account_address,dir,"","subjects.bin");
-	create_tree(account_address,dir,"","messages.bin");
-	create_tree(account_address,dir,"","HORARIO.bin");
-	create_tree(account_address,dir,"","PALAVRA.bin");
+	create_tree_type(dir,account_address,"","subjects.bin");
+	create_tree_type(dir,account_address,"","messages.bin");
+	create_tree_type(dir,account_address,"","HORARIO.bin");
+	create_tree_type(dir,account_address,"","PALAVRA.bin");
 
 	folder = dir_builder(account_address,dir,"inbox/");
 	make_dir(folder);
-	create_tree(account_address,dir,"inbox/","subjects.bin");
-	create_tree(account_address,dir,"inbox/","messages.bin");
-	create_tree(account_address,dir,"inbox/","HORARIO.bin");
-	create_tree(account_address,dir,"inbox/","PALAVRA.bin");
+	create_tree_type(dir,account_address,"inbox/","subjects.bin");
+	create_tree_type(dir,account_address,"inbox/","messages.bin");
+	create_tree_type(dir,account_address,"inbox/","HORARIO.bin");
+	create_tree_type(dir,account_address,"inbox/","PALAVRA.bin");
 	free(folder);
 
 	folder = dir_builder(account_address,dir,"outbox/");
 	make_dir(folder);
-	create_tree(account_address,dir,"outbox/","subjects.bin");
-	create_tree(account_address,dir,"outbox/","messages.bin");
-	create_tree(account_address,dir,"outbox/","HORARIO.bin");
-	create_tree(account_address,dir,"outbox/","PALAVRA.bin");
+	create_tree_type(dir,account_address,"outbox/","subjects.bin");
+	create_tree_type(dir,account_address,"outbox/","messages.bin");
+	create_tree_type(dir,account_address,"outbox/","HORARIO.bin");
+	create_tree_type(dir,account_address,"outbox/","PALAVRA.bin");
 	free(folder);
 
 	folder = dir_builder(account_address,dir,"read/");
 	make_dir(folder);
-	create_tree(account_address,dir,"read/","subjects.bin");
-	create_tree(account_address,dir,"read/","messages.bin");
-	create_tree(account_address,dir,"read/","HORARIO.bin");
-	create_tree(account_address,dir,"read/","PALAVRA.bin");
+	create_tree_type(dir,account_address,"read/","subjects.bin");
+	create_tree_type(dir,account_address,"read/","messages.bin");
+	create_tree_type(dir,account_address,"read/","HORARIO.bin");
+	create_tree_type(dir,account_address,"read/","PALAVRA.bin");
 	free(folder);
 
 	folder = dir_builder(account_address,dir,"trash/");
 	make_dir(folder);
-	create_tree(account_address,dir,"trash/","subjects.bin");
-	create_tree(account_address,dir,"trash/","messages.bin");
-	create_tree(account_address,dir,"trash/","HORARIO.bin");
-	create_tree(account_address,dir,"trash/","PALAVRA.bin");
+	create_tree_type(dir,account_address,"trash/","subjects.bin");
+	create_tree_type(dir,account_address,"trash/","messages.bin");
+	create_tree_type(dir,account_address,"trash/","HORARIO.bin");
+	create_tree_type(dir,account_address,"trash/","PALAVRA.bin");
 	free(folder);
 
 	folder = dir_builder(account_address,dir,"sent/");
 	make_dir(folder);
-	create_tree(account_address,dir,"sent/","subjects.bin");
-	create_tree(account_address,dir,"sent/","messages.bin");
-	create_tree(account_address,dir,"sent/","HORARIO.bin");
-	create_tree(account_address,dir,"sent/","PALAVRA.bin");
+	create_tree_type(dir,account_address,"sent/","subjects.bin");
+	create_tree_type(dir,account_address,"sent/","messages.bin");
+	create_tree_type(dir,account_address,"sent/","HORARIO.bin");
+	create_tree_type(dir,account_address,"sent/","PALAVRA.bin");
 	free(folder);
 
 	return;

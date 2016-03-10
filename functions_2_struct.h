@@ -103,8 +103,8 @@ typedef struct
 
 typedef struct
 {
-       int user;
-       int password;
+       char user[64];
+       char password[64];
        /*int inbox; //Todos vão conter o valor no qual está no vetor o NODO que corresponde
        int outbox;
        int read;
@@ -159,11 +159,11 @@ char* dir_builder(int account_number,char*dir,char* file);
 char* filepath_gen(char *dir, char *file);
 char* merge_string(char *string1, char *string2);
 void create_address_list(char *dir);
-int add_address(char *new,char *dir);
-void remove_address(int scroll,char *dir);
-char* get_address(int scroll,char *dir);
+int add_address(char *dir,char *user,char *password);
+void remove_address(char *dir,int pos);
+char* get_address(char *dir,int pos);
 void setup_server(char *dir);
-void create_config(int account_address,char *dir);
+void create_config(char *dir,int account_address);
 void create_text_list(int account_address,char *dir);
 int add_text(int account_address,char *dir,char *new);
 void remove_text(int account_address,char *dir,int scroll);
@@ -184,7 +184,7 @@ void remove_horario(int account_address, char *dir,int scroll);
 void create_word_list(int account_address,char *dir);
 int add_word(int account_address,char *dir, char *new);
 void remove_word(int account_address,char *dir, int scroll);
-void create_tree(int account_address, char *dir,char *folder, char *type);
+void create_tree_type(char *dir,int account_address, char *folder, char *type);
 void split_tree(FILE *tree,FILE *nodo_list,int pai,int scroll);
 int merge_nodo(FILE *tree,FILE *nodo_list,int pai,int scroll);
 void add_key_tree(int account_address, char *dir,char *folder,char *type,int key,int SUB_NODO);
@@ -203,9 +203,9 @@ int horario_maior_igual(HORARIO a,HORARIO b);
 void ler_end(char *er)
 {
 	printf("TESTE1.x.1: Lendo endereço 0\n");pause;
-			printf("Endereço lido: %s\n",get_address(0,er));
+			printf("Endereço lido: %s\n",get_address(er,0));
 	printf("TESTE1.x.2: Lendo endereço 1\n");pause;
-		printf("Endereço lido: %s\n",get_address(1,er));
+		printf("Endereço lido: %s\n",get_address(er,1));
 
 }
 
@@ -277,7 +277,7 @@ char* filepath_gen(char *dir, char *file)
 
 char* dir_builder(int account_number,char*dir,char* file)
 {	//	Função para gerar o caminho do arquivo
-	char *ad = get_address(account_number,dir), *r;
+	char *ad = get_address(dir,account_number), *r;
 
 	r = strcat(strcat(strcat(filepath_gen(dir,""),ad),"/"),file);
 	printf("\nAd = %s \n r= %s",ad,r);
@@ -319,14 +319,14 @@ char* merge_string(char *string1, char *string2)
 void create_address_list(char *dir) //
 {	// Função para criar o arquivo da Lista de Endereços
 	FILE *new;			//	Declarando ponteiro para arquivo que será criado
-	addresses ad;		//	Declarando variável addresses para ser escrita no arquivo
+	CONTA ad;		//	Declarando variável addresses para ser escrita no arquivo
 	char *dir_ad=filepath_gen(dir,"addresses.bin");		//	Gerando caminho para o arquivo
 
 	if(!(new=fopen(dir_ad,"wb")))	//	Criando arquivo
 		error_m("Error at file allocation");	//	Mensagem de erro se o arquivo não conseguir ser criado/subscrito
 	else
 	{
-		sprintf(&(ad.address[0]),"%d",-1);	//	Colocando "-1" na variável para indicar que ainda não há nenhum endereço
+		sprintf(&(ad.user[0]),"%d",-1);	//	Colocando "-1" na variável para indicar que ainda não há nenhum endereço
 		fwrite(&ad,sizeof(addresses),1,new);	//	Escrevendo no arquivo
 		fclose(new);	// 	Fechando arquivo
 	}
@@ -334,12 +334,12 @@ void create_address_list(char *dir) //
 	return;
 }
 
-int add_address(char *new,char *dir)
+int add_address(char *dir,char *user,char *password)
 {	//	Função para adicionar um endereço na Lista de Endereços
 	FILE *set,*ad;
 	char *dir_ad=filepath_gen(dir,"addresses.bin");
 	settings s;
-	addresses ads;
+	CONTA ads;
 	int scroll;		//	Variáveis auxiliares
 	fpos_t c;
 	if(!(set=fopen("settings.bin","r+b")))				// Confirmando abertura dos arquivos de settings e addresses
@@ -348,23 +348,24 @@ int add_address(char *new,char *dir)
 		error_m("Error at file opening");
 
 	fread(&s,sizeof(settings),1,set);	//	Lendo arquivo de configurações e armazenando na variável s
-	rewind(set);						//	Colocando a posição do fluxo de dados no ínicio
+	rewind(set);						//	Colocando a posição do fluxo de dados no inicio
 	scroll=(s.next_address == -1)?s.num_addresses:s.next_address;	//	Definindo a posição em que o novo endereço será salvo no arquivo addresses.bin
 	printf("NEXT: %d\nNUM AD: %d",s.next_address,s.num_addresses);
-	fseek(ad,scroll*sizeof(addresses),SEEK_SET);				//	Deslocando a posição do buffer no arquivo addresses.bin
+	fseek(ad,scroll*sizeof(CONTA),SEEK_SET);				//	Deslocando a posição do buffer no arquivo addresses.bin
 	if(s.next_address!=-1)										//	caso haja blocos não utilizados a serem subscritos
 	{
 		fgetpos(ad,&c);								//	Guardando a posição atual do fluxo de dados
-		fread(&ads,sizeof(addresses),1,ad);			//	Lendo arquivo de endereços e armazenando na variável ad
-		sscanf(ads.address,"%d",&(s.next_address));	//	Atualizando o próximo a ser subscrito
+		fread(&ads,sizeof(CONTA),1,ad);			//	Lendo arquivo de endereços e armazenando na variável ad
+		sscanf(ads.user,"%d",&(s.next_address));	//	Atualizando o próximo a ser subscrito
 		fsetpos(ad,&c);								// 	Retornando a posição do fluxo de dados para a salva anteriormente
 	}
 	else
 		s.anum_address++;
-	sprintf(ads.address,"%s",new);			//	Guardando novo endereço
+	sprintf(ads.user,"%s",user);			//	Guardando usuário
+	sprintf(ads.password,"%s",user);			//	Guardando senha
 	s.num_addresses++;						//	Incrementando o número de endereços
 	fwrite(&s,sizeof(settings),1,set);		//	Escrevendo alterações feitas nos arquivos
-	fwrite(&ads,sizeof(addresses),1,ad);
+	fwrite(&ads,sizeof(CONTA),1,ad);
 	fclose(set);							// Fechando arquivos
 	fclose(ad);
 
@@ -373,32 +374,32 @@ int add_address(char *new,char *dir)
 	return scroll;
 }
 
-void remove_address(int scroll,char *dir)
+void remove_address(char *dir,int pos)
 {	//	Função para remover um endereço da Lista de Endereços
 	FILE *set,*ad;
 	char *dir_ad=filepath_gen(dir,"addresses.bin");
 	settings s;
-	addresses ads;
+	CONTA ads;
 	fpos_t c;
 
 	if(!(set=fopen("settings.bin","r+b")))
 		error_m("Error at file opening");
 	fread(&s,sizeof(settings),1,set);
 	rewind(set);
-	if (scroll < s.anum_address && scroll >= 0)
+	if (pos < s.anum_address && pos >= 0)
 	{
 		if(!(ad=fopen(dir_ad,"r+b")))
 		error_m("Error at file opening");
 
-		fseek(ad,scroll*sizeof(addresses),SEEK_SET);
+		fseek(ad,pos*sizeof(CONTA),SEEK_SET);
 		fgetpos(ad,&c);
-		fread(&ads,sizeof(addresses),1,ad);
+		fread(&ads,sizeof(CONTA),1,ad);
 		fsetpos(ad,&c);
-		sprintf(&(ads.address[0]),"%d", s.next_address);
-		s.next_address=scroll;
+		sprintf(&(ads.user[0]),"%d", s.next_address);
+		s.next_address=pos;
 		s.num_addresses--;
 		fwrite(&s,sizeof(settings),1,set);//escrevendo alterações feitas
-		fwrite(&ads,sizeof(addresses),1,ad);
+		fwrite(&ads,sizeof(CONTA),1,ad);
 		fclose(ad);
 	}
 	fclose(set);
@@ -407,18 +408,18 @@ void remove_address(int scroll,char *dir)
 	return;
 }
 
-char* get_address(int scroll,char *dir)
+char* get_address(char *dir,int pos)
 {	//	Função que retorna um endereço da Lista de Endereços
 	char* address = (char*)malloc(sizeof(char)*64),*dir_ad=filepath_gen(dir,"addresses.bin");
 	FILE *ad;
-	addresses ads;
+	CONTA ads;
 
 	if(!(ad=fopen(dir_ad,"rb")))
 		error_m("Error at file opening");
 
-	fseek(ad,scroll*sizeof(addresses),SEEK_SET);
-	fread(&ads,sizeof(addresses),1,ad);
-	sprintf(address,"%s",ads.address);
+	fseek(ad,pos*sizeof(CONTA),SEEK_SET);
+	fread(&ads,sizeof(CONTA),1,ad);
+	sprintf(address,"%s",ads.user);
 	fclose(ad);
 
 	return address;
@@ -445,13 +446,13 @@ void setup_server(char *dir)
 	return;
 }
 
-void create_config(int account_address,char *dir)
+void create_config(char *dir,int account_address)
 {	// Função para criar o arquivo de Configuração do Usuário
 	char *address = dir_builder(account_address,dir,"config.bin"), *ac, *aux;
 	FILE *config;
 	configuration new;
 
-	ac = get_address(account_address, dir);
+	ac = get_address(dir, account_address);
 	aux = filepath_gen(dir,ac);
 
 	make_dir(aux);
@@ -1126,7 +1127,7 @@ void remove_word(int account_address,char *dir, int scroll)
 	return;
 }
 //FUNÇÕES DA ARVORE
-void create_tree(int account_address, char *dir,char *folder, char *type)
+void create_tree_type(char *dir,int account_address,char *folder, char *type)
 {
 	char *address, *sub_address, *a, *sa;
 	FILE *tree, *nodo_list;
@@ -1591,6 +1592,139 @@ void remove_SUB_NODO_tree(int account_address, char *dir,char *folder, char *typ
 
 }
 
+
+//FUNÇÕES DE ÁRVORE DE CONTAS
+void create_tree_account(char *dir)
+{
+	char *address, *sub_address;
+	FILE *tree, *nodo_list;
+	ARVOREB avb;
+	NODO nodo;
+
+	address = merge_string(dir,"tree_CONTA.bin");
+	sub_address = merge_string(dir,"tree_L_CONTA.bin");
+
+	if (!(tree = fopen(address,"wb")))
+		error_m("Error at file allocation");
+	if (!(nodo_list = fopen(sub_address,"wb")))
+		error_m("Error at file allocation");
+	avb.num_NODOS=0;
+	avb.num_SUB_NODOS=0;
+	avb.raiz=-1;
+	avb.anum_NODOS=0;
+	avb.next_NODO=-1;
+	nodo.num_chaves=0;
+	nodo.ne_folha=0;
+	nodo.pai=-1;
+
+	fwrite(&nodo,sizeof(NODO),1,nodo_list);
+	fwrite(&avb,sizeof(ARVOREB),1,tree);
+
+	fclose(tree);
+	fclose(nodo_list);
+
+	free(address);
+	free(sub_address);
+
+	return;
+}
+void add_CONTA_tree(char *dir,int account_address)
+{	// Função para adicionar chaves na árvore
+	char *address, *sub_address, *a, *sa;
+	FILE *tree, *nodo_list;
+	ARVOREB avb;
+	NODO nodo;
+	int c=0,scroll,aux,aux2,aux3,cdn=1;
+
+	address = merge_string(dir,"tree_CONTA.bin");
+	sub_address = merge_string(dir,"tree_L_CONTA.bin");
+
+	if (!(tree = fopen(address,"r+b")))
+		error_m("Error at file opening");
+	if (!(nodo_list = fopen(sub_address,"r+b")))
+		error_m("Error at file opening");
+	fread(&avb,sizeof(ARVOREB),1,tree);
+	rewind(tree);
+
+	scroll=avb.raiz;
+	if(avb.raiz==-1)
+	{	printf("\nEntrou em condição raiz =-1\n");
+		nodo.chaves[0]=account_address;
+		nodo.addresses[0]=account_address;
+		nodo.num_chaves=1;
+		nodo.pai=-1;
+		nodo.ne_folha=0;
+		avb.raiz=avb.next_NODO==-1?avb.num_NODOS:avb.next_NODO;
+		/*DEBUG ABAIXO*/
+		printf("avb.raiz = %d\nodo.next_NODO = %d\nodo.num_NODOS = %d\n",avb.raiz,avb.next_NODO,avb.num_NODOS);
+		avb.num_NODOS++;
+		cdn=0;
+	}
+	else
+	while(cdn)
+	{
+		fseek(nodo_list,sizeof(NODO)*scroll,SEEK_SET);
+		fread(&nodo,sizeof(NODO),1,nodo_list);
+
+		if(nodo.num_chaves==k-1) // 	Divisão de NODO cheio
+		{	/*DEBUG ABAIXO*/
+			printf("\n---> DIVISÃO)\n");
+			split_tree(tree,nodo_list,nodo.pai,c);
+			rewind(tree);
+			printf("\nnewraiz = %d\n", avb.raiz);
+			fread(&avb,sizeof(ARVOREB),1,tree);
+			rewind(tree);
+			scroll=nodo.pai+1?nodo.pai:avb.raiz;
+			fseek(nodo_list,sizeof(NODO)*scroll,SEEK_SET);
+			fread(&nodo,sizeof(NODO),1,nodo_list);
+		}
+
+		for(c=0;c<nodo.num_chaves && 1 > compara_infos(0,dir,"addresses.bin",nodo.chaves[c],account_address);c++);
+		if(!nodo.ne_folha)//Caso básico
+		{
+			aux=nodo.chaves[c];
+			aux3=c;
+			nodo.chaves[c] = account_address;
+			nodo.addresses[c++] = account_address;
+			for(;c<nodo.num_chaves;c++)
+			{
+				aux2=nodo.chaves[c];
+				nodo.chaves[c]=aux;
+				aux=aux2;
+			}
+			c=aux3;
+			aux=nodo.addresses[c];
+			for(;c<nodo.num_chaves;c++)
+			{
+				aux2=nodo.addresses[c];
+				nodo.addresses[c]=aux;
+				aux=aux2;
+			}
+			nodo.num_chaves++;
+			fseek(nodo_list,sizeof(NODO)*scroll,SEEK_SET);
+			cdn=0;
+		}
+		//GENIAL CORMEN <3
+		else	// 	Garante que haja filhos, por causa do if acima
+			scroll=nodo.filhos[c];
+
+	}
+	avb.num_SUB_NODOS++;
+	fwrite(&avb,sizeof(ARVOREB),1,tree);
+	fwrite(&nodo,sizeof(NODO),1,nodo_list);
+
+	fclose(tree);
+	fclose(nodo_list);
+
+	free(a);
+	free(sa);
+	free(address);
+	free(sub_address);
+
+	return;
+}
+
+
 //FUNÇÕES DE COMPARAÇÃO
 int compara_infos(int account_address, char *dir,char *tipo,int a,int b)
 {
@@ -1645,12 +1779,28 @@ int compara_infos(int account_address, char *dir,char *tipo,int a,int b)
 		address = dir_builder(account_address,dir,"horario_list.bin");
 		if (!(list = fopen(address,"rb")))
 			error_m("Error at file opening");
-		fseek(list,sizeof(PALAVRA)*a,SEEK_SET);
-		fread(&A,sizeof(PALAVRA),1,list);
-		fseek(list,sizeof(PALAVRA)*b,SEEK_SET);
-		fread(&B,sizeof(PALAVRA),1,list);
+		fseek(list,sizeof(HORARIO)*a,SEEK_SET);
+		fread(&A,sizeof(HORARIO),1,list);
+		fseek(list,sizeof(HORARIO)*b,SEEK_SET);
+		fread(&B,sizeof(HORARIO),1,list);
 		fclose(list);
 		return horario_menor(A,B)?-1:(horario_igual(A,B)?0:1);
+	}
+	else
+	if (!strcmp(tipo,"addresses.bin"))
+	{
+		CONTA A,B;
+		address = merge_string(dir,"addresses.bin");
+		if (!(list = fopen(address,"rb")))
+			error_m("Error at file opening");
+		fseek(list,sizeof(CONTA)*a,SEEK_SET);
+		fread(&A,sizeof(CONTA),1,list);
+		fseek(list,sizeof(CONTA)*b,SEEK_SET);
+		fread(&B,sizeof(CONTA),1,list);
+		fclose(list);
+		if (account_address)
+			return (strcmp(A.password,B.password));
+		return (strcmp(A.user,B.user));
 	}
 
 	return 1;
