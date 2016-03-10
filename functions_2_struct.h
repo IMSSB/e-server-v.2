@@ -186,6 +186,7 @@ int add_word(int account_address,char *dir, char *new);
 void remove_word(int account_address,char *dir, int scroll);
 void create_tree_type(char *dir,int account_address, char *folder, char *type);
 void split_tree(FILE *tree,FILE *nodo_list,int pai,int scroll);
+fpos_t predescessor(FILE *tree,FILE *nodo_list,int nodo,int key);
 int merge_nodo(FILE *tree,FILE *nodo_list,int pai,int scroll);
 void add_key_tree(int account_address, char *dir,char *folder,char *type,int key,int SUB_NODO);
 void remove_key_tree(int account_address, char *dir,char *folder,char *type,int key);
@@ -1281,8 +1282,7 @@ void split_tree(FILE *tree,FILE *nodo_list,int pai,int scroll)
 
 	return;
 }
-//Decisão de projeto
-/*int merge_nodo(FILE *tree,FILE *nodo_list,int pai,int scroll)
+int merge_nodo(FILE *tree,FILE *nodo_list,int pai,int scroll)
 {	//	Função para juntar dois NODOs irmãos, retorna o tipo da junção. 0 = Só passou um elemento, 1 = Junção dos irmãos com o pai.
 	NODO pain,son1,son2;
 	ARVOREB AVB;
@@ -1310,8 +1310,7 @@ void split_tree(FILE *tree,FILE *nodo_list,int pai,int scroll)
 
 
 	return 0;
-}*/
-;
+}
 void add_key_tree(int account_address, char *dir,char *folder, char *type,int key,int SUB_NODO)
 {	// Função para adicionar chaves na árvore
 	char *address, *sub_address, *a, *sa;
@@ -1870,5 +1869,38 @@ int horario_maior_igual(HORARIO a,HORARIO b)
 	}
 	return 1;//se chegar aqui necessariamente é igual
 }
+fpos_t predescessor(FILE *tree,FILE *nodo_list,int nodo,int key)
+{
 
+	NODO N,N1;
+	int aux;
+	fpos_t p;
+
+	fseek(nodo_list,sizeof(NODO)*nodo,SEEK_SET);
+	fread(&N,sizeof(NODO),1,nodo_list);
+	fseek(nodo_list,sizeof(NODO)*N.filhos[key],SEEK_SET);
+	fread(&N1,sizeof(NODO),1,nodo_list);
+
+	while(!N1.ne_folha)
+	{
+		fseek(nodo_list,sizeof(NODO)*N1.filhos[aux = N1.num_chaves+1],SEEK_SET);
+		fread(&N1,sizeof(NODO),1,nodo_list);
+
+	}
+
+	if(N1.num_chaves == k/2-1)
+	{
+		merge_nodo(tree,nodo_list,N1.pai,aux-1);
+		fseek(nodo_list,sizeof(NODO)*N1.pai,SEEK_SET);
+		fread(&N1,sizeof(NODO),1,nodo_list);
+		fseek(nodo_list,sizeof(NODO)*N1.filhos[aux = N1.num_chaves+1],SEEK_SET);
+		fgetpos(nodo_list,&p);
+		fread(&N1,sizeof(NODO),1,nodo_list);
+	}
+
+	N.addresses[key] = N1.addresses[N1.num_chaves];
+	N.chaves[key] = N1.chaves[N1.num_chaves];
+
+	return p;
+}
 #endif /* FUNCTIONS_2_STRUCT_H_ */
