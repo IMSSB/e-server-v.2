@@ -1292,16 +1292,75 @@ int merge_nodo(FILE *tree,FILE *nodo_list,int pai,int scroll)
 	rewind(tree);
 	fread(&AVB,sizeof(ARVOREB),1,tree); 	//	Lê o arquivo de configuração da árvore
 	fseek(nodo_list,sizeof(NODO)*pai,SEEK_SET);
+	fgetpos(nodo_list,&p);
 	fread(&pain,sizeof(NODO),1,nodo_list);
 	fseek(nodo_list,sizeof(NODO)*pain.filhos[scroll],SEEK_SET);
+	fgetpos(nodo_list,&f1);
 	fread(&son1,sizeof(NODO),1,nodo_list);
 	felipe=scroll;
 	felipe+=(scroll+1 <= pain.num_chaves)?1:-1;
 	fseek(nodo_list,sizeof(NODO)*pain.filhos[scroll+1],SEEK_SET);
+	fgetpos(nodo_list,&f2);
 	fread(&son2,sizeof(NODO),1,nodo_list);
 	if(son2.num_chaves< k/2)
 	{
-		//Junta tudo
+		if(scroll>felipe)
+		{
+			fseek(nodo_list,f2,SEEK_SET);
+			fread(&son1,sizeof(NODO),1,nodo_list);
+			fseek(nodo_list,f1,SEEK_SET);
+			fread(&son2,sizeof(NODO),1,nodo_list);
+		}
+			son1.chaves[son1.num_chaves]=pain.num_chaves[scroll];//Talvez tenha que fazer um deslocamento em alguns casos disso (AFF)
+			son1.addresses[son1.num_chaves++]=pain.addresses[scroll];
+			pain.num_chaves--;
+
+			for(c=0;c<son2.num_chaves;c++)
+			{
+				son1.chaves[son1.num_chaves+c]=son2.chaves[c];
+				son1.addresses[son1.num_chaves+c]=son2.addresses[c];
+				son1.filhos[son1.num_chaves+(c+1)]=son2.filhos[c];//Ruan, veja a questão dos filhos nos outros casos!
+			}
+			son1.num_chaves+=c;
+			son1.filhos[son1.num_chaves+1]=son2.filhos[c];
+
+
+			AVB.num_NODOS--;
+			//Manter funcionamento da lista okay...
+
+
+	}
+	else
+	if(scroll<felipe)//Acho que isso não altera a configuração de filhos caso feito do jeito certo
+	{	//caso não seja o ultimo filho e o irmão tenha 1 chave para doar
+		son1.chaves[++son1.num_chaves]=pain.chaves[scroll];
+		son1.addresses[son1.num_chaves]=pain.addresses[scroll];
+		pain.chaves[scroll]=son2.chaves[0];
+		pain.addresses[scroll]=son2.addresses[0];
+
+		for(c=son2.num_chaves; c>0;c--)
+		{
+			son2.chaves[c-1]=son2.chaves[c];
+			son2.addresses[c-1]=son2.addresses[c];
+		}
+
+	}
+	else
+	{//caso seja o ultimo filho e o irmão tenha 1 chave para doar
+
+		for(c=son1.num_chaves; c>=0;c--)
+		{
+				son1.chaves[c+1]=son1.chaves[c];
+				son1.addresses[c+1]=son1.addresses[c];
+		}
+		son1.chaves[0]=pain.chaves[scroll];
+		son1.addresses[0]=pain.addresses[scroll];
+		son1.num_chaves++;
+		pain.chaves[scroll]=son2.chaves[son2.num_chaves];
+		pain.addresses[scroll];son2.addresses[son2.num_chaves];
+		son2.num_chaves--;
+		//em tese é só isso...
+
 	}
 
 
@@ -1890,7 +1949,7 @@ fpos_t predescessor(FILE *tree,FILE *nodo_list,int nodo,int key)
 
 	if(N1.num_chaves == k/2-1)
 	{
-		merge_nodo(tree,nodo_list,N1.pai,aux-1);
+		merge_nodo(tree,nodo_list,N1.pai,aux);//Eis a questão
 		fseek(nodo_list,sizeof(NODO)*N1.pai,SEEK_SET);
 		fread(&N1,sizeof(NODO),1,nodo_list);
 		fseek(nodo_list,sizeof(NODO)*N1.filhos[aux = N1.num_chaves+1],SEEK_SET);
