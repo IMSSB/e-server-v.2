@@ -238,10 +238,10 @@ void remove_text(FILE *config,FILE *text_list,int scroll);
 char* get_text(FILE *config,FILE *text_list, int scroll);
 void create_subject_list(char *dir,int account_address);
 int add_subject(FILE *config, FILE *subject_list,char *new);
-void remove_subject(char *dir,int account_address,int scroll);
-char* get_subject(char *dir,int account_address,int scroll);
+void remove_subject(FILE *config, FILE *subject_list,int scroll);
+char* get_subject(FILE *config, FILE *subject_list,int scroll);
 void create_email_list(char *dir,int account_address);
-int add_email(char *dir,int account_address,int remetente,int destinatario, int assunto, int MSG, int data, int historico);
+int add_email(FILE *config, FILE *email_list,int remetente,int destinatario, int assunto, int MSG, int data, int historico);
 void remove_email(char *dir,int account_address,int scroll);
 void create_LISTA_ENC(char *dir,int account_address);
 int add_LISTA_ENC(char *dir,int account_address,int ultimo,int novo);
@@ -694,55 +694,37 @@ int add_subject(FILE *config, FILE *subject_list,char *new)
 	return pos;
 }
 
-void remove_subject(char* dir,int account_address,int scroll)
+void remove_subject(FILE *config, FILE *subject_list,int pos)
 {	// Função para remover um assunto da Lista de Assuntos
-	char *address=dir_builder(dir,account_address,"subject_list.bin"),*config_address=dir_builder(dir,account_address,"/config.bin");
-	FILE *subject_list,*config;
 	configuration c;
 	subjects s;
 
-	if(!(config=fopen(config_address,"r+b")))
-		error_m("Error at file opening");
-	fread(&c,sizeof(configuration),1,config);
 	rewind(config);
-	if (scroll < c.anum_subjects && scroll >=0)
+	fread(&c,sizeof(configuration),1,config);
+	if (pos < c.anum_subjects && pos >=0)
 	{
-		if(!(subject_list=fopen(address,"r+b")))
-		error_m("Error at file opening");
-
 		sprintf(s.subject,"%d",c.next_subject);
 		c.num_subjects--;
-		c.next_subject=scroll;
-		fseek(subject_list,scroll*sizeof(subjects),SEEK_SET);
+		c.next_subject=pos;
+		fseek(subject_list,pos*sizeof(subjects),SEEK_SET);
 		fwrite(&s,sizeof(subjects),1,subject_list);
+		rewind(config);
 		fwrite(&c,sizeof(configuration),1,config);
-		fclose(subject_list);
 	}
-	fclose(config);
-	free(address);
-	free(config_address);
 
 	return;
 }
 
-char* get_subject(char* dir,int account_address,int scroll)
-{	//	Função que retorna um assunto da Lista de Assuntos dada sua posição (scroll)
-	char *address=dir_builder(dir,account_address,"subject_list.bin");
-	FILE *subject_list;
+char* get_subject(FILE *config, FILE *subject_list,int pos)
+{	//	Função que retorna um assunto da Lista de Assuntos dada sua posição (pos)
 	char *sub;
 	subjects s;
 
-	if(!(subject_list=fopen(address,"rb")))
-		error_m("Error at file opening");
-	else
-	{
-		sub=(char*)malloc(sizeof(char)*100);
-		fseek(subject_list,scroll*sizeof(subjects),SEEK_SET);
-		fread(&s,sizeof(subjects),1,subject_list);
-		fclose(subject_list);
-		sprintf(sub,"%s",s.subject);
-	}
-	free(address);
+	sub=(char*)malloc(sizeof(char)*100);
+	fseek(subject_list,pos*sizeof(subjects),SEEK_SET);
+	fread(&s,sizeof(subjects),1,subject_list);
+	fclose(subject_list);
+	sprintf(sub,"%s",s.subject);
 
 	return sub;
 }
@@ -767,49 +749,35 @@ void create_email_list(char* dir,int account_address)
 	return;
 }
 
-int add_email(char* dir,int account_address,int remetente,int destinatario, int assunto, int MSG, int data, int historico)
+int add_email(FILE *config, FILE *email_list,int remetente,int destinatario, int assunto, int MSG, int data, int historico)
 { 	//	Função para adicionar um email na Lista de Emails
-	char *address=dir_builder(dir,account_address,"email_list.bin"),*config_address=dir_builder(dir,account_address,"/config.bin");
-	FILE *email_list, *config; 	// 	Arquivos que serão abertos
 	configuration c; 			//	Manipulação da configuração
 	SUB_NODO e; 				//	Manipulação de email
 	int scroll;					// 	Variável para deslocamento
 	fpos_t p;
 
-	if (!(email_list=fopen(address,"r+b"))) 	// 	Abrindo o arquivo da Lista de Emails
-		error_m("Error at file opening"); 		// 	Mensagem de erro
-	else
-	if (!(config=fopen(config_address,"r+b"))) 	// 	Abrindo o arquivo de Configuração da Conta
-		error_m("Error at file opening");		// 	Mensagem de erro
-	else
+	fread(&c,sizeof(configuration),1,config);				//
+	rewind(config);
+	scroll=(c.next_email==-1)?c.num_emails:c.next_email;	//
+	fseek(email_list,scroll*sizeof(SUB_NODO),SEEK_SET);								//
+	if (c.next_email!=-1)									//
 	{
-		fread(&c,sizeof(configuration),1,config);				//
-		rewind(config);
-		scroll=(c.next_email==-1)?c.num_emails:c.next_email;	//
-		fseek(email_list,scroll*sizeof(SUB_NODO),SEEK_SET);								//
-		if (c.next_email!=-1)									//
-		{
-			fgetpos(email_list,&p);
-			fread(&e,sizeof(SUB_NODO),1,email_list);			//
-			c.next_email = e.remetente;							//
-			fsetpos(email_list,&p);
-		}
-		else
-			c.anum_emails++;
-		c.num_emails++;											//
-		e.remetente = remetente;								//
-		e.destinatario = destinatario;							//
-		e.assunto = assunto;									//
-		e.MSG = MSG;											//
-		e.data = data;
-		e.historico = historico;								//
-		fwrite(&c,sizeof(configuration),1,config);				//
-		fwrite(&e,sizeof(SUB_NODO),1,email_list);				//
-		fclose(config);											//
-		fclose(email_list);										//
+		fgetpos(email_list,&p);
+		fread(&e,sizeof(SUB_NODO),1,email_list);			//
+		c.next_email = e.remetente;							//
+		fsetpos(email_list,&p);
 	}
-	free(address);			//
-	free(config_address);	//
+	else
+		c.anum_emails++;
+	c.num_emails++;											//
+	e.remetente = remetente;								//
+	e.destinatario = destinatario;							//
+	e.assunto = assunto;									//
+	e.MSG = MSG;											//
+	e.data = data;
+	e.historico = historico;								//
+	fwrite(&c,sizeof(configuration),1,config);				//
+	fwrite(&e,sizeof(SUB_NODO),1,email_list);				//
 
 	return scroll;
 }
