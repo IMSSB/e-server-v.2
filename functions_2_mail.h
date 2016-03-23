@@ -9,21 +9,26 @@
 #define FUNCTIONS_2_H_
 #include "functions_2_struct.h"
 
-void create_account(char *dir,char *user,char *password);
+void create_account(PRINCIPAL *principal,char *dir,char *user,char *password);
 void print_email(ARQUIVOS arquivos,int email_pos);
 void print_horario(HORARIO data);
-void setup();
+void setup(PRINCIPAL principal);
 void menu();
-void criar_conta(char *dir);
-void acessar_conta(char *dir);
+void criar_conta(PRINCIPAL *principal,char *dir);
+void acessar_conta(PRINCIPAL principal,char *dir);
 ARQUIVOS open_account_files(char *dir, int account_address);
 void close_account_files(ARQUIVOS arquivos);
 void formated_message(char *string);
+PRINCIPAL open_server_files();
+void close_server_files(PRINCIPAL principal);
 
-void create_account(char *dir,char *user,char *password)
+void create_account(PRINCIPAL *principal,char *dir,char *user,char *password)
 {
-	int account_address = add_address(dir,user,password);
+	int account_address = add_address(principal->settings,principal->addresses,user,password);
 	char *folder;
+	close_server_files(*principal);
+	*principal = open_server_files();
+	//add_CONTA_tree(account_address);
 
 	create_config(dir,account_address);
 
@@ -143,9 +148,8 @@ void project_presentation()
 	return;
 }
 
-void setup()
+void setup(PRINCIPAL principal)
 {
-	FILE *set;
 	settings config;
 	char *caminho;
 	int opcao;
@@ -153,12 +157,13 @@ void setup()
 	breakline;
 	printf("Configuração do Servidor");
 	breakline;
-	if ((set = fopen("settings.bin","r+b")))
+	if ((principal.settings))
 	{
 		printf("Foi detectada que um arquivo de configuração anterior do servidor já foi criado, funcionando na pasta:");
 		breakline;
 
-		fread(&config,sizeof(settings),1,set);
+		rewind(principal.settings);
+		fread(&config,sizeof(settings),1,principal.settings);
 		printf("%s",config.dir);
 
 		breakline;
@@ -166,10 +171,7 @@ void setup()
 		breakline;
 		scanf("%d",&opcao);
 		if (opcao != 1)
-		{
-			fclose(set);
 			return;
-		}
 	}
 
 	printf("Digite o caminho completo para o diretório em que o servidor de e-mails irá funcionar: (Ex: C:\\E-Server\\\n");
@@ -180,15 +182,14 @@ void setup()
 	if (opcao == 1)
 	{
 		sprintf(config.dir,"%s",caminho);
-		rewind(set);
-		fwrite(&config,sizeof(settings),1,set);
+		rewind(principal.settings);
+		fwrite(&config,sizeof(settings),1,principal.settings);
 	}
 	else {
 		setup_server(caminho);
 		create_address_list(caminho);
+		create_tree_account(caminho);
 	}
-
-	fclose(set);
 
 	printf("Servidor configurado corretamente na pasta: %s",caminho);
 
@@ -199,25 +200,22 @@ void setup()
 
 void menu()
 {
-	FILE *set;
+	PRINCIPAL principal = open_server_files();
 	settings config;
 	int opcao=0;
-	if (!(set = fopen("settings.bin","r+b")))
+	if (!(principal.settings))
 	{
 		printf("Foi detectado que essa é a primeira abertura do E-Server v.2.0");
 		breakline;
 		printf("É necessário que seja feita a configuração inicial para funcionamento do programa");
 		breakline;
-		setup();
+		setup(principal);
+		principal = open_server_files();
 	}
-	else
-		fclose(set);
 
 	do {
-		if (!(set = fopen("settings.bin","r+b")))
-			error_m("Error at file opening");
-		fread(&config,sizeof(settings),1,set);
-		fclose(set);
+		rewind(principal.settings);
+		fread(&config,sizeof(settings),1,principal.settings);
 
 		printf("Selecione o que deseja fazer:"); breakline;
 		printf("[1] Criar conta de e-mail"); breakline;
@@ -229,13 +227,15 @@ void menu()
 		switch (opcao)
 		{
 			case 1: // 	Criar conta
-				criar_conta(config.dir);
+				criar_conta(&principal,config.dir);
 			break;
 			case 2:	//	Acessar uma conta
-				acessar_conta(config.dir);
+				acessar_conta(principal,config.dir);
 			break;
 			case 3:	//	Configurar
-				setup();
+				setup(principal);
+				close_server_files(principal);
+				principal = open_server_files();
 			break;
 
 			default:
@@ -246,16 +246,17 @@ void menu()
 
 	return;
 }
-void criar_conta(char *dir)
+void criar_conta(PRINCIPAL *principal,char *dir)
 {
 	char *user,*password;
+	formated_message("CRIAÇÃO DE CONTA DE USUÁRIO");
 	printf("Digite o nome de usuário:"); breakline;
 	user = ler('\n');
-	printf("Digite a senha para a conta"); breakline;
+	printf("Digite a senha para a conta:"); breakline;
 	password = ler('\n');
 
 	pause;
-	create_account(dir,user,password);
+	create_account(principal,dir,user,password);
 	printf("Conta de e-mail criada com sucesso!"); breakline;
 	printf("Agora você pode acessá-la pelo menu principal."); breakline;
 
@@ -264,10 +265,14 @@ void criar_conta(char *dir)
 	return;
 }
 
-void acessar_conta(char *dir)
+void acessar_conta(PRINCIPAL principal,char *dir)
 {
-	int c;
-
+	char *user,*password;
+	formated_message("ACESSAR UMA CONTA");
+	printf("Digite o nome de usuário:"); breakline;
+	user = ler('\n');
+	printf("Digite a senha para da conta:"); breakline;
+	password = ler('\n');
 	return;
 }
 
@@ -624,6 +629,40 @@ void close_account_files(ARQUIVOS arquivos)
 	fclose(arquivos.trash_tree_L_messages);
 	fclose(arquivos.trash_tree_L_subjects);
 	return;
+}
+
+PRINCIPAL open_server_files()
+{
+	PRINCIPAL principal;
+	settings set;
+	char *arquivo;
+
+	if ((principal.settings = fopen("settings.bin","rb+")))
+	{
+		fread(&set,sizeof(settings),1,principal.settings);
+		rewind(principal.settings);
+		arquivo=filepath_gen(set.dir,"addresses.bin");
+		if (!(principal.addresses = fopen(arquivo,"rb+")))
+			error_m("Error at file opening");
+		free(arquivo);
+		arquivo=filepath_gen(set.dir,"tree_CONTA.bin");
+		if (!(principal.tree_CONTA = fopen(arquivo,"rb+")))
+			error_m("Error at file opening");
+		free(arquivo);
+		arquivo=filepath_gen(set.dir,"tree_L_CONTA.bin");
+		if (!(principal.tree_L_CONTA = fopen(arquivo,"rb+")))
+			error_m("Error at file opening");
+		free(arquivo);
+	}
+	return principal;
+}
+
+void close_server_files(PRINCIPAL principal)
+{
+	fclose(principal.addresses);
+	fclose(principal.settings);
+	fclose(principal.tree_CONTA);
+	fclose(principal.tree_L_CONTA);
 }
 
 void formated_message(char *string){

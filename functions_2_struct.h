@@ -216,6 +216,14 @@ typedef struct
 
 }ARQUIVOS;
 
+typedef struct{
+	FILE *settings;
+	FILE *addresses;
+	FILE *tree_CONTA;
+	FILE *tree_L_CONTA;
+
+}PRINCIPAL;
+
 //ESCOPO DAS FUNÇÕES
 char* detecta_os();
 void ler_end(char *er);
@@ -227,8 +235,8 @@ char* dir_builder(char*dir,int account_number,char* file);
 char* filepath_gen(char *dir, char *file);
 char* merge_string(char *string1, char *string2);
 void create_address_list(char *dir);
-int add_address(char *dir,char *user,char *password);
-void remove_address(char *dir,int pos);
+int add_address(FILE *set, FILE *ad,char *user,char *password);
+void remove_address(FILE *set, FILE *ad,int pos);
 char* get_address(char *dir,int account_number);
 void setup_server(char *dir);
 void create_config(char *dir,int account_address);
@@ -391,32 +399,27 @@ void create_address_list(char *dir) //
 	char *dir_ad=filepath_gen(dir,"addresses.bin");		//	Gerando caminho para o arquivo
 
 	if(!(new=fopen(dir_ad,"wb")))	//	Criando arquivo
-		error_m("Error at file allocation");	//	Mensagem de erro se o arquivo não conseguir ser criado/subscrito
+		error_m("Error at file allocation - CAL");	//	Mensagem de erro se o arquivo não conseguir ser criado/subscrito
 	else
 	{
 		sprintf(&(ad.user[0]),"%d",-1);	//	Colocando "-1" na variável para indicar que ainda não há nenhum endereço
-		fwrite(&ad,sizeof(addresses),1,new);	//	Escrevendo no arquivo
+		fwrite(&ad,sizeof(CONTA),1,new);	//	Escrevendo no arquivo
 		fclose(new);	// 	Fechando arquivo
 	}
 
 	return;
 }
 
-int add_address(char *dir,char *user,char *password)
+int add_address(FILE *set, FILE *ad,char *user,char *password)
 {	//	Função para adicionar um endereço na Lista de Endereços
-	FILE *set,*ad;
-	char *dir_ad=filepath_gen(dir,"addresses.bin");
 	settings s;
 	CONTA ads;
 	int scroll;		//	Variáveis auxiliares
 	fpos_t c;
-	if(!(set=fopen("settings.bin","r+b")))				// Confirmando abertura dos arquivos de settings e addresses
-		error_m("Error at file opening");
-	if(!(ad=fopen(dir_ad,"r+b")))
-		error_m("Error at file opening");
 
-	fread(&s,sizeof(settings),1,set);	//	Lendo arquivo de configurações e armazenando na variável s
 	rewind(set);						//	Colocando a posição do fluxo de dados no inicio
+	fread(&s,sizeof(settings),1,set);	//	Lendo arquivo de configurações e armazenando na variável s
+
 	scroll=(s.next_address == -1)?s.num_addresses:s.next_address;	//	Definindo a posição em que o novo endereço será salvo no arquivo addresses.bin
 	printf("NEXT: %d\nNUM AD: %d",s.next_address,s.num_addresses);
 	fseek(ad,scroll*sizeof(CONTA),SEEK_SET);				//	Deslocando a posição do buffer no arquivo addresses.bin
@@ -432,33 +435,24 @@ int add_address(char *dir,char *user,char *password)
 	sprintf(ads.user,"%s",user);			//	Guardando usuário
 	sprintf(ads.password,"%s",user);			//	Guardando senha
 	s.num_addresses++;						//	Incrementando o número de endereços
+	rewind(set);						//	Colocando a posição do fluxo de dados no inicio
 	fwrite(&s,sizeof(settings),1,set);		//	Escrevendo alterações feitas nos arquivos
 	fwrite(&ads,sizeof(CONTA),1,ad);
-	fclose(set);							// Fechando arquivos
-	fclose(ad);
-
-	free(dir_ad);	// Liberando ponteiros
 
 	return scroll;
 }
 
-void remove_address(char *dir,int pos)
+void remove_address(FILE *set, FILE *ad,int pos)
 {	//	Função para remover um endereço da Lista de Endereços
-	FILE *set,*ad;
-	char *dir_ad=filepath_gen(dir,"addresses.bin");
 	settings s;
 	CONTA ads;
 	fpos_t c;
 
-	if(!(set=fopen("settings.bin","r+b")))
-		error_m("Error at file opening");
-	fread(&s,sizeof(settings),1,set);
 	rewind(set);
+	fread(&s,sizeof(settings),1,set);
+
 	if (pos < s.anum_address && pos >= 0)
 	{
-		if(!(ad=fopen(dir_ad,"r+b")))
-		error_m("Error at file opening");
-
 		fseek(ad,pos*sizeof(CONTA),SEEK_SET);
 		fgetpos(ad,&c);
 		fread(&ads,sizeof(CONTA),1,ad);
@@ -466,12 +460,10 @@ void remove_address(char *dir,int pos)
 		sprintf(&(ads.user[0]),"%d", s.next_address);
 		s.next_address=pos;
 		s.num_addresses--;
-		fwrite(&s,sizeof(settings),1,set);//escrevendo alterações feitas
 		fwrite(&ads,sizeof(CONTA),1,ad);
-		fclose(ad);
+		rewind(set);
+		fwrite(&s,sizeof(settings),1,set);//escrevendo alterações feitas
 	}
-	fclose(set);
-	free(dir_ad);
 
 	return;
 }
@@ -1296,7 +1288,7 @@ void add_key_tree(ARQUIVOS arquivos,FILE *tree, FILE *nodo_list,char *type,int k
 {	// Função para adicionar chaves na árvore
 	ARVOREB new;
 	NODO nnew;
-	int c=0,scroll,aux,aux2,aux3,cdn=1;
+	int c=0,scroll,aux,aux2,aux3,aux4,cdn=1;
 
 	rewind(tree);
 	fread(&new,sizeof(ARVOREB),1,tree);
@@ -1337,23 +1329,21 @@ void add_key_tree(ARQUIVOS arquivos,FILE *tree, FILE *nodo_list,char *type,int k
 		if(!nnew.ne_folha)//Caso básico
 		{
 			aux=nnew.chaves[c];
-			aux3=c;
-			nnew.chaves[c++] = key;
+			nnew.chaves[c] = key;
+
+			aux3=nnew.addresses[c];
+			nnew.addresses[c++] = add_LISTA_ENC(arquivos.config,arquivos.lista_enc,-1,SUB_NODO);//MESMA COISA AQUI
 			for(;c<nnew.num_chaves;c++)
 			{
 				aux2=nnew.chaves[c];
 				nnew.chaves[c]=aux;
 				aux=aux2;
+
+				aux4=nnew.addresses[c];
+				nnew.addresses[c]=aux3;
+				aux3=aux4;
 			}
-			c=aux3;
-			aux=nnew.addresses[c];
-			nnew.addresses[c++] = add_LISTA_ENC(arquivos.config,arquivos.lista_enc,-1,SUB_NODO);//MESMA COISA AQUI
-			for(;c<nnew.num_chaves;c++)
-			{
-				aux2=nnew.addresses[c];
-				nnew.addresses[c]=aux;
-				aux=aux2;
-			}
+
 			nnew.num_chaves++;
 			fseek(nodo_list,sizeof(NODO)*scroll,SEEK_SET);
 			cdn=0;
@@ -1528,13 +1518,13 @@ void create_tree_account(char *dir)
 	ARVOREB avb;
 	NODO nodo;
 
-	address = merge_string(dir,"tree_CONTA.bin");
-	sub_address = merge_string(dir,"tree_L_CONTA.bin");
+	address = merge_string(dir,"/tree_CONTA.bin");
+	sub_address = merge_string(dir,"/tree_L_CONTA.bin");
 
 	if (!(tree = fopen(address,"wb")))
-		error_m("Error at file allocation");
+		error_m("Error at file allocation - CTA");
 	if (!(nodo_list = fopen(sub_address,"wb")))
-		error_m("Error at file allocation");
+		error_m("Error at file allocation - CTA");
 	avb.num_NODOS=0;
 	avb.num_SUB_NODOS=0;
 	avb.raiz=-1;
@@ -1555,23 +1545,14 @@ void create_tree_account(char *dir)
 
 	return;
 }
-void add_CONTA_tree(char *dir,int account_address)
+void add_CONTA_tree(FILE *tree, FILE *nodo_list,int account_address)
 {	// Função para adicionar chaves na árvore
-	char *address, *sub_address, *a, *sa;
-	FILE *tree, *nodo_list;
 	ARVOREB avb;
 	NODO nodo;
-	int c=0,scroll,aux,aux2,aux3,cdn=1;
+	int c=0,scroll,aux,aux2,cdn=1;
 
-	address = merge_string(dir,"tree_CONTA.bin");
-	sub_address = merge_string(dir,"tree_L_CONTA.bin");
-
-	if (!(tree = fopen(address,"r+b")))
-		error_m("Error at file opening");
-	if (!(nodo_list = fopen(sub_address,"r+b")))
-		error_m("Error at file opening");
-	fread(&avb,sizeof(ARVOREB),1,tree);
 	rewind(tree);
+	fread(&avb,sizeof(ARVOREB),1,tree);
 
 	scroll=avb.raiz;
 	if(avb.raiz==-1)
@@ -1606,24 +1587,16 @@ void add_CONTA_tree(char *dir,int account_address)
 			fread(&nodo,sizeof(NODO),1,nodo_list);
 		}
 
-		for(c=0;c<nodo.num_chaves && 1 > compara_infos(dir,0,"addresses.bin",nodo.chaves[c],account_address);c++);
+		//for(c=0;c<nodo.num_chaves && 1 > compara_infos(dir,0,"addresses",nodo.chaves[c],account_address);c++);
 		if(!nodo.ne_folha)//Caso básico
 		{
 			aux=nodo.chaves[c];
-			aux3=c;
 			nodo.chaves[c] = account_address;
 			nodo.addresses[c++] = account_address;
 			for(;c<nodo.num_chaves;c++)
 			{
 				aux2=nodo.chaves[c];
 				nodo.chaves[c]=aux;
-				aux=aux2;
-			}
-			c=aux3;
-			aux=nodo.addresses[c];
-			for(;c<nodo.num_chaves;c++)
-			{
-				aux2=nodo.addresses[c];
 				nodo.addresses[c]=aux;
 				aux=aux2;
 			}
@@ -1637,16 +1610,9 @@ void add_CONTA_tree(char *dir,int account_address)
 
 	}
 	avb.num_SUB_NODOS++;
+	rewind(tree);
 	fwrite(&avb,sizeof(ARVOREB),1,tree);
 	fwrite(&nodo,sizeof(NODO),1,nodo_list);
-
-	fclose(tree);
-	fclose(nodo_list);
-
-	free(a);
-	free(sa);
-	free(address);
-	free(sub_address);
 
 	return;
 }
@@ -1703,8 +1669,17 @@ int compara_infos(ARQUIVOS arquivos, char *tipo,int a,int b)
 		fseek(arquivos.addresses,sizeof(CONTA)*b,SEEK_SET);
 		fread(&B,sizeof(CONTA),1,arquivos.addresses);
 
-		//if (account_address)
-			return (strcmp(A.password,B.password));
+		return (strcmp(A.user,B.user));
+	}
+	else
+	if (!strcmp(tipo,"password"))
+	{
+		CONTA A,B;
+		fseek(arquivos.addresses,sizeof(CONTA)*a,SEEK_SET);
+		fread(&A,sizeof(CONTA),1,arquivos.addresses);
+		fseek(arquivos.addresses,sizeof(CONTA)*b,SEEK_SET);
+		fread(&B,sizeof(CONTA),1,arquivos.addresses);
+
 		return (strcmp(A.user,B.user));
 	}
 
