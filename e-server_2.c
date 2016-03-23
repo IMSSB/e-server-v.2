@@ -11,10 +11,10 @@ void testar_estrutura(char *er)
 	LISTA lista;
 	NODO nodo;
 	ARVOREB avb;
-	new = fopen(dir_builder(1,er,"tree_L_subjects.bin"),"rb");
+	new = fopen(dir_builder(er,1,"tree_L_subjects.bin"),"rb");
 	fseek(new,sizeof(NODO)*3,SEEK_SET);
 	fread(&nodo,sizeof(NODO),1,new);
-	tree = fopen(dir_builder(1,er,"tree_subjects.bin"),"rb");
+	tree = fopen(dir_builder(er,1,"tree_subjects.bin"),"rb");
 	fread(&avb,sizeof(ARVOREB),1,tree);
 	print_nodo(nodo);
 	print_arvoreb(avb);

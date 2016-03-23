@@ -10,12 +10,14 @@
 #include "functions_2_struct.h"
 
 void create_account(char *dir,char *user,char *password);
-void print_email(int account_address,char *dir,int email_pos);
+void print_email(ARQUIVOS arquivos,int email_pos);
 void print_horario(HORARIO data);
 void setup();
 void menu();
 void criar_conta(char *dir);
 void acessar_conta(char *dir);
+ARQUIVOS open_account_files(char *dir, int account_address);
+void close_account_files(ARQUIVOS arquivos);
 void formated_message(char *string);
 
 void create_account(char *dir,char *user,char *password)
@@ -25,19 +27,19 @@ void create_account(char *dir,char *user,char *password)
 
 	create_config(dir,account_address);
 
-	create_LISTA_ENC(account_address,dir);
-	create_email_list(account_address,dir);
-	create_subject_list(account_address,dir);
-	create_word_list(account_address,dir);
-	create_text_list(account_address,dir);
-	create_horario_list(account_address,dir);
+	create_LISTA_ENC(dir,account_address);
+	create_email_list(dir,account_address);
+	create_subject_list(dir,account_address);
+	create_word_list(dir,account_address);
+	create_text_list(dir,account_address);
+	create_horario_list(dir,account_address);
 
 	create_tree_type(dir,account_address,"","subjects.bin");
 	create_tree_type(dir,account_address,"","messages.bin");
 	create_tree_type(dir,account_address,"","HORARIO.bin");
 	create_tree_type(dir,account_address,"","PALAVRA.bin");
 
-	folder = dir_builder(account_address,dir,"inbox/");
+	folder = dir_builder(dir,account_address,"inbox/");
 	make_dir(folder);
 	create_tree_type(dir,account_address,"inbox/","subjects.bin");
 	create_tree_type(dir,account_address,"inbox/","messages.bin");
@@ -45,7 +47,7 @@ void create_account(char *dir,char *user,char *password)
 	create_tree_type(dir,account_address,"inbox/","PALAVRA.bin");
 	free(folder);
 
-	folder = dir_builder(account_address,dir,"outbox/");
+	folder = dir_builder(dir,account_address,"outbox/");
 	make_dir(folder);
 	create_tree_type(dir,account_address,"outbox/","subjects.bin");
 	create_tree_type(dir,account_address,"outbox/","messages.bin");
@@ -53,7 +55,7 @@ void create_account(char *dir,char *user,char *password)
 	create_tree_type(dir,account_address,"outbox/","PALAVRA.bin");
 	free(folder);
 
-	folder = dir_builder(account_address,dir,"read/");
+	folder = dir_builder(dir,account_address,"read/");
 	make_dir(folder);
 	create_tree_type(dir,account_address,"read/","subjects.bin");
 	create_tree_type(dir,account_address,"read/","messages.bin");
@@ -61,7 +63,7 @@ void create_account(char *dir,char *user,char *password)
 	create_tree_type(dir,account_address,"read/","PALAVRA.bin");
 	free(folder);
 
-	folder = dir_builder(account_address,dir,"trash/");
+	folder = dir_builder(dir,account_address,"trash/");
 	make_dir(folder);
 	create_tree_type(dir,account_address,"trash/","subjects.bin");
 	create_tree_type(dir,account_address,"trash/","messages.bin");
@@ -69,7 +71,7 @@ void create_account(char *dir,char *user,char *password)
 	create_tree_type(dir,account_address,"trash/","PALAVRA.bin");
 	free(folder);
 
-	folder = dir_builder(account_address,dir,"sent/");
+	folder = dir_builder(dir,account_address,"sent/");
 	make_dir(folder);
 	create_tree_type(dir,account_address,"sent/","subjects.bin");
 	create_tree_type(dir,account_address,"sent/","messages.bin");
@@ -80,56 +82,30 @@ void create_account(char *dir,char *user,char *password)
 	return;
 }
 
-void print_email(int account_address,char *dir,int email_pos)
+void print_email(ARQUIVOS arquivos,int email_pos)
 {
-	char *address=dir_builder(account_address,dir,"email_list.bin");
-	FILE *email_list,*to_print; 	// 	Arquivos que serão abertos
 	SUB_NODO email; 				//	Manipulação de email
 	messages mensagem;
 	subjects assunto;
 	HORARIO data;
 	addresses remetente, destinatario;
 
-	if (!(email_list = fopen(address,"rb")))
-		error_m("Error at file opening");
-	fseek(email_list,sizeof(SUB_NODO)*email_pos,SEEK_SET);
-	fread(&email,sizeof(SUB_NODO),1,email_list);
-	fclose(email_list);
-	free(address);
+	fseek(arquivos.email_list,sizeof(SUB_NODO)*email_pos,SEEK_SET);
+	fread(&email,sizeof(SUB_NODO),1,arquivos.email_list);
 
-	address=dir_builder(account_address,dir,"text_list.bin");
-	if (!(to_print = fopen(address,"rb")))
-		error_m("Error at file opening");
-	fseek(to_print,sizeof(messages)*email.MSG,SEEK_SET);
-	fread(&mensagem,sizeof(messages),1,to_print);
-	fclose(to_print);
-	free(address);
+	fseek(arquivos.text_list,sizeof(messages)*email.MSG,SEEK_SET);
+	fread(&mensagem,sizeof(messages),1,arquivos.text_list);
 
-	address=dir_builder(account_address,dir,"subject_list.bin");
-	if (!(to_print = fopen(address,"rb")))
-		error_m("Error at file opening");
-	fseek(to_print,sizeof(subjects)*email.assunto,SEEK_SET);
-	fread(&assunto,sizeof(subjects),1,to_print);
-	fclose(to_print);
-	free(address);
+	fseek(arquivos.subject_list,sizeof(subjects)*email.assunto,SEEK_SET);
+	fread(&assunto,sizeof(subjects),1,arquivos.subject_list);
 
-	address=dir_builder(account_address,dir,"horario_list.bin");
-	if (!(to_print = fopen(address,"rb")))
-		error_m("Error at file opening");
-	fseek(to_print,sizeof(HORARIO)*email.data,SEEK_SET);
-	fread(&data,sizeof(HORARIO),1,to_print);
-	fclose(to_print);
-	free(address);
+	fseek(arquivos.horario_list,sizeof(HORARIO)*email.data,SEEK_SET);
+	fread(&data,sizeof(HORARIO),1,arquivos.horario_list);
 
-	address=filepath_gen(dir,"addresses.bin");
-	if (!(to_print = fopen(address,"rb")))
-		error_m("Error at file opening");
-	fseek(to_print,sizeof(addresses)*email.remetente,SEEK_SET);
-	fread(&remetente,sizeof(addresses),1,to_print);
-	fseek(to_print,sizeof(addresses)*email.destinatario,SEEK_SET);
-	fread(&destinatario,sizeof(addresses),1,to_print);
-	fclose(to_print);
-	free(address);
+	fseek(arquivos.addresses,sizeof(addresses)*email.remetente,SEEK_SET);
+	fread(&remetente,sizeof(addresses),1,arquivos.addresses);
+	fseek(arquivos.addresses,sizeof(addresses)*email.destinatario,SEEK_SET);
+	fread(&destinatario,sizeof(addresses),1,arquivos.addresses);
 
 	breakline;
 	print_horario(data);
@@ -292,6 +268,361 @@ void acessar_conta(char *dir)
 {
 	int c;
 
+	return;
+}
+
+ARQUIVOS open_account_files(char *dir, int account_address)
+{
+	ARQUIVOS arquivos;
+	char *arquivo;
+	//	Arquivos Gerais
+	arquivo=filepath_gen(dir,"addresses.bin");
+	if (!(arquivos.addresses = fopen(arquivo,"rb+")))
+		error_m("Error at file opening");
+	free(arquivo);
+
+	arquivo=dir_builder(dir,account_address,"config.bin");
+	if (!(arquivos.config = fopen(arquivo,"rb+")))
+		error_m("Error at file opening");
+	free(arquivo);
+
+	arquivo=dir_builder(dir,account_address,"email_list.bin");
+	if (!(arquivos.email_list = fopen(arquivo,"rb+")))
+		error_m("Error at file opening");
+	free(arquivo);
+
+	arquivo=dir_builder(dir,account_address,"horario_list.bin");
+	if (!(arquivos.horario_list = fopen(arquivo,"rb+")))
+		error_m("Error at file opening");
+	free(arquivo);
+
+	arquivo=dir_builder(dir,account_address,"subject_list.bin");
+	if (!(arquivos.subject_list = fopen(arquivo,"rb+")))
+		error_m("Error at file opening");
+	free(arquivo);
+
+	arquivo=dir_builder(dir,account_address,"text_list.bin");
+	if (!(arquivos.text_list = fopen(arquivo,"rb+")))
+		error_m("Error at file opening");
+	free(arquivo);
+
+	arquivo=dir_builder(dir,account_address,"word_list.bin");
+	if (!(arquivos.word_list = fopen(arquivo,"rb+")))
+		error_m("Error at file opening");
+	free(arquivo);
+
+	arquivo=dir_builder(dir,account_address,"lista_enc.bin");
+	if (!(arquivos.lista_enc = fopen(arquivo,"rb+")))
+		error_m("Error at file opening");
+	free(arquivo);
+
+	//	Árvores Gerais
+	arquivo=dir_builder(dir,account_address,"tree_HORARIO.bin");
+	if (!(arquivos.tree_HORARIO = fopen(arquivo,"rb+")))
+		error_m("Error at file opening");
+	free(arquivo);
+
+	arquivo=dir_builder(dir,account_address,"tree_messages.bin");
+	if (!(arquivos.tree_messages = fopen(arquivo,"rb+")))
+		error_m("Error at file opening");
+	free(arquivo);
+
+	arquivo=dir_builder(dir,account_address,"tree_PALAVRA.bin");
+	if (!(arquivos.tree_PALAVRA = fopen(arquivo,"rb+")))
+		error_m("Error at file opening");
+	free(arquivo);
+
+	arquivo=dir_builder(dir,account_address,"tree_subjects.bin");
+	if (!(arquivos.tree_subjects = fopen(arquivo,"rb+")))
+		error_m("Error at file opening");
+	free(arquivo);
+
+	arquivo=dir_builder(dir,account_address,"tree_L_HORARIO.bin");
+	if (!(arquivos.tree_L_HORARIO = fopen(arquivo,"rb+")))
+		error_m("Error at file opening");
+	free(arquivo);
+
+	arquivo=dir_builder(dir,account_address,"tree_L_messages.bin");
+	if (!(arquivos.tree_L_messages = fopen(arquivo,"rb+")))
+		error_m("Error at file opening");
+	free(arquivo);
+
+	arquivo=dir_builder(dir,account_address,"tree_L_PALAVRA.bin");
+	if (!(arquivos.tree_L_PALAVRA = fopen(arquivo,"rb+")))
+		error_m("Error at file opening");
+	free(arquivo);
+
+	arquivo=dir_builder(dir,account_address,"tree_L_subjects.bin");
+	if (!(arquivos.tree_L_subjects = fopen(arquivo,"rb+")))
+		error_m("Error at file opening");
+	free(arquivo);
+
+	//	Caixas de Emails
+	//	Árvores de Inbox
+	arquivo=dir_builder(dir,account_address,"inbox/tree_HORARIO.bin");
+	if (!(arquivos.inbox_tree_HORARIO = fopen(arquivo,"rb+")))
+		error_m("Error at file opening");
+	free(arquivo);
+
+	arquivo=dir_builder(dir,account_address,"inbox/tree_messages.bin");
+	if (!(arquivos.inbox_tree_messages = fopen(arquivo,"rb+")))
+		error_m("Error at file opening");
+	free(arquivo);
+
+	arquivo=dir_builder(dir,account_address,"inbox/tree_PALAVRA.bin");
+	if (!(arquivos.inbox_tree_PALAVRA = fopen(arquivo,"rb+")))
+		error_m("Error at file opening");
+	free(arquivo);
+
+	arquivo=dir_builder(dir,account_address,"inbox/tree_subjects.bin");
+	if (!(arquivos.inbox_tree_subjects = fopen(arquivo,"rb+")))
+		error_m("Error at file opening");
+	free(arquivo);
+
+	arquivo=dir_builder(dir,account_address,"inbox/tree_L_HORARIO.bin");
+	if (!(arquivos.inbox_tree_L_HORARIO = fopen(arquivo,"rb+")))
+		error_m("Error at file opening");
+	free(arquivo);
+
+	arquivo=dir_builder(dir,account_address,"inbox/tree_L_messages.bin");
+	if (!(arquivos.inbox_tree_L_messages = fopen(arquivo,"rb+")))
+		error_m("Error at file opening");
+	free(arquivo);
+
+	arquivo=dir_builder(dir,account_address,"inbox/tree_L_PALAVRA.bin");
+	if (!(arquivos.inbox_tree_L_PALAVRA = fopen(arquivo,"rb+")))
+		error_m("Error at file opening");
+	free(arquivo);
+
+	arquivo=dir_builder(dir,account_address,"inbox/tree_L_subjects.bin");
+	if (!(arquivos.inbox_tree_L_subjects = fopen(arquivo,"rb+")))
+		error_m("Error at file opening");
+	free(arquivo);
+
+	//	Árvores de Outbox
+	arquivo=dir_builder(dir,account_address,"outbox/tree_HORARIO.bin");
+	if (!(arquivos.outbox_tree_HORARIO = fopen(arquivo,"rb+")))
+		error_m("Error at file opening");
+	free(arquivo);
+
+	arquivo=dir_builder(dir,account_address,"outbox/tree_messages.bin");
+	if (!(arquivos.outbox_tree_messages = fopen(arquivo,"rb+")))
+		error_m("Error at file opening");
+	free(arquivo);
+
+	arquivo=dir_builder(dir,account_address,"outbox/tree_PALAVRA.bin");
+	if (!(arquivos.outbox_tree_PALAVRA = fopen(arquivo,"rb+")))
+		error_m("Error at file opening");
+	free(arquivo);
+
+	arquivo=dir_builder(dir,account_address,"outbox/tree_subjects.bin");
+	if (!(arquivos.outbox_tree_subjects = fopen(arquivo,"rb+")))
+		error_m("Error at file opening");
+	free(arquivo);
+
+	arquivo=dir_builder(dir,account_address,"outbox/tree_L_HORARIO.bin");
+	if (!(arquivos.outbox_tree_L_HORARIO = fopen(arquivo,"rb+")))
+		error_m("Error at file opening");
+	free(arquivo);
+
+	arquivo=dir_builder(dir,account_address,"outbox/tree_L_messages.bin");
+	if (!(arquivos.outbox_tree_L_messages = fopen(arquivo,"rb+")))
+		error_m("Error at file opening");
+	free(arquivo);
+
+	arquivo=dir_builder(dir,account_address,"outbox/tree_L_PALAVRA.bin");
+	if (!(arquivos.outbox_tree_L_PALAVRA = fopen(arquivo,"rb+")))
+		error_m("Error at file opening");
+	free(arquivo);
+
+	arquivo=dir_builder(dir,account_address,"outbox/tree_L_subjects.bin");
+	if (!(arquivos.outbox_tree_L_subjects = fopen(arquivo,"rb+")))
+		error_m("Error at file opening");
+	free(arquivo);
+
+	//	Árvores de Read
+	arquivo=dir_builder(dir,account_address,"read/tree_HORARIO.bin");
+	if (!(arquivos.read_tree_HORARIO = fopen(arquivo,"rb+")))
+		error_m("Error at file opening");
+	free(arquivo);
+
+	arquivo=dir_builder(dir,account_address,"read/tree_messages.bin");
+	if (!(arquivos.read_tree_messages = fopen(arquivo,"rb+")))
+		error_m("Error at file opening");
+	free(arquivo);
+
+	arquivo=dir_builder(dir,account_address,"read/tree_PALAVRA.bin");
+	if (!(arquivos.read_tree_PALAVRA = fopen(arquivo,"rb+")))
+		error_m("Error at file opening");
+	free(arquivo);
+
+	arquivo=dir_builder(dir,account_address,"read/tree_subjects.bin");
+	if (!(arquivos.read_tree_subjects = fopen(arquivo,"rb+")))
+		error_m("Error at file opening");
+	free(arquivo);
+
+	arquivo=dir_builder(dir,account_address,"read/tree_L_HORARIO.bin");
+	if (!(arquivos.read_tree_L_HORARIO = fopen(arquivo,"rb+")))
+		error_m("Error at file opening");
+	free(arquivo);
+
+	arquivo=dir_builder(dir,account_address,"read/tree_L_messages.bin");
+	if (!(arquivos.read_tree_L_messages = fopen(arquivo,"rb+")))
+		error_m("Error at file opening");
+	free(arquivo);
+
+	arquivo=dir_builder(dir,account_address,"read/tree_L_PALAVRA.bin");
+	if (!(arquivos.read_tree_L_PALAVRA = fopen(arquivo,"rb+")))
+		error_m("Error at file opening");
+	free(arquivo);
+
+	arquivo=dir_builder(dir,account_address,"read/tree_L_subjects.bin");
+	if (!(arquivos.read_tree_L_subjects = fopen(arquivo,"rb+")))
+		error_m("Error at file opening");
+	free(arquivo);
+
+	//	Árvores de Sent
+	arquivo=dir_builder(dir,account_address,"sent/tree_HORARIO.bin");
+	if (!(arquivos.sent_tree_HORARIO = fopen(arquivo,"rb+")))
+		error_m("Error at file opening");
+	free(arquivo);
+
+	arquivo=dir_builder(dir,account_address,"sent/tree_messages.bin");
+	if (!(arquivos.sent_tree_messages = fopen(arquivo,"rb+")))
+		error_m("Error at file opening");
+	free(arquivo);
+
+	arquivo=dir_builder(dir,account_address,"sent/tree_PALAVRA.bin");
+	if (!(arquivos.sent_tree_PALAVRA = fopen(arquivo,"rb+")))
+		error_m("Error at file opening");
+	free(arquivo);
+
+	arquivo=dir_builder(dir,account_address,"sent/tree_subjects.bin");
+	if (!(arquivos.sent_tree_subjects = fopen(arquivo,"rb+")))
+		error_m("Error at file opening");
+	free(arquivo);
+
+	arquivo=dir_builder(dir,account_address,"sent/tree_L_HORARIO.bin");
+	if (!(arquivos.sent_tree_L_HORARIO = fopen(arquivo,"rb+")))
+		error_m("Error at file opening");
+	free(arquivo);
+
+	arquivo=dir_builder(dir,account_address,"sent/tree_L_messages.bin");
+	if (!(arquivos.sent_tree_L_messages = fopen(arquivo,"rb+")))
+		error_m("Error at file opening");
+	free(arquivo);
+
+	arquivo=dir_builder(dir,account_address,"sent/tree_L_PALAVRA.bin");
+	if (!(arquivos.sent_tree_L_PALAVRA = fopen(arquivo,"rb+")))
+		error_m("Error at file opening");
+	free(arquivo);
+
+	arquivo=dir_builder(dir,account_address,"sent/tree_L_subjects.bin");
+	if (!(arquivos.sent_tree_L_subjects = fopen(arquivo,"rb+")))
+		error_m("Error at file opening");
+	free(arquivo);
+
+	//	Árvores de Trash
+	arquivo=dir_builder(dir,account_address,"trash/tree_HORARIO.bin");
+	if (!(arquivos.trash_tree_HORARIO = fopen(arquivo,"rb+")))
+		error_m("Error at file opening");
+	free(arquivo);
+
+	arquivo=dir_builder(dir,account_address,"trash/tree_messages.bin");
+	if (!(arquivos.trash_tree_messages = fopen(arquivo,"rb+")))
+		error_m("Error at file opening");
+	free(arquivo);
+
+	arquivo=dir_builder(dir,account_address,"trash/tree_PALAVRA.bin");
+	if (!(arquivos.trash_tree_PALAVRA = fopen(arquivo,"rb+")))
+		error_m("Error at file opening");
+	free(arquivo);
+
+	arquivo=dir_builder(dir,account_address,"trash/tree_subjects.bin");
+	if (!(arquivos.trash_tree_subjects = fopen(arquivo,"rb+")))
+		error_m("Error at file opening");
+	free(arquivo);
+
+	arquivo=dir_builder(dir,account_address,"trash/tree_L_HORARIO.bin");
+	if (!(arquivos.trash_tree_L_HORARIO = fopen(arquivo,"rb+")))
+		error_m("Error at file opening");
+	free(arquivo);
+
+	arquivo=dir_builder(dir,account_address,"trash/tree_L_messages.bin");
+	if (!(arquivos.trash_tree_L_messages = fopen(arquivo,"rb+")))
+		error_m("Error at file opening");
+	free(arquivo);
+
+	arquivo=dir_builder(dir,account_address,"trash/tree_L_PALAVRA.bin");
+	if (!(arquivos.trash_tree_L_PALAVRA = fopen(arquivo,"rb+")))
+		error_m("Error at file opening");
+	free(arquivo);
+
+	arquivo=dir_builder(dir,account_address,"trash/tree_L_subjects.bin");
+	if (!(arquivos.trash_tree_L_subjects = fopen(arquivo,"rb+")))
+		error_m("Error at file opening");
+	free(arquivo);
+
+	return arquivos;
+}
+
+void close_account_files(ARQUIVOS arquivos)
+{
+	fclose(arquivos.config);
+	fclose(arquivos.email_list);
+	fclose(arquivos.horario_list);
+	fclose(arquivos.text_list);
+	fclose(arquivos.subject_list);
+	fclose(arquivos.word_list);
+	fclose(arquivos.lista_enc);
+	fclose(arquivos.tree_HORARIO);
+	fclose(arquivos.tree_PALAVRA);
+	fclose(arquivos.tree_messages);
+	fclose(arquivos.tree_subjects);
+	fclose(arquivos.tree_L_HORARIO);
+	fclose(arquivos.tree_L_PALAVRA);
+	fclose(arquivos.tree_L_messages);
+	fclose(arquivos.tree_L_subjects);
+	fclose(arquivos.inbox_tree_HORARIO);
+	fclose(arquivos.inbox_tree_PALAVRA);
+	fclose(arquivos.inbox_tree_messages);
+	fclose(arquivos.inbox_tree_subjects);
+	fclose(arquivos.inbox_tree_L_HORARIO);
+	fclose(arquivos.inbox_tree_L_PALAVRA);
+	fclose(arquivos.inbox_tree_L_messages);
+	fclose(arquivos.inbox_tree_L_subjects);
+	fclose(arquivos.outbox_tree_HORARIO);
+	fclose(arquivos.outbox_tree_PALAVRA);
+	fclose(arquivos.outbox_tree_messages);
+	fclose(arquivos.outbox_tree_subjects);
+	fclose(arquivos.outbox_tree_L_HORARIO);
+	fclose(arquivos.outbox_tree_L_PALAVRA);
+	fclose(arquivos.outbox_tree_L_messages);
+	fclose(arquivos.outbox_tree_L_subjects);
+	fclose(arquivos.read_tree_HORARIO);
+	fclose(arquivos.read_tree_PALAVRA);
+	fclose(arquivos.read_tree_messages);
+	fclose(arquivos.read_tree_subjects);
+	fclose(arquivos.read_tree_L_HORARIO);
+	fclose(arquivos.read_tree_L_PALAVRA);
+	fclose(arquivos.read_tree_L_messages);
+	fclose(arquivos.read_tree_L_subjects);
+	fclose(arquivos.sent_tree_HORARIO);
+	fclose(arquivos.sent_tree_PALAVRA);
+	fclose(arquivos.sent_tree_messages);
+	fclose(arquivos.sent_tree_subjects);
+	fclose(arquivos.sent_tree_L_HORARIO);
+	fclose(arquivos.sent_tree_L_PALAVRA);
+	fclose(arquivos.sent_tree_L_messages);
+	fclose(arquivos.sent_tree_L_subjects);
+	fclose(arquivos.trash_tree_HORARIO);
+	fclose(arquivos.trash_tree_PALAVRA);
+	fclose(arquivos.trash_tree_messages);
+	fclose(arquivos.trash_tree_subjects);
+	fclose(arquivos.trash_tree_L_HORARIO);
+	fclose(arquivos.trash_tree_L_PALAVRA);
+	fclose(arquivos.trash_tree_L_messages);
+	fclose(arquivos.trash_tree_L_subjects);
 	return;
 }
 
