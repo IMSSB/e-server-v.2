@@ -88,6 +88,34 @@ void create_account(PRINCIPAL *principal,char *dir,char *user,char *password)
 
 	return;
 }
+void print_email_header(ARQUIVOS arquivos,int email_pos)
+{
+	SUB_NODO email; 				//	Manipulação de email
+	subjects assunto;
+	HORARIO data;
+	addresses remetente, destinatario;
+
+	fseek(arquivos.email_list,sizeof(SUB_NODO)*email_pos,SEEK_SET);
+	fread(&email,sizeof(SUB_NODO),1,arquivos.email_list);
+
+	fseek(arquivos.subject_list,sizeof(subjects)*email.assunto,SEEK_SET);
+	fread(&assunto,sizeof(subjects),1,arquivos.subject_list);
+
+	fseek(arquivos.horario_list,sizeof(HORARIO)*email.data,SEEK_SET);
+	fread(&data,sizeof(HORARIO),1,arquivos.horario_list);
+
+	fseek(arquivos.addresses,sizeof(addresses)*email.remetente,SEEK_SET);
+	fread(&remetente,sizeof(addresses),1,arquivos.addresses);
+	fseek(arquivos.addresses,sizeof(addresses)*email.destinatario,SEEK_SET);
+	fread(&destinatario,sizeof(addresses),1,arquivos.addresses);
+
+	printf("De: %s",remetente.address); breakline;
+	printf("Para: %s",destinatario.address); breakline;
+	printf("%s   ",assunto.subject);
+	print_horario(data); breakline;
+
+
+}
 
 void print_email(ARQUIVOS arquivos,int email_pos)
 {
@@ -272,24 +300,22 @@ void criar_conta(PRINCIPAL *principal,char *dir)
 
 void acessar_conta(PRINCIPAL *principal,char *dir)
 {
-	char *user,*password=NULL,*t;
+	char *user,*password=(char *)calloc(sizeof(char),1),*t;
 	int temp, conta, confirmacao;
 	do {
 		formated_message("ACESSAR UMA CONTA");
 		printf("Digite o nome de usuário:"); breakline;
 		user = ler('\n');
-		printf("\nBugou aqui\n\n\n");
 		temp = add_address(principal->settings,principal->addresses,user,password);
 
-		printf("\nBugou lá\n\n\n");
 		conta = busca_CONTA_tree(principal->addresses,principal->tree_CONTA, principal->tree_L_CONTA,temp);
 
-		printf("\nBugou culá\n\n\n");
 		if (conta == -1)
 			printf("A conta de email não foi localizada, por favor tente novamente com um email válido.\n");
 		pause;
 		cls;
 		remove_address(principal->settings,principal->addresses,temp);
+		free(password);
 	} while(conta == -1);
 	do {
 		printf("Digite a senha da conta:"); breakline;
@@ -367,8 +393,20 @@ void access_inbox(ARQUIVOS arquivos)
 
 }
 
-void list_email_by_tree(ARQUIVOS arquivos,FILE *tree)
+void list_email_decreasing(ARQUIVOS arquivos,FILE *tree,FILE *nodo_list,int pos)
 {	//	FUNÇÃO PARA IMPRIMIR LISTA DE EMAILS COM ORGANIZAÇÃO A PARTIR DE UMA ÁRVORE
+	ARVOREB avb;
+	NODO nodo;
+	fseek(nodo_list,sizeof(NODO)*pos,SEEK_SET);
+	fread(&nodo,sizeof(NODO),1,nodo_list);
+	if (nodo.ne_folha)
+	{
+		list_email_decreasing(arquivos,tree,nodo_list,nodo.filhos[nodo.num_chaves+1]);
+	}
+	else
+	{
+		print_email_header();
+	}
 
 }
 

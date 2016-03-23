@@ -419,11 +419,12 @@ int add_address(FILE *set, FILE *ad,char *user,char *password)
 	int scroll;		//	Variáveis auxiliares
 	fpos_t c;
 
+	printf("---- #1");
 	rewind(set);						//	Colocando a posição do fluxo de dados no inicio
 	fread(&s,sizeof(settings),1,set);	//	Lendo arquivo de configurações e armazenando na variável s
-
+	printf("---- #2");
 	scroll=(s.next_address == -1)?s.num_addresses:s.next_address;	//	Definindo a posição em que o novo endereço será salvo no arquivo addresses.bin
-
+	printf("---- #3");
 	fseek(ad,scroll*sizeof(CONTA),SEEK_SET);				//	Deslocando a posição do buffer no arquivo addresses.bin
 	if(s.next_address!=-1)										//	caso haja blocos não utilizados a serem subscritos
 	{
@@ -434,13 +435,14 @@ int add_address(FILE *set, FILE *ad,char *user,char *password)
 	}
 	else
 		s.anum_address++;
+	printf("---- #4");
 	sprintf(ads.user,"%s",user);			//	Guardando usuário
 	sprintf(ads.password,"%s",password);			//	Guardando senha
 	s.num_addresses++;						//	Incrementando o número de endereços
 	rewind(set);						//	Colocando a posição do fluxo de dados no inicio
 	fwrite(&s,sizeof(settings),1,set);		//	Escrevendo alterações feitas nos arquivos
 	fwrite(&ads,sizeof(CONTA),1,ad);
-
+	printf("---- #5");
 	return scroll;
 }
 
@@ -1239,8 +1241,9 @@ int merge_nodo(FILE *tree,FILE *nodo_list,int pai,int scroll)
 			fseek(nodo_list,f1,SEEK_SET);
 			fread(&son2,sizeof(NODO),1,nodo_list);
 		}
-			son1.chaves[son1.num_chaves]=pain.chaves[scroll];//Talvez tenha que fazer um deslocamento em alguns casos disso (AFF)
-			son1.addresses[son1.num_chaves++]=pain.addresses[scroll];
+
+			son1.chaves[(int)son1.num_chaves]=pain.chaves[scroll];//Talvez tenha que fazer um deslocamento em alguns casos disso (AFF)
+			son1.addresses[(int)son1.num_chaves++]=pain.addresses[scroll];
 			pain.num_chaves--;
 
 			for(c=0;c<son2.num_chaves;c++)
@@ -1261,8 +1264,8 @@ int merge_nodo(FILE *tree,FILE *nodo_list,int pai,int scroll)
 	else
 	if(scroll<felipe)//Acho que isso não altera a configuração de filhos caso feito do jeito certo
 	{	//caso não seja o ultimo filho e o irmão tenha 1 chave para doar
-		son1.chaves[++son1.num_chaves]=pain.chaves[scroll];
-		son1.addresses[son1.num_chaves]=pain.addresses[scroll];
+		son1.chaves[(int)++son1.num_chaves]=pain.chaves[scroll];
+		son1.addresses[(int)son1.num_chaves]=pain.addresses[scroll];
 		pain.chaves[scroll]=son2.chaves[0];
 		pain.addresses[scroll]=son2.addresses[0];
 
