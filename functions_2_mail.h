@@ -15,7 +15,9 @@ void print_horario(HORARIO data);
 void setup(PRINCIPAL principal);
 void menu();
 void criar_conta(PRINCIPAL *principal,char *dir);
-void acessar_conta(PRINCIPAL principal,char *dir);
+void acessar_conta(PRINCIPAL *principal,char *dir);
+void abrir_conta(PRINCIPAL principal,char *dir,int conta);
+int number_of_emails(FILE *tree);
 ARQUIVOS open_account_files(char *dir, int account_address);
 void close_account_files(ARQUIVOS arquivos);
 void formated_message(char *string);
@@ -28,7 +30,7 @@ void create_account(PRINCIPAL *principal,char *dir,char *user,char *password)
 	char *folder;
 	close_server_files(*principal);
 	*principal = open_server_files();
-	//add_CONTA_tree(account_address);
+	add_CONTA_tree(principal->addresses,principal->tree_CONTA,principal->tree_L_CONTA,account_address);
 
 	create_config(dir,account_address);
 
@@ -218,10 +220,12 @@ void menu()
 		fread(&config,sizeof(settings),1,principal.settings);
 
 		printf("Selecione o que deseja fazer:"); breakline;
-		printf("[1] Criar conta de e-mail"); breakline;
-		printf("[2] Acessar uma conta de e-mail"); breakline;
-		printf("[3] Reconfigurar servidor"); breakline;
-		printf("[0] Fechar programa"); breakline;
+		printf("[1] - Criar conta de e-mail"); breakline;
+		printf("[2] - Acessar uma conta de e-mail"); breakline;
+		printf("[3] - Reconfigurar servidor"); breakline;
+		printf("[0] - Fechar programa"); breakline;
+		breakline;
+		printf("Escolha: ");
 		scanf("%d",&opcao);
 		cls;
 		switch (opcao)
@@ -230,12 +234,12 @@ void menu()
 				criar_conta(&principal,config.dir);
 			break;
 			case 2:	//	Acessar uma conta
-				acessar_conta(principal,config.dir);
+				acessar_conta(&principal,config.dir);
 			break;
 			case 3:	//	Configurar
 				setup(principal);
-				close_server_files(principal);
-				principal = open_server_files();
+				close_server_files(principal);	//	Fecha arquivos antigos se tiver sido efetuada alguma alteração
+				principal = open_server_files();	//	Abre novos arquivos
 			break;
 
 			default:
@@ -243,7 +247,8 @@ void menu()
 			break;
 		}
 	} while(opcao);
-
+	printf("Obrigado por utilizar o E-Server v.0.2"); breakline;
+	close_server_files(principal);
 	return;
 }
 void criar_conta(PRINCIPAL *principal,char *dir)
@@ -265,15 +270,114 @@ void criar_conta(PRINCIPAL *principal,char *dir)
 	return;
 }
 
-void acessar_conta(PRINCIPAL principal,char *dir)
+void acessar_conta(PRINCIPAL *principal,char *dir)
 {
-	char *user,*password;
-	formated_message("ACESSAR UMA CONTA");
-	printf("Digite o nome de usuário:"); breakline;
-	user = ler('\n');
-	printf("Digite a senha para da conta:"); breakline;
-	password = ler('\n');
+	char *user,*password=NULL,*t;
+	int temp, conta, confirmacao;
+	do {
+		formated_message("ACESSAR UMA CONTA");
+		printf("Digite o nome de usuário:"); breakline;
+		user = ler('\n');
+		printf("\nBugou aqui\n\n\n");
+		temp = add_address(principal->settings,principal->addresses,user,password);
+
+		printf("\nBugou lá\n\n\n");
+		conta = busca_CONTA_tree(principal->addresses,principal->tree_CONTA, principal->tree_L_CONTA,temp);
+
+		printf("\nBugou culá\n\n\n");
+		if (conta == -1)
+			printf("A conta de email não foi localizada, por favor tente novamente com um email válido.\n");
+		pause;
+		cls;
+		remove_address(principal->settings,principal->addresses,temp);
+	} while(conta == -1);
+	do {
+		printf("Digite a senha da conta:"); breakline;
+		password = ler('\n');
+		t = get_password(principal->addresses,conta);
+		if ((confirmacao = strcmp(password,t)))
+			printf("Senha inválida. Tente novamente com a senha correta.");
+		pause;
+		cls;
+	} while(confirmacao);
+	printf("Acesso autorizado à conta: %s.\n",user);
+	pause;
+	cls;
+	abrir_conta(*principal,dir,conta);
 	return;
+}
+
+void abrir_conta(PRINCIPAL principal,char *dir,int conta)
+{
+	ARQUIVOS arquivos;
+	int escolha;
+	arquivos = open_account_files(dir,conta);
+
+	do {
+		printf("\n[Opção] - Pasta (Nº de E-mails) ");
+		printf("\n[1] - %21s (%d)","Caixa de Entrada",number_of_emails(arquivos.inbox_tree_messages));
+		printf("\n[2] - %21s (%d)","Caixa de Saída",number_of_emails(arquivos.outbox_tree_messages));
+		printf("\n[3] - %21s (%d)","Lidos",number_of_emails(arquivos.read_tree_messages));
+		printf("\n[4] - %21s (%d)","Enviados",number_of_emails(arquivos.sent_tree_messages));
+		printf("\n[5] - %21s (%d)","Lixeira",number_of_emails(arquivos.trash_tree_messages));
+
+		printf("\n[6] - Escrever novo e-mail");
+		printf("\n[7] - Pesquisar por e-mail");
+		printf("\n[0] - Sair da conta");
+
+		printf("\nEscolha: ");
+		scanf("%d",&escolha);
+
+		cls;
+		// Essas são as funções que faltam ser definidas
+		/*switch (escolha)
+		{
+			case 1: // Caixa de Entrada
+				access_inbox(arquivos);
+			break;
+			case 2: // Caixa de Saída
+				access_outbox(arquivos);
+			break;
+			case 3: // Lidos
+				access_read(arquivos);
+			break;
+			case 4: // Enviados
+				access_sent(arquivos);
+			break;
+			case 5: // Lixeira
+				access_trasharquivos);
+			break;
+			case 6: // Enviar Email
+				send_email(arquivos);
+			break;
+			case 7: // Pesquisar Email
+				search_email(arquivos);
+			break;
+			case 0: // Sair da Conta
+				close_ccount_files(arquivos);
+				printf("O logoff foi efetuado com sucesso."); breakline;
+			break;
+			default:
+				return;
+		}*/
+	} while (escolha);
+}
+void access_inbox(ARQUIVOS arquivos)
+{
+
+}
+
+void list_email_by_tree(ARQUIVOS arquivos,FILE *tree)
+{	//	FUNÇÃO PARA IMPRIMIR LISTA DE EMAILS COM ORGANIZAÇÃO A PARTIR DE UMA ÁRVORE
+
+}
+
+int number_of_emails(FILE *tree)
+{
+	ARVOREB avb;
+	rewind(tree);
+	fread(&avb,sizeof(ARVOREB),1,tree);
+	return avb.num_SUB_NODOS;
 }
 
 ARQUIVOS open_account_files(char *dir, int account_address)

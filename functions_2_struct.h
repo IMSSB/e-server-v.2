@@ -269,6 +269,8 @@ void remove_key_tree(char *dir,int account_address,char *folder,char *type,int k
 int busca_SUB_NODO_tree(ARQUIVOS arquivos,FILE *tree, FILE *nodo_list, char *type,int key);
 void add_SUB_NODO_tree(ARQUIVOS arquivos,FILE *tree, FILE *nodo_list,char *type,int key,int SUB_NODO);
 void remove_SUB_NODO_tree(ARQUIVOS arquivos,FILE *tree, FILE *nodo_list, char *type,int key,int SUB_NODO);
+void create_tree_account(char *dir);
+void add_CONTA_tree(FILE *addresses,FILE *tree, FILE *nodo_list,int account_address);
 int compara_infos(ARQUIVOS arquivos,char *type,int a,int b);
 int horario_igual(HORARIO a,HORARIO b);
 int horario_maior(HORARIO a,HORARIO b);
@@ -421,7 +423,7 @@ int add_address(FILE *set, FILE *ad,char *user,char *password)
 	fread(&s,sizeof(settings),1,set);	//	Lendo arquivo de configurações e armazenando na variável s
 
 	scroll=(s.next_address == -1)?s.num_addresses:s.next_address;	//	Definindo a posição em que o novo endereço será salvo no arquivo addresses.bin
-	printf("NEXT: %d\nNUM AD: %d",s.next_address,s.num_addresses);
+
 	fseek(ad,scroll*sizeof(CONTA),SEEK_SET);				//	Deslocando a posição do buffer no arquivo addresses.bin
 	if(s.next_address!=-1)										//	caso haja blocos não utilizados a serem subscritos
 	{
@@ -433,7 +435,7 @@ int add_address(FILE *set, FILE *ad,char *user,char *password)
 	else
 		s.anum_address++;
 	sprintf(ads.user,"%s",user);			//	Guardando usuário
-	sprintf(ads.password,"%s",user);			//	Guardando senha
+	sprintf(ads.password,"%s",password);			//	Guardando senha
 	s.num_addresses++;						//	Incrementando o número de endereços
 	rewind(set);						//	Colocando a posição do fluxo de dados no inicio
 	fwrite(&s,sizeof(settings),1,set);		//	Escrevendo alterações feitas nos arquivos
@@ -481,6 +483,18 @@ char* get_address(char *dir,int account_number)
 	fread(&ads,sizeof(CONTA),1,ad);
 	sprintf(address,"%s",ads.user);
 	fclose(ad);
+
+	return address;
+}
+
+char* get_password(FILE *ad,int account_number)
+{	//	Função que retorna um endereço da Lista de Endereços
+	char* address = (char*)malloc(sizeof(char)*64);
+	CONTA ads;
+
+	fseek(ad,account_number*sizeof(CONTA),SEEK_SET);
+	fread(&ads,sizeof(CONTA),1,ad);
+	sprintf(address,"%s",ads.password);
 
 	return address;
 }
@@ -1438,30 +1452,27 @@ int busca_SUB_NODO_tree(ARQUIVOS arquivos,FILE *tree, FILE *nodo_list, char *typ
 	fread(&new,sizeof(ARVOREB),1,tree);
 
 	scroll = new.raiz;
-	printf("\n----> Aqui cara");
+
 	while(cdn && new.raiz+1)
 	{
 		fseek(nodo_list,sizeof(NODO)*scroll,SEEK_SET);
 		fread(&nnew,sizeof(NODO),1,nodo_list);
-		printf("\n----> Em baixo, cara");
+
 		for(c=0;c<nnew.num_chaves && 1 > (aux=compara_infos(arquivos,type,nnew.chaves[c],key)) && aux;c++);
-		printf("\n AUX = %d",aux);
+
 		if (!aux)
-		{	printf("\nPF 1");
+		{
 			achou = nnew.addresses[c];
 			cdn = 0;
 		}
 		else
 		if (!nnew.ne_folha)//É FOLHA!
-		{	printf("\nPF 2");
+		{
 			achou = -1;
 			cdn = 0;
 		}
 		else
-		{
 			scroll = nnew.filhos[c];
-			printf("\nPF 3");
-		}
 	}
 
 	return achou;
@@ -1545,11 +1556,13 @@ void create_tree_account(char *dir)
 
 	return;
 }
-void add_CONTA_tree(FILE *tree, FILE *nodo_list,int account_address)
+void add_CONTA_tree(FILE *addresses,FILE *tree, FILE *nodo_list,int account_address)
 {	// Função para adicionar chaves na árvore
 	ARVOREB avb;
 	NODO nodo;
 	int c=0,scroll,aux,aux2,cdn=1;
+	ARQUIVOS aux3;
+	aux3.addresses = addresses;
 
 	rewind(tree);
 	fread(&avb,sizeof(ARVOREB),1,tree);
@@ -1587,7 +1600,7 @@ void add_CONTA_tree(FILE *tree, FILE *nodo_list,int account_address)
 			fread(&nodo,sizeof(NODO),1,nodo_list);
 		}
 
-		//for(c=0;c<nodo.num_chaves && 1 > compara_infos(dir,0,"addresses",nodo.chaves[c],account_address);c++);
+		for(c=0;c<nodo.num_chaves && 1 > compara_infos(aux3,"addresses",nodo.chaves[c],account_address);c++);
 		if(!nodo.ne_folha)//Caso básico
 		{
 			aux=nodo.chaves[c];
@@ -1615,6 +1628,43 @@ void add_CONTA_tree(FILE *tree, FILE *nodo_list,int account_address)
 	fwrite(&nodo,sizeof(NODO),1,nodo_list);
 
 	return;
+}
+int busca_CONTA_tree(FILE *addresses,FILE *tree, FILE *nodo_list,int key)
+{
+	ARVOREB new;
+	NODO nnew;
+	int c,scroll,aux,cdn=1,achou=-1;
+	ARQUIVOS aux3;
+	aux3.addresses = addresses;
+
+	rewind(tree);
+	fread(&new,sizeof(ARVOREB),1,tree);
+
+	scroll = new.raiz;
+
+	while(cdn && new.raiz+1)
+	{
+		fseek(nodo_list,sizeof(NODO)*scroll,SEEK_SET);
+		fread(&nnew,sizeof(NODO),1,nodo_list);
+
+		for(c=0;c<nnew.num_chaves && 1 > (aux=compara_infos(aux3,"addresses",nnew.chaves[c],key)) && aux;c++);
+
+		if (!aux)
+		{
+			achou = nnew.addresses[c];
+			cdn = 0;
+		}
+		else
+		if (!nnew.ne_folha)//É FOLHA!
+		{
+			achou = -1;
+			cdn = 0;
+		}
+		else
+			scroll = nnew.filhos[c];
+	}
+
+	return achou;
 }
 
 
@@ -1680,7 +1730,7 @@ int compara_infos(ARQUIVOS arquivos, char *tipo,int a,int b)
 		fseek(arquivos.addresses,sizeof(CONTA)*b,SEEK_SET);
 		fread(&B,sizeof(CONTA),1,arquivos.addresses);
 
-		return (strcmp(A.user,B.user));
+		return (strcmp(A.password,B.password));
 	}
 
 	return 1;
