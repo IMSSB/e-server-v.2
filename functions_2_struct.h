@@ -242,26 +242,26 @@ void remove_subject(FILE *config, FILE *subject_list,int scroll);
 char* get_subject(FILE *config, FILE *subject_list,int scroll);
 void create_email_list(char *dir,int account_address);
 int add_email(FILE *config, FILE *email_list,int remetente,int destinatario, int assunto, int MSG, int data, int historico);
-void remove_email(char *dir,int account_address,int scroll);
+void remove_email(FILE *config, FILE *email_list,int scroll);
 void create_LISTA_ENC(char *dir,int account_address);
-int add_LISTA_ENC(char *dir,int account_address,int ultimo,int novo);
-void remove_LISTA_ENC(char *dir,int account_address, int anterior,int atual);//A chamada desta função deve ser feita dentro da arvore onde é posível ter essas informações
+int add_LISTA_ENC(FILE *config, FILE *lista_enc,int ultimo,int novo);
+void remove_LISTA_ENC(FILE *config, FILE *lista_enc, int anterior,int atual);//A chamada desta função deve ser feita dentro da arvore onde é posível ter essas informações
 void create_horario_list(char *dir,int account_address);
-int add_horario(char *dir,int account_address, HORARIO novo);
-void remove_horario(char *dir,int account_address, int scroll);
+int add_horario(FILE *config, FILE *horario_list, HORARIO novo);
+void remove_horario(FILE *config, FILE *horario_list, int scroll);
 void create_word_list(char *dir,int account_address);
-int add_word(char *dir,int account_address, char *new);
-void remove_word(char* dir,int account_address, int scroll);
+int add_word(FILE *config, FILE *word_list, char *new);
+void remove_word(FILE *config, FILE *word_list, int scroll);
 void create_tree_type(char *dir,int account_address, char *folder, char *type);
 void split_tree(FILE *tree,FILE *nodo_list,int pai,int scroll);
 fpos_t predescessor(FILE *tree,FILE *nodo_list,int nodo,int key);
 int merge_nodo(FILE *tree,FILE *nodo_list,int pai,int scroll);
-void add_key_tree(char *dir,int account_address,char *folder,char *type,int key,int SUB_NODO);
+void add_key_tree(ARQUIVOS arquivos,FILE *tree, FILE *nodo_list,char *type,int key,int SUB_NODO);
 void remove_key_tree(char *dir,int account_address,char *folder,char *type,int key);
-int busca_SUB_NODO_tree(char *dir,int account_address,char *folder,char *type,int key);
-void add_SUB_NODO_tree(char *dir,int account_address,char *folder,char *type,int key,int SUB_NODO);
-void remove_SUB_NODO_tree(char *dir,int account_address, char *folder, char *type,int key,int SUB_NODO);
-int compara_infos(char *dir,int account_address,char *type,int a,int b);
+int busca_SUB_NODO_tree(ARQUIVOS arquivos,FILE *tree, FILE *nodo_list, char *type,int key);
+void add_SUB_NODO_tree(ARQUIVOS arquivos,FILE *tree, FILE *nodo_list,char *type,int key,int SUB_NODO);
+void remove_SUB_NODO_tree(ARQUIVOS arquivos,FILE *tree, FILE *nodo_list, char *type,int key,int SUB_NODO);
+int compara_infos(ARQUIVOS arquivos,char *type,int a,int b);
 int horario_igual(HORARIO a,HORARIO b);
 int horario_maior(HORARIO a,HORARIO b);
 int horario_menor(HORARIO a,HORARIO b);
@@ -756,8 +756,9 @@ int add_email(FILE *config, FILE *email_list,int remetente,int destinatario, int
 	int scroll;					// 	Variável para deslocamento
 	fpos_t p;
 
-	fread(&c,sizeof(configuration),1,config);				//
 	rewind(config);
+	fread(&c,sizeof(configuration),1,config);				//
+
 	scroll=(c.next_email==-1)?c.num_emails:c.next_email;	//
 	fseek(email_list,scroll*sizeof(SUB_NODO),SEEK_SET);								//
 	if (c.next_email!=-1)									//
@@ -776,43 +777,35 @@ int add_email(FILE *config, FILE *email_list,int remetente,int destinatario, int
 	e.MSG = MSG;											//
 	e.data = data;
 	e.historico = historico;								//
+	rewind(config);
 	fwrite(&c,sizeof(configuration),1,config);				//
 	fwrite(&e,sizeof(SUB_NODO),1,email_list);				//
 
 	return scroll;
 }
 
-void remove_email(char* dir,int account_address,int scroll)
+void remove_email(FILE *config, FILE *email_list,int pos)
 {	//	Função para removar email da Lista de Emails dada sua posição (scroll)
-	char *address=dir_builder(dir,account_address,"email_list.bin"),*config_address=dir_builder(dir,account_address,"/config.bin");
-	FILE *email_list, *config; 	// 	Arquivos que serão abertos
 	configuration c; 			//	Manipulação da configuração
 	SUB_NODO e; 				//	Manipulação de email
 	fpos_t p;
 
-	if (!(config=fopen(config_address,"r+b"))) 	// 	Abrindo o arquivo da Lista de Emails
-		error_m("Error at file opening"); 		// 	Mensagem de erro
-	fread(&c,sizeof(configuration),1,config);				//
 	rewind(config);
-	if (scroll < c.anum_emails && scroll >=0 )
-	{
-		if (!(email_list=fopen(address,"r+b"))) 	// 	Abrindo o arquivo de Configuração da Conta
-			error_m("Error at file opening");		// 	Mensagem de erro
+	fread(&c,sizeof(configuration),1,config);				//
 
-		fseek(email_list,scroll*sizeof(SUB_NODO),SEEK_SET);								//
+	if (pos < c.anum_emails && pos >=0 )
+	{
+		fseek(email_list,pos*sizeof(SUB_NODO),SEEK_SET);								//
 		fgetpos(email_list,&p);
 		fread(&e,sizeof(SUB_NODO),1,email_list);				//
 		fsetpos(email_list,&p);
 		e.remetente = c.next_email;								//
-		c.next_email = scroll;									//
+		c.next_email = pos;									//
 		c.num_emails--;											//
+		rewind(config);
 		fwrite(&c,sizeof(configuration),1,config);				//
 		fwrite(&e,sizeof(SUB_NODO),1,email_list);				//
-		fclose(email_list);										//
 	}
-	fclose(config);			//
-	free(address);			//
-	free(config_address);	//
 
 	return;
 }
@@ -837,73 +830,56 @@ void create_LISTA_ENC(char *dir,int account_address)
 	return;
 }
 
-int add_LISTA_ENC(char *dir, int account_address, int antecessor,int novo)
+int add_LISTA_ENC(FILE *config, FILE *lista_enc, int antecessor,int novo)
 {	//	Função para adicionar lista à Lista de Listas Encadeadas de Emails
-	char   *address = dir_builder(dir,account_address,"lista_enc.bin"),*config_address=dir_builder(dir,account_address,"/config.bin");
-	FILE *lista_enc,*config;
 	LISTA a;
 	configuration c;
-	int scroll,aux=-1;
+	int pos,aux=-1;
 	fpos_t p;
 	// FUTURO: FAZER SUPOSIÇÃO DA POSIÇÃO NA LISTA QUANDO não houver antecessor
-	if(!(config=fopen(config_address,"r+b")))
-		error_m("Error at file opening");
-	else
-	if(!(lista_enc=fopen(address,"r+b")))
-		error_m("Error at file opening");
-	else
+	rewind(config);
+	fread(&c,sizeof(configuration),1,config);
+
+	pos = (c.next_LISTA_ENC==-1)?c.num_LISTA_ENC:c.next_LISTA_ENC;
+	if(antecessor >= 0)
 	{
-		fread(&c,sizeof(configuration),1,config);
-		rewind(config);
-		scroll = (c.next_LISTA_ENC==-1)?c.num_LISTA_ENC:c.next_LISTA_ENC;
-		if(antecessor >= 0)
-		{
-			fseek(lista_enc,antecessor*sizeof(LISTA),SEEK_SET);
-			fgetpos(lista_enc,&p);
-			fread(&a,sizeof(LISTA),1,lista_enc);
-			fsetpos(lista_enc,&p);
-			aux = a.next;
-			a.next = scroll;
-			fwrite(&a,sizeof(LISTA),1,lista_enc);
-		}
-		fseek(lista_enc,scroll*sizeof(LISTA),SEEK_SET);
+		fseek(lista_enc,antecessor*sizeof(LISTA),SEEK_SET);
 		fgetpos(lista_enc,&p);
 		fread(&a,sizeof(LISTA),1,lista_enc);
 		fsetpos(lista_enc,&p);
-		if(c.next_LISTA_ENC!=-1)
-			c.next_LISTA_ENC=a.next;
-		else
-			c.anum_LISTA_ENC++;
-		c.num_LISTA_ENC++;
-		a.next=aux;
-		a.address = novo;
+		aux = a.next;
+		a.next = pos;
 		fwrite(&a,sizeof(LISTA),1,lista_enc);
-		fwrite(&c,sizeof(configuration),1,config);
-		fclose(lista_enc);
-		fclose(config);
 	}
-	free(address);
-	free(config_address);
+	fseek(lista_enc,pos*sizeof(LISTA),SEEK_SET);
+	fgetpos(lista_enc,&p);
+	fread(&a,sizeof(LISTA),1,lista_enc);
+	fsetpos(lista_enc,&p);
+	if(c.next_LISTA_ENC!=-1)
+		c.next_LISTA_ENC=a.next;
+	else
+		c.anum_LISTA_ENC++;
+	c.num_LISTA_ENC++;
+	a.next=aux;
+	a.address = novo;
+	fwrite(&a,sizeof(LISTA),1,lista_enc);
+	fwrite(&c,sizeof(configuration),1,config);
 
-	return (scroll);
+	return (pos);
 }
 
-void remove_LISTA_ENC(char *dir,int account_address, int antecessor,int atual)
+void remove_LISTA_ENC(FILE *config, FILE *lista_enc, int antecessor,int atual)
 {	//	Função para remover lista da Lista de Listas Encadeadas de Emails
-	char   *address = dir_builder(dir,account_address,"/lista_enc.bin"),*config_address=dir_builder(dir,account_address,"/config.bin");
-	FILE *lista_enc,*config;
 	LISTA a;
 	configuration c;
 	int aux;
 	fpos_t p;
 
-	if(!(config=fopen(config_address,"r+b")))
-		error_m("Error at file opening");
+	rewind(config);
+	fread(&c,sizeof(configuration),1,config);
+
 	if(atual < c.anum_LISTA_ENC && atual >= 0)
 	{
-		if(!(lista_enc=fopen(address,"r+b")))
-			error_m("Error at file opening");
-
 		fread(&c,sizeof(configuration),1,config);
 		rewind(config);
 		fseek(lista_enc,atual*sizeof(LISTA),SEEK_SET);
@@ -923,11 +899,9 @@ void remove_LISTA_ENC(char *dir,int account_address, int antecessor,int atual)
 			a.next=aux;
 			fwrite(&a,sizeof(LISTA),1,lista_enc);
 		}
+		rewind(config);
 		fwrite(&c,sizeof(configuration),1,config);
-		fclose(lista_enc);
 	}
-	free(address);
-	free(config_address);
 
 	return;
 }
@@ -952,74 +926,53 @@ void create_horario_list(char *dir,int account_address)
 	return;
 }
 
-int add_horario(char *dir,int account_address, HORARIO novo)
+int add_horario(FILE *config, FILE *horario_list, HORARIO novo)
 {	// Função para adicionar horário à Lista de Horários
-	char *address = dir_builder(dir,account_address,"horario_list.bin"),*config_address=dir_builder(dir,account_address,"config.bin");
-	FILE *horarios,*config;
 	HORARIO a;
 	configuration c;
 	int scroll,cont;
 	fpos_t p;
 
-	if(!(config=fopen(config_address,"r+b")))
-		error_m("Error at file opening");
+	rewind(config);
+	fread(&c,sizeof(configuration),1,config);
+
+	scroll=(c.next_HORARIO==-1)?c.num_HORARIO:c.next_HORARIO;
+	fseek(horario_list,scroll*sizeof(HORARIO),SEEK_SET);
+	fgetpos(horario_list,&p);
+	fread(&a,sizeof(HORARIO),1,horario_list);
+	fsetpos(horario_list,&p);
+	if(c.next_HORARIO!=-1)
+		c.next_HORARIO=a.data[0];
 	else
-	if(!(horarios=fopen(address,"r+b")))
-		error_m("Error at file opening");
-	else
-	{
-		fread(&c,sizeof(configuration),1,config);
-		rewind(config);
-		scroll=(c.next_HORARIO==-1)?c.num_HORARIO:c.next_HORARIO;
-		fseek(horarios,scroll*sizeof(HORARIO),SEEK_SET);
-		fgetpos(horarios,&p);
-		fread(&a,sizeof(HORARIO),1,horarios);
-		fsetpos(horarios,&p);
-		if(c.next_HORARIO!=-1)
-			c.next_HORARIO=a.data[0];
-		else
-			c.anum_HORARIO++;
-		c.num_HORARIO++;
-		for(cont=0;cont<6;cont++)
-			a.data[cont]=novo.data[cont];
-		fwrite(&c,sizeof(configuration),1,config);
-		fwrite(&a,sizeof(HORARIO),1,horarios);
-		fclose(horarios);
-		fclose(config);
-	}
-	free(address);
-	free(config_address);
+		c.anum_HORARIO++;
+	c.num_HORARIO++;
+	for(cont=0;cont<6;cont++)
+		a.data[cont]=novo.data[cont];
+	fwrite(&a,sizeof(HORARIO),1,horario_list);
+	rewind(config);
+	fwrite(&c,sizeof(configuration),1,config);
 
 	return scroll;
 }
 
-void remove_horario(char *dir,int account_address, int scroll)
+void remove_horario(FILE *config, FILE *horario_list, int scroll)
 {	// Função para remover horário da Lista de Horários
-	char *address = dir_builder(dir,account_address,"horario_list.bin"),*config_address=dir_builder(dir,account_address,"config.bin");
-	FILE *horarios,*config;
 	HORARIO a;
 	configuration c;
 
-	if(!(config=fopen(config_address,"r+b")))
-		error_m("Error at file opening");
-	fread(&c,sizeof(configuration),1,config);
 	rewind(config);
+	fread(&c,sizeof(configuration),1,config);
+
 	if(scroll < c.anum_HORARIO && scroll > 0)
 	{
-		if(!(horarios=fopen(address,"r+b")))
-			error_m("Error at file opening");
-
 		a.data[0]=c.next_HORARIO;
 		c.next_HORARIO=scroll;
 		c.num_HORARIO--;
-		fseek(horarios,scroll*sizeof(HORARIO),SEEK_SET);
+		fseek(horario_list,scroll*sizeof(HORARIO),SEEK_SET);
+		fwrite(&a,sizeof(HORARIO),1,horario_list);
+		rewind(config);
 		fwrite(&c,sizeof(configuration),1,config);
-		fwrite(&a,sizeof(HORARIO),1,horarios);
-		fclose(horarios);
 	}
-	fclose(config);
-	free(address);
-	free(config_address);
 
 	return;
 }
@@ -1042,78 +995,57 @@ void create_word_list(char *dir,int account_address)
 	return;
 }
 
-int add_word(char *dir,int account_address, char *new)
+int add_word(FILE *config, FILE *word_list, char *new)
 {	// 	Função para adicionar palavra da Lista de Palavras
-	char *address = dir_builder(dir,account_address,"word_list.bin"),*config_address=dir_builder(dir,account_address,"config.bin");
-	FILE *word_list,*config;
 	PALAVRA w;
 	configuration c;
-	int scroll;
+	int pos;
 	fpos_t p;
 
-	if (!(word_list=fopen(address,"r+b")))
-		error_m("Error at file opening");
-	else
-	if (!(config=fopen(config_address,"r+b")))
-		error_m("Error at file opening");
-	else
-	{
-		fread(&c,sizeof(configuration),1,config);
-		rewind(config);
-		scroll=(c.next_PALAVRA==-1)?c.num_PALAVRA:c.next_PALAVRA;
-		fseek(word_list,scroll*sizeof(PALAVRA),SEEK_SET);
-		fgetpos(word_list,&p);
-		fread(&w,sizeof(PALAVRA),1,word_list);
-		fsetpos(word_list,&p);
-		if (c.next_PALAVRA != -1)
-		{
-			fgetpos(word_list,&p);
-			fread(&w,sizeof(messages),1,word_list);
-			sscanf(w.key,"%d",&(c.next_PALAVRA));
-			fsetpos(word_list,&p);
-		}
-		else
-			c.anum_PALAVRA++;
-		sprintf(w.key,"%s",new);
-		c.num_PALAVRA++;
-		fwrite(&w,sizeof(PALAVRA),1,word_list);
-		fwrite(&c,sizeof(PALAVRA),1,config);
-		fclose(word_list);
-		fclose(config);
-	}
-	free(address);
-	free(config_address);
+	rewind(config);
+	fread(&c,sizeof(configuration),1,config);
 
-	return scroll;
+	pos=(c.next_PALAVRA==-1)?c.num_PALAVRA:c.next_PALAVRA;
+	fseek(word_list,pos*sizeof(PALAVRA),SEEK_SET);
+	fgetpos(word_list,&p);
+	fread(&w,sizeof(PALAVRA),1,word_list);
+	fsetpos(word_list,&p);
+	if (c.next_PALAVRA != -1)
+	{
+		fgetpos(word_list,&p);
+		fread(&w,sizeof(messages),1,word_list);
+		sscanf(w.key,"%d",&(c.next_PALAVRA));
+		fsetpos(word_list,&p);
+	}
+	else
+		c.anum_PALAVRA++;
+	sprintf(w.key,"%s",new);
+	c.num_PALAVRA++;
+	fwrite(&w,sizeof(PALAVRA),1,word_list);
+	rewind(config);
+	fwrite(&c,sizeof(PALAVRA),1,config);
+
+	return pos;
 }
 
-void remove_word(char *dir,int account_address, int scroll)
+void remove_word(FILE *config, FILE *word_list, int scroll)
 {	// 	Função para remover palavra da Lista de Palavras
-	char *address = dir_builder(dir,account_address,"word_list.bin"),*config_address=dir_builder(dir,account_address,"config.bin");
-	FILE *word_list,*config;
 	PALAVRA w;
 	configuration c;
 
-	if (!(config=fopen(config_address,"r+b")))
-		error_m("Error at file opening");
-	fread(&c,sizeof(configuration),1,config);
 	rewind(config);
+	fread(&c,sizeof(configuration),1,config);
+
 	if (scroll < c.anum_PALAVRA && scroll >0)
 	{
-		if (!(word_list=fopen(address,"r+b")))
-			error_m("Error at file opening");
-
 		sprintf(w.key,"%d",c.next_PALAVRA);
 		c.num_PALAVRA--;
 		c.next_PALAVRA=scroll;
 		fseek(word_list,scroll*sizeof(PALAVRA),SEEK_SET);
 		fwrite(&w,sizeof(PALAVRA),1,word_list);
+		rewind(config);
 		fwrite(&c,sizeof(PALAVRA),1,config);
-		fclose(word_list);
 	}
-	fclose(config);
-	free(address);
-	free(config_address);
 
 	return;
 }
@@ -1360,32 +1292,21 @@ int merge_nodo(FILE *tree,FILE *nodo_list,int pai,int scroll)
 
 	return 0;
 }
-void add_key_tree(char *dir,int account_address,char *folder, char *type,int key,int SUB_NODO)
+void add_key_tree(ARQUIVOS arquivos,FILE *tree, FILE *nodo_list,char *type,int key,int SUB_NODO)
 {	// Função para adicionar chaves na árvore
-	char *address, *sub_address, *a, *sa;
-	FILE *tree, *nodo_list;
 	ARVOREB new;
 	NODO nnew;
 	int c=0,scroll,aux,aux2,aux3,cdn=1;
-	printf("\nKey tree 1\n");
-	a = merge_string(folder,merge_string("tree_",type));
-	sa = merge_string(folder,merge_string("tree_L_",type));
-	address = dir_builder(dir,account_address,a);
-	sub_address	= dir_builder(dir,account_address,sa);
-	printf("\nKey tree 2\n");
-	if (!(tree = fopen(address,"r+b")))
-		error_m("Error at file opening");
-	if (!(nodo_list = fopen(sub_address,"r+b")))
-		error_m("Error at file opening");
-	fread(&new,sizeof(ARVOREB),1,tree);
+
 	rewind(tree);
-	printf("\nKey tree 3\n");
+	fread(&new,sizeof(ARVOREB),1,tree);
+
 	scroll=new.raiz;
 	if(new.raiz==-1)
 	{	printf("\nEntrou em condição raiz =-1\n");
 		nnew.chaves[0]=key;
 		nnew.num_chaves=1;
-		nnew.addresses[0]=add_LISTA_ENC(dir,account_address,-1,SUB_NODO);//Aqui deve ser o endereço da lista
+		nnew.addresses[0]=add_LISTA_ENC(arquivos.config,arquivos.lista_enc,-1,SUB_NODO);//Aqui deve ser o endereço da lista
 		nnew.pai=-1;
 		nnew.ne_folha=0;
 		new.raiz=new.next_NODO==-1?new.num_NODOS:new.next_NODO;
@@ -1412,7 +1333,7 @@ void add_key_tree(char *dir,int account_address,char *folder, char *type,int key
 			fread(&nnew,sizeof(NODO),1,nodo_list);
 		}
 
-		for(c=0;c<nnew.num_chaves && 1 > compara_infos(dir,account_address,type,nnew.chaves[c],key);c++);
+		for(c=0;c<nnew.num_chaves && 1 > compara_infos(arquivos,type,nnew.chaves[c],key);c++);
 		if(!nnew.ne_folha)//Caso básico
 		{
 			aux=nnew.chaves[c];
@@ -1426,7 +1347,7 @@ void add_key_tree(char *dir,int account_address,char *folder, char *type,int key
 			}
 			c=aux3;
 			aux=nnew.addresses[c];
-			nnew.addresses[c++] = add_LISTA_ENC(dir,account_address,-1,SUB_NODO);//MESMA COISA AQUI
+			nnew.addresses[c++] = add_LISTA_ENC(arquivos.config,arquivos.lista_enc,-1,SUB_NODO);//MESMA COISA AQUI
 			for(;c<nnew.num_chaves;c++)
 			{
 				aux2=nnew.addresses[c];
@@ -1443,16 +1364,9 @@ void add_key_tree(char *dir,int account_address,char *folder, char *type,int key
 
 	}
 	new.num_SUB_NODOS++;
-	fwrite(&new,sizeof(ARVOREB),1,tree);
 	fwrite(&nnew,sizeof(NODO),1,nodo_list);
-
-	fclose(tree);
-	fclose(nodo_list);
-
-	free(a);
-	free(sa);
-	free(address);
-	free(sub_address);
+	rewind(tree);
+	fwrite(&new,sizeof(ARVOREB),1,tree);
 
 	return;
 }
@@ -1524,25 +1438,14 @@ void add_key_tree(char *dir,int account_address,char *folder, char *type,int key
 }*/
 ;
 
-int busca_SUB_NODO_tree(char *dir,int account_address,char *folder, char *type,int key)
+int busca_SUB_NODO_tree(ARQUIVOS arquivos,FILE *tree, FILE *nodo_list, char *type,int key)
 {
-	char *address, *sub_address, *a, *sa;
-	FILE *tree, *nodo_list;
 	ARVOREB new;
 	NODO nnew;
 	int c,scroll,aux,cdn=1,achou=-1;
 
-	a = merge_string(folder,merge_string("tree_",type));
-	sa = merge_string(folder,merge_string("tree_L_",type));
-	address = dir_builder(dir,account_address,a);
-	sub_address	= dir_builder(dir,account_address,sa);
-
-	if (!(tree = fopen(address,"r+b")))
-		error_m("Error at file opening");
-	if (!(nodo_list = fopen(sub_address,"r+b")))
-		error_m("Error at file opening");
-	fread(&new,sizeof(ARVOREB),1,tree);
 	rewind(tree);
+	fread(&new,sizeof(ARVOREB),1,tree);
 
 	scroll = new.raiz;
 	printf("\n----> Aqui cara");
@@ -1551,7 +1454,7 @@ int busca_SUB_NODO_tree(char *dir,int account_address,char *folder, char *type,i
 		fseek(nodo_list,sizeof(NODO)*scroll,SEEK_SET);
 		fread(&nnew,sizeof(NODO),1,nodo_list);
 		printf("\n----> Em baixo, cara");
-		for(c=0;c<nnew.num_chaves && 1 > (aux=compara_infos(dir,account_address,type,nnew.chaves[c],key)) && aux;c++);
+		for(c=0;c<nnew.num_chaves && 1 > (aux=compara_infos(arquivos,type,nnew.chaves[c],key)) && aux;c++);
 		printf("\n AUX = %d",aux);
 		if (!aux)
 		{	printf("\nPF 1");
@@ -1570,71 +1473,47 @@ int busca_SUB_NODO_tree(char *dir,int account_address,char *folder, char *type,i
 			printf("\nPF 3");
 		}
 	}
-	fclose(tree);
-	fclose(nodo_list);
-
-	free(a);
-	free(sa);
-	free(address);
-	free(sub_address);
 
 	return achou;
 }
 
 //OPS! LISTA ENCADEADA
-void add_SUB_NODO_tree(char *dir, int account_address,char *folder, char *type,int key,int SUB_NODO)
+void add_SUB_NODO_tree(ARQUIVOS arquivos,FILE *tree, FILE *nodo_list, char *type,int key,int SUB_NODO)
 {
-	char *address, *sub_address = dir_builder(dir,account_address,"lista_enc.bin"), *a;
-	FILE *tree, *sub_nodo_list;
 	ARVOREB new;
 	int pos;
 
-	a = merge_string(folder,merge_string("tree_",type));
-
-	address = dir_builder(dir,account_address,a);
-
-	printf("\nChegou aqui 3\n");
-	pos = busca_SUB_NODO_tree(dir,account_address,folder,type,key);
+	pos = busca_SUB_NODO_tree(arquivos,tree,nodo_list,type,key);
 	if (pos == -1)
-		add_key_tree(dir,account_address,folder,type,key,SUB_NODO);
+		add_key_tree(arquivos,tree,nodo_list,type,key,SUB_NODO);
 	else
 	{
 		LISTA primeiro;
 		int scroll = pos, aux=1;
-		if (!(tree = fopen(address,"r+b")))
-				error_m("Error at file opening");
-		if (!(sub_nodo_list = fopen(sub_address,"r+b")))
-			error_m("Error at file opening");
-		fread(&new,sizeof(ARVOREB),1,tree);
+
 		rewind(tree);
-		printf("\nChegou aqui 4\n");
+		fread(&new,sizeof(ARVOREB),1,tree);
+
 		for (;aux;)
 		{
-			fseek(sub_nodo_list,sizeof(LISTA)*scroll,SEEK_SET);
-			fread(&primeiro,sizeof(LISTA),1,sub_nodo_list);
+			fseek(arquivos.lista_enc,sizeof(LISTA)*scroll,SEEK_SET);
+			fread(&primeiro,sizeof(LISTA),1,arquivos.lista_enc);
 			if (primeiro.next+1)
 				scroll = primeiro.next;
 			else
 				aux = 0;
 		}
-		add_LISTA_ENC(dir,account_address,scroll,SUB_NODO);
+		add_LISTA_ENC(arquivos.config,arquivos.lista_enc,scroll,SUB_NODO);
 		new.num_SUB_NODOS++;
 
+		rewind(tree);
 		fwrite(&new,sizeof(ARVOREB),1,tree);
-		fclose(sub_nodo_list);
-		fclose(tree);
 	}
-	free(a);
-	printf("\nChegou aqui 5.3\n");
-	free(address);
-	printf("\nChegou aqui 5.4\n");
-	free(sub_address);
-	printf("\nChegou aqui 5.5\n");
 
 	return;
 }
 
-void remove_SUB_NODO_tree(char *dir,int account_address,char *folder, char *type,int key,int SUB_NODO)
+void remove_SUB_NODO_tree(ARQUIVOS arquivos,FILE *tree, FILE *nodo_list, char *type,int key,int SUB_NODO)
 {
 
 
@@ -1774,79 +1653,57 @@ void add_CONTA_tree(char *dir,int account_address)
 
 
 //FUNÇÕES DE COMPARAÇÃO
-int compara_infos(char *dir,int account_address, char *tipo,int a,int b)
+int compara_infos(ARQUIVOS arquivos, char *tipo,int a,int b)
 {
-	char *address;
-	FILE *list;
-
-	if (!strcmp(tipo,"messages.bin"))
+	if (!strcmp(tipo,"messages"))
 	{
 		messages A,B;
-		address = dir_builder(dir,account_address,"text_list.bin");
-		if (!(list = fopen(address,"rb")))
-			error_m("Error at file opening");
-		fseek(list,sizeof(messages)*a,SEEK_SET);
-		fread(&A,sizeof(messages),1,list);
-		fseek(list,sizeof(messages)*b,SEEK_SET);
-		fread(&B,sizeof(messages),1,list);
-		fclose(list);
+		fseek(arquivos.text_list,sizeof(messages)*a,SEEK_SET);
+		fread(&A,sizeof(messages),1,arquivos.text_list);
+		fseek(arquivos.text_list,sizeof(messages)*b,SEEK_SET);
+		fread(&B,sizeof(messages),1,arquivos.text_list);
 		return (strcmp(A.mail,B.mail));
 	}
 	else
-	if (!strcmp(tipo,"subjects.bin"))
+	if (!strcmp(tipo,"subjects"))
 	{
 		subjects A,B;
-		address = dir_builder(dir,account_address,"subject_list.bin");
-		if (!(list = fopen(address,"rb")))
-			error_m("Error at file opening");
-		fseek(list,sizeof(subjects)*a,SEEK_SET);
-		fread(&A,sizeof(subjects),1,list);
-		fseek(list,sizeof(subjects)*b,SEEK_SET);
-		fread(&B,sizeof(subjects),1,list);
-		fclose(list);
+		fseek(arquivos.subject_list,sizeof(subjects)*a,SEEK_SET);
+		fread(&A,sizeof(subjects),1,arquivos.subject_list);
+		fseek(arquivos.subject_list,sizeof(subjects)*b,SEEK_SET);
+		fread(&B,sizeof(subjects),1,arquivos.subject_list);
 		return (strcmp(A.subject,B.subject));
 	}
 	else
-	if (!strcmp(tipo,"PALAVRA.bin"))
+	if (!strcmp(tipo,"PALAVRA"))
 	{
 		PALAVRA A,B;
-		address = dir_builder(dir,account_address,"word_list.bin");
-		if (!(list = fopen(address,"rb")))
-			error_m("Error at file opening");
-		fseek(list,sizeof(PALAVRA)*a,SEEK_SET);
-		fread(&A,sizeof(PALAVRA),1,list);
-		fseek(list,sizeof(PALAVRA)*b,SEEK_SET);
-		fread(&B,sizeof(PALAVRA),1,list);
-		fclose(list);
+		fseek(arquivos.word_list,sizeof(PALAVRA)*a,SEEK_SET);
+		fread(&A,sizeof(PALAVRA),1,arquivos.word_list);
+		fseek(arquivos.word_list,sizeof(PALAVRA)*b,SEEK_SET);
+		fread(&B,sizeof(PALAVRA),1,arquivos.word_list);
 		return (strcmp(A.key,B.key));
 	}
 	else
-	if (!strcmp(tipo,"HORARIO.bin"))
+	if (!strcmp(tipo,"HORARIO"))
 	{
 		HORARIO A,B;
-		address = dir_builder(dir,account_address,"horario_list.bin");
-		if (!(list = fopen(address,"rb")))
-			error_m("Error at file opening");
-		fseek(list,sizeof(HORARIO)*a,SEEK_SET);
-		fread(&A,sizeof(HORARIO),1,list);
-		fseek(list,sizeof(HORARIO)*b,SEEK_SET);
-		fread(&B,sizeof(HORARIO),1,list);
-		fclose(list);
+		fseek(arquivos.horario_list,sizeof(HORARIO)*a,SEEK_SET);
+		fread(&A,sizeof(HORARIO),1,arquivos.horario_list);
+		fseek(arquivos.horario_list,sizeof(HORARIO)*b,SEEK_SET);
+		fread(&B,sizeof(HORARIO),1,arquivos.horario_list);
 		return horario_menor(A,B)?-1:(horario_igual(A,B)?0:1);
 	}
 	else
-	if (!strcmp(tipo,"addresses.bin"))
+	if (!strcmp(tipo,"addresses"))
 	{
 		CONTA A,B;
-		address = merge_string(dir,"addresses.bin");
-		if (!(list = fopen(address,"rb")))
-			error_m("Error at file opening");
-		fseek(list,sizeof(CONTA)*a,SEEK_SET);
-		fread(&A,sizeof(CONTA),1,list);
-		fseek(list,sizeof(CONTA)*b,SEEK_SET);
-		fread(&B,sizeof(CONTA),1,list);
-		fclose(list);
-		if (account_address)
+		fseek(arquivos.addresses,sizeof(CONTA)*a,SEEK_SET);
+		fread(&A,sizeof(CONTA),1,arquivos.addresses);
+		fseek(arquivos.addresses,sizeof(CONTA)*b,SEEK_SET);
+		fread(&B,sizeof(CONTA),1,arquivos.addresses);
+
+		//if (account_address)
 			return (strcmp(A.password,B.password));
 		return (strcmp(A.user,B.user));
 	}
