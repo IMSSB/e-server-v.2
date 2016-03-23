@@ -794,7 +794,7 @@ PRINCIPAL open_server_files()
 		arquivo=filepath_gen(set.dir,"tree_L_CONTA.bin");
 		if (!(principal.tree_L_CONTA = fopen(arquivo,"rb+")))
 			error_m("Error at file opening");
-		free(arquivo);
+		free(arquivo);;
 	}
 	return principal;
 }
