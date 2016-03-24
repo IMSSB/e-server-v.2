@@ -12,11 +12,14 @@
 #include <stdlib.h>
 #include <locale.h>
 #include <string.h>
-#include <conio.h>
+
 #include <time.h>
 #include <sys/stat.h>
 #ifndef __linux__ // Verifica se o sistema atual não é Linux
 	#include <direct.h> 	//	Inclui biblioteca específica do Windows se não for
+	#include <conio.h>
+#else
+	#include <curses.h>
 #endif
 
 #define cls system("CLS || clear");

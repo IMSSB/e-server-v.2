@@ -383,7 +383,6 @@ void acessar_conta(PRINCIPAL *principal,char *dir)
 void abrir_conta(PRINCIPAL principal,char *dir,int conta)
 {
 	ARQUIVOS arquivos;
-	int escolha;
 	int opcao=0,nova_opcao=0,tecla=0,loop=1;
 	char *roll[8],cursor[]="-->",vazio[]="   ";
 	roll[0]=cursor;
