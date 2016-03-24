@@ -9,6 +9,19 @@
 #define FUNCTIONS_2_H_
 #include "functions_2_struct.h"
 
+//	Teclas
+#define KeyEnter 13
+//Teclas Especiais
+#define KeySpecial 0
+// Teclas Especiais 2
+#define KeySpecial2 224
+#define KeyUp 72
+#define KeyLeft 75
+#define KeyRight 77
+#define KeyDown 80
+
+#define numMenu 5
+
 void create_account(PRINCIPAL *principal,char *dir,char *user,char *password);
 void print_email(ARQUIVOS arquivos,int email_pos);
 void print_horario(HORARIO data);
@@ -23,6 +36,7 @@ void close_account_files(ARQUIVOS arquivos);
 void formated_message(char *string);
 PRINCIPAL open_server_files();
 void close_server_files(PRINCIPAL principal);
+
 
 void create_account(PRINCIPAL *principal,char *dir,char *user,char *password)
 {
@@ -232,7 +246,11 @@ void menu()
 {
 	PRINCIPAL principal = open_server_files();
 	settings config;
-	int opcao=0;
+	int opcao=0,nova_opcao=0,tecla=0,loop=1;
+	char *roll[4],cursor[]="-->",vazio[]="   ";
+	roll[0]=cursor;
+	roll[1]=roll[2]=roll[3]=vazio;
+
 	if (!(principal.settings))
 	{
 		printf("Foi detectado que essa é a primeira abertura do E-Server v.2.0");
@@ -247,34 +265,62 @@ void menu()
 		rewind(principal.settings);
 		fread(&config,sizeof(settings),1,principal.settings);
 
-		printf("Selecione o que deseja fazer:"); breakline;
-		printf("[1] - Criar conta de e-mail"); breakline;
-		printf("[2] - Acessar uma conta de e-mail"); breakline;
-		printf("[3] - Reconfigurar servidor"); breakline;
-		printf("[0] - Fechar programa"); breakline;
-		breakline;
-		printf("Escolha: ");
-		scanf("%d",&opcao);
-		cls;
+		while(tecla!=KeyEnter)
+		{
+			if(opcao-nova_opcao)
+			{
+				roll[opcao]=vazio;
+				roll[nova_opcao]=cursor;
+				opcao=nova_opcao;
+			}
+			printf("Selecione o que deseja fazer e aperte ENTER:"); breakline;
+			printf("%s |Criar conta de e-mail",roll[0]); breakline;
+			printf("%s |Acessar uma conta de e-mail",roll[1]); breakline;
+			printf("%s |Reconfigurar servidor",roll[2]); breakline;
+			printf("%s |Fechar programa",roll[3]); breakline;
+			breakline;
+
+			tecla = getch();
+			while (tecla != KeySpecial2 && tecla != KeyEnter)
+				tecla = getch();
+			if (tecla == KeySpecial2)
+			{
+				tecla = getch();
+				if (tecla == KeyUp)
+				{
+					if (opcao)
+						nova_opcao--;
+				}
+				else if (tecla == KeyDown)
+				{
+					if (opcao < 3)
+						nova_opcao++;
+				}
+			}
+			cls;
+		}
+		tecla=0;
 		switch (opcao)
 		{
-			case 1: // 	Criar conta
+			case 0: // 	Criar conta
 				criar_conta(&principal,config.dir);
 			break;
-			case 2:	//	Acessar uma conta
+			case 1:	//	Acessar uma conta
 				acessar_conta(&principal,config.dir);
 			break;
-			case 3:	//	Configurar
+			case 2:	//	Configurar
 				setup(principal);
 				close_server_files(principal);	//	Fecha arquivos antigos se tiver sido efetuada alguma alteração
 				principal = open_server_files();	//	Abre novos arquivos
 			break;
-
+			case 3:
+				loop = 0;
+			break;
 			default:
 
 			break;
 		}
-	} while(opcao);
+	} while(loop);
 	printf("Obrigado por utilizar o E-Server v.0.2"); breakline;
 	close_server_files(principal);
 	return;
@@ -302,6 +348,7 @@ void acessar_conta(PRINCIPAL *principal,char *dir)
 {
 	char *user,*password=(char *)calloc(sizeof(char),1),*t;
 	int temp, conta, confirmacao;
+
 	do {
 		formated_message("ACESSAR UMA CONTA");
 		printf("Digite o nome de usuário:"); breakline;
@@ -337,56 +384,86 @@ void abrir_conta(PRINCIPAL principal,char *dir,int conta)
 {
 	ARQUIVOS arquivos;
 	int escolha;
+	int opcao=0,nova_opcao=0,tecla=0,loop=1;
+	char *roll[8],cursor[]="-->",vazio[]="   ";
+	roll[0]=cursor;
+	roll[1]=roll[2]=roll[3]=roll[4]=roll[5]=roll[6]=roll[7]=vazio;
+
 	arquivos = open_account_files(dir,conta);
 
 	do {
-		printf("\n[Opção] - Pasta (Nº de E-mails) ");
-		printf("\n[1] - %21s (%d)","Caixa de Entrada",number_of_emails(arquivos.inbox_tree_messages));
-		printf("\n[2] - %21s (%d)","Caixa de Saída",number_of_emails(arquivos.outbox_tree_messages));
-		printf("\n[3] - %21s (%d)","Lidos",number_of_emails(arquivos.read_tree_messages));
-		printf("\n[4] - %21s (%d)","Enviados",number_of_emails(arquivos.sent_tree_messages));
-		printf("\n[5] - %21s (%d)","Lixeira",number_of_emails(arquivos.trash_tree_messages));
+		while(tecla!=KeyEnter)
+		{
+			if(opcao-nova_opcao)
+			{
+				roll[opcao]=vazio;
+				roll[nova_opcao]=cursor;
+				opcao=nova_opcao;
+			}
+			printf("\n[Opção] - Pasta (Nº de E-mails) "); breakline;
+			printf("%s |%21s (%d)",roll[0],"Caixa de Entrada",number_of_emails(arquivos.inbox_tree_messages)); breakline;
+			printf("%s |%21s (%d)",roll[1],"Caixa de Saída",number_of_emails(arquivos.outbox_tree_messages)); breakline;
+			printf("%s |%21s (%d)",roll[2],"Lidos",number_of_emails(arquivos.read_tree_messages)); breakline;
+			printf("%s |%21s (%d)",roll[3],"Enviados",number_of_emails(arquivos.sent_tree_messages)); breakline;
+			printf("%s |%21s (%d)",roll[4],"Lixeira",number_of_emails(arquivos.trash_tree_messages)); breakline;
 
-		printf("\n[6] - Escrever novo e-mail");
-		printf("\n[7] - Pesquisar por e-mail");
-		printf("\n[0] - Sair da conta");
+			printf("%s |%25s",roll[5],"Escrever novo e-mail"); breakline;
+			printf("%s |%25s",roll[6],"Pesquisar por e-mail"); breakline;
+			printf("%s |%25s",roll[7],"Sair da conta"); breakline;
 
-		printf("\nEscolha: ");
-		scanf("%d",&escolha);
-
-		cls;
+			tecla = getch();
+			while (tecla != KeySpecial2 && tecla != KeyEnter)
+				tecla = getch();
+			if (tecla == KeySpecial2)
+			{
+				tecla = getch();
+				if (tecla == KeyUp)
+				{
+					if (opcao)
+						nova_opcao--;
+				}
+				else if (tecla == KeyDown)
+				{
+					if (opcao < 7)
+						nova_opcao++;
+				}
+			}
+			cls;
+		}
+		tecla=0;
 		// Essas são as funções que faltam ser definidas
 		/*switch (escolha)
 		{
-			case 1: // Caixa de Entrada
+			case 0: // Caixa de Entrada
 				access_inbox(arquivos);
 			break;
-			case 2: // Caixa de Saída
+			case 1: // Caixa de Saída
 				access_outbox(arquivos);
 			break;
-			case 3: // Lidos
+			case 2: // Lidos
 				access_read(arquivos);
 			break;
-			case 4: // Enviados
+			case 3: // Enviados
 				access_sent(arquivos);
 			break;
-			case 5: // Lixeira
+			case 4: // Lixeira
 				access_trasharquivos);
 			break;
-			case 6: // Enviar Email
+			case 5: // Enviar Email
 				send_email(arquivos);
 			break;
-			case 7: // Pesquisar Email
+			case 6: // Pesquisar Email
 				search_email(arquivos);
 			break;
-			case 0: // Sair da Conta
+			case 7: // Sair da Conta
+				loop=0;
 				close_ccount_files(arquivos);
 				printf("O logoff foi efetuado com sucesso."); breakline;
 			break;
 			default:
 				return;
 		}*/
-	} while (escolha);
+	} while (loop);
 }
 void access_inbox(ARQUIVOS arquivos)
 {
@@ -405,7 +482,7 @@ void list_email_decreasing(ARQUIVOS arquivos,FILE *tree,FILE *nodo_list,int pos)
 	}
 	else
 	{
-		print_email_header();
+		//print_email_header();
 	}
 
 }

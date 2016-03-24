@@ -12,6 +12,7 @@
 #include <stdlib.h>
 #include <locale.h>
 #include <string.h>
+#include <conio.h>
 #include <time.h>
 #include <sys/stat.h>
 #ifndef __linux__ // Verifica se o sistema atual não é Linux
@@ -19,7 +20,7 @@
 #endif
 
 #define cls system("CLS || clear");
-#define pause printf("\nDigite algo para continuar"); getchar();
+#define pause printf("\nDigite algo para continuar"); getch();
 #define spc printf("  |");
 #define spc_m printf("              ");
 #define breakline printf("\n");
@@ -98,7 +99,7 @@ typedef struct
 	int MSG;
 	int data;
 	int historico; 		// PARA RICARDO E RUAN DO FUTURO: A ESTRUTURA RETRO ALUDIDA
-						// REFERENCIARÁ UM SUBNODO, E ASSIM EM DIANTE, ENCADEANDO. COM CADEADOS.
+						// REFERENCIARÁ UM SUBNODO, E ASSIM EM DIANTE, ENCADEANDO.
 }SUB_NODO;
 
 typedef struct
@@ -362,6 +363,7 @@ char* dir_builder(char*dir,int account_number,char* file)
 	free(ad);
 	return r;
 }
+
 char* ler(char modo)
 {
 	char *lido=NULL;
