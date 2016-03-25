@@ -4,7 +4,9 @@
  *  Created on: 11/01/2016
  *      Author: ricardo
  */
+
 #include "functions_2_mail.h"
+
 void testar_estrutura(char *er)
 {
 	FILE *new,*tree;
@@ -25,6 +27,7 @@ void testar_estrutura(char *er)
 
 int main(void)
 {
+	setlocale(LC_ALL,"Portuguese");
 	project_presentation();
 	menu();
 
