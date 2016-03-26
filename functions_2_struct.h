@@ -4,7 +4,7 @@
  *  Created on: 11/01/2016
  *      Author: ricardo
  */
-//MUDANÇAS
+//MUDANï¿½AS
 #ifndef FUNCTIONS_2_STRUCT_H_
 #define FUNCTIONS_2_STRUCT_H_
 
@@ -15,8 +15,8 @@
 
 #include <time.h>
 #include <sys/stat.h>
-#ifndef __linux__ // Verifica se o sistema atual não é Linux
-	#include <direct.h> 	//	Inclui biblioteca específica do Windows se não for
+#ifndef __linux__ // Verifica se o sistema atual nï¿½o ï¿½ Linux
+	#include <direct.h> 	//	Inclui biblioteca especï¿½fica do Windows se nï¿½o for
 	#include <conio.h>
 #else
 	#include <curses.h>
@@ -28,9 +28,9 @@
 #define spc_m printf("              ");
 #define breakline printf("\n");
 #define line breakline; printf("____________________________________________________________"); breakline;
-#define x 10	// Limite de histórico
+#define x 10	// Limite de histï¿½rico
 #define k 6
-// Ordem - Usar número par - Número de Chaves será k-1 e o número de filhos será k
+// Ordem - Usar nï¿½mero par - Nï¿½mero de Chaves serï¿½ k-1 e o nï¿½mero de filhos serï¿½ k
 #define numChaves k-1
 #define numFilhos k
 #define minChaves ((k/2)-1)
@@ -42,7 +42,7 @@
 #define size_address 64
 #define size_horario strlen("00/00/0000 00:00:00")
 
-// 	Temos que voltar o ponteiro dos arquivos depois das operações de leitura
+// 	Temos que voltar o ponteiro dos arquivos depois das operaï¿½ï¿½es de leitura
 
 
 typedef struct
@@ -78,7 +78,7 @@ typedef struct
 }
 configuration;
 
-//	Estrutura dos tipos de informações de email
+//	Estrutura dos tipos de informaï¿½ï¿½es de email
 typedef struct
 {
 	char mail[size_message];
@@ -97,10 +97,10 @@ typedef struct
 }
 addresses;
 
-typedef struct //O resto das informações não serve pra busca
+typedef struct //O resto das informaï¿½ï¿½es nï¿½o serve pra busca
 {
-	//int dia,mês,ano,horas,minutos,segundos;
-	int data[6];//data ordenada por relevância (ano,mês,dia,hora,minuto,segundo)
+	//int dia,mï¿½s,ano,horas,minutos,segundos;
+	int data[6];//data ordenada por relevï¿½ncia (ano,mï¿½s,dia,hora,minuto,segundo)
 }
 HORARIO;
 
@@ -118,30 +118,30 @@ typedef struct
 	int MSG;
 	int data;
 	int historico; 		// PARA RICARDO E RUAN DO FUTURO: A ESTRUTURA RETRO ALUDIDA
-}						// REFERENCIARÁ UM SUBNODO, E ASSIM EM DIANTE, ENCADEANDO.
+}						// REFERENCIARï¿½ UM SUBNODO, E ASSIM EM DIANTE, ENCADEANDO.
 SUB_NODO;
 
 typedef struct
 {
        char user[64];
        char password[64];
-       /*int inbox; //Todos vão conter o valor no qual está no vetor o NODO que corresponde
+       /*int inbox; //Todos vï¿½o conter o valor no qual estï¿½ no vetor o NODO que corresponde
        int outbox;
        int read;
        int trash;
        int sent;*/
 }
-CONTA;		//Conta deve ser uma arvore pois seria totalmente incompreensível
-			//usar métodos tão sofisticados de busca pra tudo exceto pra achar as contas
+CONTA;		//Conta deve ser uma arvore pois seria totalmente incompreensï¿½vel
+			//usar mï¿½todos tï¿½o sofisticados de busca pra tudo exceto pra achar as contas
 
 typedef struct
 {
-	int chaves[k-1]; 	// Campo que é escolhido convenientemente ao funcionamento do sistema. (messages, subjects, HORARIO
+	int chaves[k-1]; 	// Campo que ï¿½ escolhido convenientemente ao funcionamento do sistema. (messages, subjects, HORARIO
 	int addresses[k-1];	// Apontam para Listas de SUB_NODO
 	int filhos[k]; 		// NODOS
 	int pai;
-	char num_chaves;	// Escolha do tipo char devido ao tamanho máximo escalado para o programa, 64 filhos e 63 chaves.
-	char ne_folha;	// Número de Filhos. Também pode indicar se o NODO é uma folha ou não, 0 = folha.
+	char num_chaves;	// Escolha do tipo char devido ao tamanho mï¿½ximo escalado para o programa, 64 filhos e 63 chaves.
+	char ne_folha;	// Nï¿½mero de Filhos. Tambï¿½m pode indicar se o NODO ï¿½ uma folha ou nï¿½o, 0 = folha.
 }
 NODO;
 
@@ -173,7 +173,7 @@ typedef struct
 	FILE *text_list;
 	FILE *word_list;
 	FILE *lista_enc;
-	//Árvores Gerais
+	//ï¿½rvores Gerais
 	FILE *tree_HORARIO;
 	FILE *tree_messages;
 	FILE *tree_PALAVRA;
@@ -249,7 +249,7 @@ typedef struct{
 	RESULT **index;
 }RESULTADO;
 
-//ESCOPO DAS FUNÇÕES
+//ESCOPO DAS FUNï¿½ï¿½ES
 char* detecta_os();
 void print_nodo(NODO nodo);
 void print_arvoreb(ARVOREB avb);
@@ -273,6 +273,7 @@ void create_text_list(char *dir,int account_address);
 int add_text(FILE *config,FILE *text_list,char *new);
 void remove_text(FILE *config,FILE *text_list,int scroll);
 char* get_text(FILE *config,FILE *text_list, int scroll);
+char** words_from_text(FILE *config,FILE *text_list, int scroll);
 
 void create_subject_list(char *dir,int account_address);
 int add_subject(FILE *config, FILE *subject_list,char *new);
@@ -285,7 +286,7 @@ void remove_email(FILE *config, FILE *email_list,int scroll);
 
 void create_LISTA_ENC(char *dir,int account_address);
 int add_LISTA_ENC(FILE *config, FILE *lista_enc,int ultimo,int novo);
-void remove_LISTA_ENC(FILE *config, FILE *lista_enc, int anterior,int atual);//A chamada desta função deve ser feita dentro da arvore onde é posível ter essas informações
+void remove_LISTA_ENC(FILE *config, FILE *lista_enc, int anterior,int atual);//A chamada desta funï¿½ï¿½o deve ser feita dentro da arvore onde ï¿½ posï¿½vel ter essas informaï¿½ï¿½es
 
 void create_horario_list(char *dir,int account_address);
 int add_horario(FILE *config, FILE *horario_list, HORARIO novo);

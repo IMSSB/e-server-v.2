@@ -6,7 +6,7 @@
  */
 #include "functions_2_struct.h"
 
-// FUNÇÕES DE TESTE INTERNO
+// FUNï¿½ï¿½ES DE TESTE INTERNO
 
 char* detecta_os()
 {
@@ -36,7 +36,7 @@ void print_nodo(NODO nodo){
 	breakline;
 	printf("pai = %d\n", nodo.pai);
 	printf("num_chaves = %d\n", nodo.num_chaves);
-	printf("não é folha = %d\n", nodo.ne_folha);
+	printf("nï¿½o ï¿½ folha = %d\n", nodo.ne_folha);
 }
 void print_arvoreb(ARVOREB avb)
 {
@@ -46,7 +46,7 @@ void print_arvoreb(ARVOREB avb)
 	printf("AVB - num_SUB_NODOS = %d\n", avb.num_SUB_NODOS);
 	printf("AVB - next_NODO = %d\n", avb.next_NODO);
 }
-//Função para resolver ambiguidade de modos entre sistemas operacionais
+//Funï¿½ï¿½o para resolver ambiguidade de modos entre sistemas operacionais
 void make_dir(char *aux)
 {
 	#ifdef __linux
@@ -55,9 +55,9 @@ void make_dir(char *aux)
 		_mkdir(aux);
 	#endif
 }
-// 	FUNÇÕES ÚTEIS
+// 	FUNï¿½ï¿½ES ï¿½TEIS
 void error_m(char *errormessage)
-{ 	/* Função para facilitar exibição de mensagens de erro */
+{ 	/* Funï¿½ï¿½o para facilitar exibiï¿½ï¿½o de mensagens de erro */
     printf("\n%s",errormessage);
     pause;
     exit(1);
@@ -65,17 +65,17 @@ void error_m(char *errormessage)
 
 
 char* filepath_gen(char *dir, char *file)
-{ 	// 	Função para gerar ponteiro para char com o diretório
-	char *path=(char *) malloc(sizeof(char)*250);	//	Alocando espaço para ponteiro que será retornado
-	sprintf(path, "%s",dir);	//	Colocando diretório fornecido no espaço alocado
+{ 	// 	Funï¿½ï¿½o para gerar ponteiro para char com o diretï¿½rio
+	char *path=(char *) malloc(sizeof(char)*250);	//	Alocando espaï¿½o para ponteiro que serï¿½ retornado
+	sprintf(path, "%s",dir);	//	Colocando diretï¿½rio fornecido no espaï¿½o alocado
 	strcat(path,"/");			//	Concatenando com uma barra
 	strcat(path,file);			//	Concatenando com o nome do arquivo
 	return path;				//	Retornando o ponteiro
 }
-// Não se pode usar strcat em string constante, perdi um tempinho com isso.
+// Nï¿½o se pode usar strcat em string constante, perdi um tempinho com isso.
 
 char* dir_builder(char*dir,int account_number,char* file)
-{	//	Função para gerar o caminho do arquivo
+{	//	Funï¿½ï¿½o para gerar o caminho do arquivo
 	char *ad = get_address(dir,account_number), *r;
 
 	r = strcat(strcat(strcat(filepath_gen(dir,""),ad),"/"),file);
@@ -116,18 +116,18 @@ char* ler(char modo)
 }
 
 
-//LISTA DE ENDEREÇOS GLOBAL
+//LISTA DE ENDEREï¿½OS GLOBAL
 void create_address_list(char *dir) //
-{	// Função para criar o arquivo da Lista de Endereços
-	FILE *new;			//	Declarando ponteiro para arquivo que será criado
-	CONTA ad;		//	Declarando variável addresses para ser escrita no arquivo
+{	// Funï¿½ï¿½o para criar o arquivo da Lista de Endereï¿½os
+	FILE *new;			//	Declarando ponteiro para arquivo que serï¿½ criado
+	CONTA ad;		//	Declarando variï¿½vel addresses para ser escrita no arquivo
 	char *dir_ad=filepath_gen(dir,"addresses.bin");		//	Gerando caminho para o arquivo
 
 	if(!(new=fopen(dir_ad,"wb")))	//	Criando arquivo
-		error_m("Error at file allocation - CAL");	//	Mensagem de erro se o arquivo não conseguir ser criado/subscrito
+		error_m("Error at file allocation - CAL");	//	Mensagem de erro se o arquivo nï¿½o conseguir ser criado/subscrito
 	else
 	{
-		sprintf(&(ad.user[0]),"%d",-1);	//	Colocando "-1" na variável para indicar que ainda não há nenhum endereço
+		sprintf(&(ad.user[0]),"%d",-1);	//	Colocando "-1" na variï¿½vel para indicar que ainda nï¿½o hï¿½ nenhum endereï¿½o
 		fwrite(&ad,sizeof(CONTA),1,new);	//	Escrevendo no arquivo
 		fclose(new);	// 	Fechando arquivo
 	}
@@ -136,37 +136,37 @@ void create_address_list(char *dir) //
 }
 
 int add_address(FILE *set, FILE *ad,char *user,char *password)
-{	//	Função para adicionar um endereço na Lista de Endereços
+{	//	Funï¿½ï¿½o para adicionar um endereï¿½o na Lista de Endereï¿½os
 	settings s;
 	CONTA ads;
-	int scroll;		//	Variáveis auxiliares
+	int scroll;		//	Variï¿½veis auxiliares
 	fpos_t c;
 
-	rewind(set);						//	Colocando a posição do fluxo de dados no inicio
-	fread(&s,sizeof(settings),1,set);	//	Lendo arquivo de configurações e armazenando na variável s
-	scroll=(s.next_address == -1)?s.num_addresses:s.next_address;	//	Definindo a posição em que o novo endereço será salvo no arquivo addresses.bin
-	fseek(ad,scroll*sizeof(CONTA),SEEK_SET);				//	Deslocando a posição do buffer no arquivo addresses.bin
-	if(s.next_address!=-1)										//	caso haja blocos não utilizados a serem subscritos
+	rewind(set);						//	Colocando a posiï¿½ï¿½o do fluxo de dados no inicio
+	fread(&s,sizeof(settings),1,set);	//	Lendo arquivo de configuraï¿½ï¿½es e armazenando na variï¿½vel s
+	scroll=(s.next_address == -1)?s.num_addresses:s.next_address;	//	Definindo a posiï¿½ï¿½o em que o novo endereï¿½o serï¿½ salvo no arquivo addresses.bin
+	fseek(ad,scroll*sizeof(CONTA),SEEK_SET);				//	Deslocando a posiï¿½ï¿½o do buffer no arquivo addresses.bin
+	if(s.next_address!=-1)										//	caso haja blocos nï¿½o utilizados a serem subscritos
 	{
-		fgetpos(ad,&c);								//	Guardando a posição atual do fluxo de dados
-		fread(&ads,sizeof(CONTA),1,ad);			//	Lendo arquivo de endereços e armazenando na variável ad
-		sscanf(ads.user,"%d",&(s.next_address));	//	Atualizando o próximo a ser subscrito
-		fsetpos(ad,&c);								// 	Retornando a posição do fluxo de dados para a salva anteriormente
+		fgetpos(ad,&c);								//	Guardando a posiï¿½ï¿½o atual do fluxo de dados
+		fread(&ads,sizeof(CONTA),1,ad);			//	Lendo arquivo de endereï¿½os e armazenando na variï¿½vel ad
+		sscanf(ads.user,"%d",&(s.next_address));	//	Atualizando o prï¿½ximo a ser subscrito
+		fsetpos(ad,&c);								// 	Retornando a posiï¿½ï¿½o do fluxo de dados para a salva anteriormente
 	}
 	else
 		s.anum_address++;
-	sprintf(ads.user,"%s",user);			//	Guardando usuário
+	sprintf(ads.user,"%s",user);			//	Guardando usuï¿½rio
 	sprintf(ads.password,"%s",password);			//	Guardando senha
-	s.num_addresses++;						//	Incrementando o número de endereços
-	rewind(set);						//	Colocando a posição do fluxo de dados no inicio
-	fwrite(&s,sizeof(settings),1,set);		//	Escrevendo alterações feitas nos arquivos
+	s.num_addresses++;						//	Incrementando o nï¿½mero de endereï¿½os
+	rewind(set);						//	Colocando a posiï¿½ï¿½o do fluxo de dados no inicio
+	fwrite(&s,sizeof(settings),1,set);		//	Escrevendo alteraï¿½ï¿½es feitas nos arquivos
 	fwrite(&ads,sizeof(CONTA),1,ad);
 
 	return scroll;
 }
 
 void remove_address(FILE *set, FILE *ad,int pos)
-{	//	Função para remover um endereço da Lista de Endereços
+{	//	Funï¿½ï¿½o para remover um endereï¿½o da Lista de Endereï¿½os
 	settings s;
 	CONTA ads;
 	fpos_t c;
@@ -185,14 +185,14 @@ void remove_address(FILE *set, FILE *ad,int pos)
 		s.num_addresses--;
 		fwrite(&ads,sizeof(CONTA),1,ad);
 		rewind(set);
-		fwrite(&s,sizeof(settings),1,set);//escrevendo alterações feitas
+		fwrite(&s,sizeof(settings),1,set);//escrevendo alteraï¿½ï¿½es feitas
 	}
 
 	return;
 }
 
 char* get_address(char *dir,int account_number)
-{	//	Função que retorna um endereço da Lista de Endereços
+{	//	Funï¿½ï¿½o que retorna um endereï¿½o da Lista de Endereï¿½os
 	char* address = (char*)malloc(sizeof(char)*64),*dir_ad=filepath_gen(dir,"addresses.bin");
 	FILE *ad;
 	CONTA ads;
@@ -209,7 +209,7 @@ char* get_address(char *dir,int account_number)
 }
 
 char* get_password(FILE *ad,int account_number)
-{	//	Função que retorna um endereço da Lista de Endereços
+{	//	Funï¿½ï¿½o que retorna um endereï¿½o da Lista de Endereï¿½os
 	char* address = (char*)malloc(sizeof(char)*64);
 	CONTA ads;
 
@@ -220,9 +220,9 @@ char* get_password(FILE *ad,int account_number)
 	return address;
 }
 
-//CONFIGURAÇÃO
+//CONFIGURAï¿½ï¿½O
 void setup_server(char *dir)
-{	//	Função para configuração geral do Servidor
+{	//	Funï¿½ï¿½o para configuraï¿½ï¿½o geral do Servidor
 	FILE *set;
 	settings new;
 
@@ -242,7 +242,7 @@ void setup_server(char *dir)
 }
 
 void create_config(char *dir,int account_address)
-{	// Função para criar o arquivo de Configuração do Usuário
+{	// Funï¿½ï¿½o para criar o arquivo de Configuraï¿½ï¿½o do Usuï¿½rio
 	char *address = dir_builder(dir,account_address,"config.bin"), *ac, *aux;
 	FILE *config;
 	configuration new;
@@ -290,7 +290,7 @@ void create_config(char *dir,int account_address)
 
 //LISTA DE TEXTOS
 void create_text_list(char *dir,int account_address)
-{	//	Função para criar o arquivo da Lista de Textos do usuário
+{	//	Funï¿½ï¿½o para criar o arquivo da Lista de Textos do usuï¿½rio
 	char *address=dir_builder(dir,account_address,"text_list.bin");
 	FILE *text_list;
 	messages msg;
@@ -309,7 +309,7 @@ void create_text_list(char *dir,int account_address)
 }
 
 int add_text(FILE *config,FILE *text_list,char *new)
-{	//	Função para adicionar um texto à Lista de Textos
+{	//	Funï¿½ï¿½o para adicionar um texto ï¿½ Lista de Textos
 	messages msg;
 	configuration c;
 	int scroll;
@@ -337,8 +337,8 @@ int add_text(FILE *config,FILE *text_list,char *new)
 	return scroll;
 }
 
-void remove_text(FILE *config,FILE *text_list,int pos)//precisamos validar as remoções depois
-{	//	Função para remover um texto da Lista de Textos
+void remove_text(FILE *config,FILE *text_list,int pos)//precisamos validar as remoï¿½ï¿½es depois
+{	//	Funï¿½ï¿½o para remover um texto da Lista de Textos
 	messages msg;
 	configuration c;
 
@@ -360,7 +360,7 @@ void remove_text(FILE *config,FILE *text_list,int pos)//precisamos validar as re
 }
 
 char* get_text(FILE *config,FILE *text_list, int pos)
-{	//	Função que retorna um texto da Lista de Textos
+{	//	Funï¿½ï¿½o que retorna um texto da Lista de Textos
 	char *t=(char*)malloc(sizeof(char)*300);
 	messages read;
 
@@ -371,12 +371,44 @@ char* get_text(FILE *config,FILE *text_list, int pos)
 
 	return t;
 }
+char** words_from_text(FILE *config,FILE *text_list, int scroll)
+{
+	char  **words;
+	messages read;
+	char aux[300];
+	int c=0,ca=0,tam,num_words=0;
 
+	fseek(text_list,scroll,SEEK_SET);
+	fread(&read,sizeof(messages),1,text_list);
+
+	while(c<300 && read.mail[c])
+	{
+		for(num_words++,ca++,tam=0 ; c<300 && read.mail[c] && tam <=30 && read.mail[c] !=' ' && read.mail[c] !='.' && read.mail[c] !=',' && read.mail[c] !='!' && read.mail[c] !='?' && read.mail[c] !='<' && read.mail[c] !='>' &&read.mail[c] !=';' && read.mail[c] !=':';c++,ca++,tam++ )//Tratando possÃ­veis pontuaÃ§Ãµes existentes
+		{
+			aux[ca]=read.mail[c];
+		}
+	}
+
+	aux[ca]='\o';//Barra zero Ã© assim mesmo?
+
+	words=(char**)malloc(sizeof(char*)*num_words);
+
+	for(c=0;c<num_words;c++)
+		words[c]=(char*)malloc(sizeof(char)*30);
+
+	ca=0;
+	for(c=0;c<num_words;c++,ca++)
+		for(tam=0;aux[ca] != ' ';ca++,tam++)
+			words[c][tam]=aux[ca];
+
+	return words;
+
+}
 
 //LISTA DE ASSUNTOS
 void create_subject_list(char* dir,int account_address)
-{	// Função para criar o arquivo da Lista de Assuntos do usuário
-	char *subjects_address=dir_builder(dir,account_address,"subject_list.bin");//fazer uma função pra isso!!!
+{	// Funï¿½ï¿½o para criar o arquivo da Lista de Assuntos do usuï¿½rio
+	char *subjects_address=dir_builder(dir,account_address,"subject_list.bin");//fazer uma funï¿½ï¿½o pra isso!!!
 	FILE *subject_list;
 	subjects sub;
 
@@ -394,7 +426,7 @@ void create_subject_list(char* dir,int account_address)
 }
 
 int add_subject(FILE *config, FILE *subject_list,char *new)
-{	// Função para adicionar um assunto à Lista de Assuntos
+{	// Funï¿½ï¿½o para adicionar um assunto ï¿½ Lista de Assuntos
 	configuration c;
 	subjects s;
 	int pos;
@@ -422,7 +454,7 @@ int add_subject(FILE *config, FILE *subject_list,char *new)
 }
 
 void remove_subject(FILE *config, FILE *subject_list,int pos)
-{	// Função para remover um assunto da Lista de Assuntos
+{	// Funï¿½ï¿½o para remover um assunto da Lista de Assuntos
 	configuration c;
 	subjects s;
 
@@ -443,7 +475,7 @@ void remove_subject(FILE *config, FILE *subject_list,int pos)
 }
 
 char* get_subject(FILE *config, FILE *subject_list,int pos)
-{	//	Função que retorna um assunto da Lista de Assuntos dada sua posição (pos)
+{	//	Funï¿½ï¿½o que retorna um assunto da Lista de Assuntos dada sua posiï¿½ï¿½o (pos)
 	char *sub;
 	subjects s;
 
@@ -458,7 +490,7 @@ char* get_subject(FILE *config, FILE *subject_list,int pos)
 
 //LISTA DE EMAILS
 void create_email_list(char* dir,int account_address)
-{	// Função para criar o arquivo da Lista de Emails
+{	// Funï¿½ï¿½o para criar o arquivo da Lista de Emails
 	char *address = dir_builder(dir,account_address,"email_list.bin");
 	FILE *email_list;
 	SUB_NODO new;
@@ -477,10 +509,10 @@ void create_email_list(char* dir,int account_address)
 }
 
 int add_email(FILE *config, FILE *email_list,int remetente,int destinatario, int assunto, int MSG, int data, int historico)
-{ 	//	Função para adicionar um email na Lista de Emails
-	configuration c; 			//	Manipulação da configuração
-	SUB_NODO e; 				//	Manipulação de email
-	int scroll;					// 	Variável para deslocamento
+{ 	//	Funï¿½ï¿½o para adicionar um email na Lista de Emails
+	configuration c; 			//	Manipulaï¿½ï¿½o da configuraï¿½ï¿½o
+	SUB_NODO e; 				//	Manipulaï¿½ï¿½o de email
+	int scroll;					// 	Variï¿½vel para deslocamento
 	fpos_t p;
 
 	rewind(config);
@@ -512,9 +544,9 @@ int add_email(FILE *config, FILE *email_list,int remetente,int destinatario, int
 }
 
 void remove_email(FILE *config, FILE *email_list,int pos)
-{	//	Função para removar email da Lista de Emails dada sua posição (scroll)
-	configuration c; 			//	Manipulação da configuração
-	SUB_NODO e; 				//	Manipulação de email
+{	//	Funï¿½ï¿½o para removar email da Lista de Emails dada sua posiï¿½ï¿½o (scroll)
+	configuration c; 			//	Manipulaï¿½ï¿½o da configuraï¿½ï¿½o
+	SUB_NODO e; 				//	Manipulaï¿½ï¿½o de email
 	fpos_t p;
 
 	rewind(config);
@@ -539,7 +571,7 @@ void remove_email(FILE *config, FILE *email_list,int pos)
 
 //LISTA DE LISTAS ENCADEADAS DE EMAILS
 void create_LISTA_ENC(char *dir,int account_address)
-{	// Função para criar o arquivo da Lista de Listas Encadeadas de Emails
+{	// Funï¿½ï¿½o para criar o arquivo da Lista de Listas Encadeadas de Emails
 	char* address = dir_builder(dir,account_address,"lista_enc.bin");
 	FILE *lista_enc;
 	LISTA l;
@@ -558,12 +590,12 @@ void create_LISTA_ENC(char *dir,int account_address)
 }
 
 int add_LISTA_ENC(FILE *config, FILE *lista_enc, int antecessor,int novo)
-{	//	Função para adicionar lista à Lista de Listas Encadeadas de Emails
+{	//	Funï¿½ï¿½o para adicionar lista ï¿½ Lista de Listas Encadeadas de Emails
 	LISTA a;
 	configuration c;
 	int pos,aux=-1;
 	fpos_t p;
-	// FUTURO: FAZER SUPOSIÇÃO DA POSIÇÃO NA LISTA QUANDO não houver antecessor
+	// FUTURO: FAZER SUPOSIï¿½ï¿½O DA POSIï¿½ï¿½O NA LISTA QUANDO nï¿½o houver antecessor
 	rewind(config);
 	fread(&c,sizeof(configuration),1,config);
 
@@ -596,7 +628,7 @@ int add_LISTA_ENC(FILE *config, FILE *lista_enc, int antecessor,int novo)
 }
 
 void remove_LISTA_ENC(FILE *config, FILE *lista_enc, int antecessor,int atual)
-{	//	Função para remover lista da Lista de Listas Encadeadas de Emails
+{	//	Funï¿½ï¿½o para remover lista da Lista de Listas Encadeadas de Emails
 	LISTA a;
 	configuration c;
 	int aux;
@@ -633,9 +665,9 @@ void remove_LISTA_ENC(FILE *config, FILE *lista_enc, int antecessor,int atual)
 	return;
 }
 
-//LISTA DE HORÁRIOS
+//LISTA DE HORï¿½RIOS
 void create_horario_list(char *dir,int account_address)
-{	// Função para criar arquivo da Lista de Horários
+{	// Funï¿½ï¿½o para criar arquivo da Lista de Horï¿½rios
 	char *address = dir_builder(dir,account_address,"horario_list.bin");
 	FILE *horarios;
 	HORARIO a;
@@ -654,7 +686,7 @@ void create_horario_list(char *dir,int account_address)
 }
 
 int add_horario(FILE *config, FILE *horario_list, HORARIO novo)
-{	// Função para adicionar horário à Lista de Horários
+{	// Funï¿½ï¿½o para adicionar horï¿½rio ï¿½ Lista de Horï¿½rios
 	HORARIO a;
 	configuration c;
 	int scroll,cont;
@@ -683,7 +715,7 @@ int add_horario(FILE *config, FILE *horario_list, HORARIO novo)
 }
 
 void remove_horario(FILE *config, FILE *horario_list, int scroll)
-{	// Função para remover horário da Lista de Horários
+{	// Funï¿½ï¿½o para remover horï¿½rio da Lista de Horï¿½rios
 	HORARIO a;
 	configuration c;
 
@@ -706,7 +738,7 @@ void remove_horario(FILE *config, FILE *horario_list, int scroll)
 
 //LISTA DE PALAVRAS
 void create_word_list(char *dir,int account_address)
-{	//	Função para criar o arquivo da Lista de Palavras
+{	//	Funï¿½ï¿½o para criar o arquivo da Lista de Palavras
 	char *address = dir_builder(dir,account_address,"word_list.bin");
 	FILE *word_list;
 	PALAVRA w;
@@ -723,7 +755,7 @@ void create_word_list(char *dir,int account_address)
 }
 
 int add_word(FILE *config, FILE *word_list, char *new)
-{	// 	Função para adicionar palavra da Lista de Palavras
+{	// 	Funï¿½ï¿½o para adicionar palavra da Lista de Palavras
 	PALAVRA w;
 	configuration c;
 	int pos;
@@ -756,7 +788,7 @@ int add_word(FILE *config, FILE *word_list, char *new)
 }
 
 void remove_word(FILE *config, FILE *word_list, int scroll)
-{	// 	Função para remover palavra da Lista de Palavras
+{	// 	Funï¿½ï¿½o para remover palavra da Lista de Palavras
 	PALAVRA w;
 	configuration c;
 
@@ -776,7 +808,7 @@ void remove_word(FILE *config, FILE *word_list, int scroll)
 
 	return;
 }
-//FUNÇÕES DA ARVORE
+//FUNï¿½ï¿½ES DA ARVORE
 void create_tree_type(char *dir,int account_address,char *folder, char *type)
 {
 	char *address, *sub_address, *a, *sa;
@@ -818,41 +850,41 @@ void create_tree_type(char *dir,int account_address,char *folder, char *type)
 }
 
 void split_tree(FILE *tree,FILE *nodo_list,int pai,int scroll)
-{	//	Função para dividir nós cheios durante inserção
+{	//	Funï¿½ï¿½o para dividir nï¿½s cheios durante inserï¿½ï¿½o
 	NODO pain,son1,son2;
 	ARVOREB AVB;
 	int c,felipe,smith;
 	fpos_t p,f1,f2;
 
 	rewind(tree);
-	fread(&AVB,sizeof(ARVOREB),1,tree); 	//	Lê o arquivo de configuração da árvore
+	fread(&AVB,sizeof(ARVOREB),1,tree); 	//	Lï¿½ o arquivo de configuraï¿½ï¿½o da ï¿½rvore
 	if(pai+1)	// 	Caso o NODO a ser dividido tenha pai
 	{
 		printf("\n---> CASO TENHA PAI)\nscroll = %d\n",scroll);
-		fseek(nodo_list,sizeof(NODO)*pai,SEEK_SET); // Procura a posição do pai no arquivo
-		fgetpos(nodo_list,&p);	//	Guarda a posição de gravação do Pai
+		fseek(nodo_list,sizeof(NODO)*pai,SEEK_SET); // Procura a posiï¿½ï¿½o do pai no arquivo
+		fgetpos(nodo_list,&p);	//	Guarda a posiï¿½ï¿½o de gravaï¿½ï¿½o do Pai
 		fread(&pain,sizeof(NODO),1,nodo_list);	//
-		fseek(nodo_list,sizeof(NODO)*pain.filhos[scroll],SEEK_SET);	// Procura posição do filho cheio, que vai ser o Filho 1
-		fgetpos(nodo_list,&f1);	//	Guarda a posição de gravação do Filho 1
+		fseek(nodo_list,sizeof(NODO)*pain.filhos[scroll],SEEK_SET);	// Procura posiï¿½ï¿½o do filho cheio, que vai ser o Filho 1
+		fgetpos(nodo_list,&f1);	//	Guarda a posiï¿½ï¿½o de gravaï¿½ï¿½o do Filho 1
 		fread(&son1,sizeof(NODO),1,nodo_list);
 	}
-	else	//	Se o NODO a ser dividido não tiver pai (Caso for raiz)
+	else	//	Se o NODO a ser dividido nï¿½o tiver pai (Caso for raiz)
 	{
-		printf("\n---> CASO NÃO TENHA PAI)\n");
+		printf("\n---> CASO Nï¿½O TENHA PAI)\n");
 		fseek(nodo_list,sizeof(NODO)*AVB.raiz,SEEK_SET);
-		fgetpos(nodo_list,&f1);	//	Guarda a posição de gravação do Filho 1
+		fgetpos(nodo_list,&f1);	//	Guarda a posiï¿½ï¿½o de gravaï¿½ï¿½o do Filho 1
 		fread(&son1,sizeof(NODO),1,nodo_list);
 		smith = (AVB.next_NODO == -1)?AVB.num_NODOS:AVB.next_NODO;
 		fseek(nodo_list,sizeof(NODO)*smith,SEEK_SET);
 		fgetpos(nodo_list,&p);
 		fread(&pain,sizeof(NODO),1,nodo_list);
 		if (AVB.next_NODO+1)
-			AVB.next_NODO = pain.pai; // Possibilitar isso na remoção
+			AVB.next_NODO = pain.pai; // Possibilitar isso na remoï¿½ï¿½o
 		else
 			AVB.anum_NODOS++;
 
 		AVB.num_NODOS++;
-		felipe = smith;//Felipe é endereço do pai
+		felipe = smith;//Felipe ï¿½ endereï¿½o do pai
 		pain.pai=-1;
 		pain.num_chaves=1;
 		pain.ne_folha=1;
@@ -882,7 +914,7 @@ void split_tree(FILE *tree,FILE *nodo_list,int pai,int scroll)
 	if (son1.ne_folha)
 		son2.filhos[c-(k/2)] = son1.filhos[c];
 	son2.ne_folha = son1.ne_folha;
-	son1.num_chaves = son2.num_chaves = minChaves; // Só funciona para ordem par
+	son1.num_chaves = son2.num_chaves = minChaves; // Sï¿½ funciona para ordem par
 
 	if(pai+1)
 	{
@@ -953,7 +985,7 @@ fpos_t predescessor(FILE *tree,FILE *nodo_list,int nodo,int key)
 
 	if(N1.num_chaves == k/2-1)
 	{
-		merge_nodo(tree,nodo_list,N1.pai,aux);//Eis a questão
+		merge_nodo(tree,nodo_list,N1.pai,aux);//Eis a questï¿½o
 		fseek(nodo_list,sizeof(NODO)*N1.pai,SEEK_SET);
 		fread(&N1,sizeof(NODO),1,nodo_list);
 		fseek(nodo_list,sizeof(NODO)*N1.filhos[aux = N1.num_chaves+1],SEEK_SET);
@@ -968,14 +1000,14 @@ fpos_t predescessor(FILE *tree,FILE *nodo_list,int nodo,int key)
 }
 
 int merge_nodo(FILE *tree,FILE *nodo_list,int pai,int scroll)
-{	//	Função para juntar dois NODOs irmãos, retorna o tipo da junção. 0 = Só passou um elemento, 1 = Junção dos irmãos com o pai.
+{	//	Funï¿½ï¿½o para juntar dois NODOs irmï¿½os, retorna o tipo da junï¿½ï¿½o. 0 = Sï¿½ passou um elemento, 1 = Junï¿½ï¿½o dos irmï¿½os com o pai.
 	NODO pain,son1,son2;
 	ARVOREB AVB;
 	int c,felipe;
 	fpos_t p,f1,f2;
 
 	rewind(tree);
-	fread(&AVB,sizeof(ARVOREB),1,tree); 	//	Lê o arquivo de configuração da árvore
+	fread(&AVB,sizeof(ARVOREB),1,tree); 	//	Lï¿½ o arquivo de configuraï¿½ï¿½o da ï¿½rvore
 	fseek(nodo_list,sizeof(NODO)*pai,SEEK_SET);
 	fgetpos(nodo_list,&p);
 	fread(&pain,sizeof(NODO),1,nodo_list);
@@ -983,7 +1015,7 @@ int merge_nodo(FILE *tree,FILE *nodo_list,int pai,int scroll)
 	fgetpos(nodo_list,&f1);
 	fread(&son1,sizeof(NODO),1,nodo_list);
 	felipe=scroll;
-	felipe+=(scroll <= pain.num_chaves)?1:-1; // Verifica se tem irmão à direita e define o irmão para junção
+	felipe+=(scroll <= pain.num_chaves)?1:-1; // Verifica se tem irmï¿½o ï¿½ direita e define o irmï¿½o para junï¿½ï¿½o
 	fseek(nodo_list,sizeof(NODO)*pain.filhos[felipe],SEEK_SET);
 	fgetpos(nodo_list,&f2);
 	fread(&son2,sizeof(NODO),1,nodo_list);
@@ -991,9 +1023,9 @@ int merge_nodo(FILE *tree,FILE *nodo_list,int pai,int scroll)
 	{
 		if(scroll>felipe)
 		{
-			fseek(nodo_list,f2,SEEK_SET);
+			fsetpos(nodo_list,&f2);
 			fread(&son1,sizeof(NODO),1,nodo_list);
-			fseek(nodo_list,f1,SEEK_SET);
+			fsetpos(nodo_list,&f1);
 			fread(&son2,sizeof(NODO),1,nodo_list);
 		}
 
@@ -1005,7 +1037,7 @@ int merge_nodo(FILE *tree,FILE *nodo_list,int pai,int scroll)
 			{
 				son1.chaves[son1.num_chaves+c]=son2.chaves[c];
 				son1.addresses[son1.num_chaves+c]=son2.addresses[c];
-				son1.filhos[son1.num_chaves+(c+1)]=son2.filhos[c];//Ruan, veja a questão dos filhos nos outros casos!
+				son1.filhos[son1.num_chaves+(c+1)]=son2.filhos[c];//Ruan, veja a questï¿½o dos filhos nos outros casos!
 			}
 			son1.num_chaves+=c;
 			son1.filhos[son1.num_chaves+1]=son2.filhos[c];
@@ -1017,8 +1049,8 @@ int merge_nodo(FILE *tree,FILE *nodo_list,int pai,int scroll)
 
 	}
 	else
-	if(scroll<felipe)//Acho que isso não altera a configuração de filhos caso feito do jeito certo
-	{	//caso não seja o ultimo filho e o irmão tenha 1 chave para doar
+	if(scroll<felipe)//Acho que isso nï¿½o altera a configuraï¿½ï¿½o de filhos caso feito do jeito certo
+	{	//caso nï¿½o seja o ultimo filho e o irmï¿½o tenha 1 chave para doar
 		son1.chaves[(int)++son1.num_chaves]=pain.chaves[scroll];
 		son1.addresses[(int)son1.num_chaves]=pain.addresses[scroll];
 		pain.chaves[scroll]=son2.chaves[0];
@@ -1032,7 +1064,7 @@ int merge_nodo(FILE *tree,FILE *nodo_list,int pai,int scroll)
 
 	}
 	else
-	{//caso seja o ultimo filho e o irmão tenha 1 chave para doar
+	{//caso seja o ultimo filho e o irmï¿½o tenha 1 chave para doar
 
 		for(c=son1.num_chaves; c>=0;c--)
 		{
@@ -1045,7 +1077,7 @@ int merge_nodo(FILE *tree,FILE *nodo_list,int pai,int scroll)
 		pain.chaves[scroll]=son2.chaves[(int)son2.num_chaves];
 		pain.addresses[scroll]=son2.addresses[(int)son2.num_chaves];
 		son2.num_chaves--;
-		//em tese é só isso...
+		//em tese ï¿½ sï¿½ isso...
 
 	}
 
@@ -1057,7 +1089,7 @@ int merge_nodo(FILE *tree,FILE *nodo_list,int pai,int scroll)
 	return 0;
 }
 void add_key_tree(ARQUIVOS arquivos,FILE *tree, FILE *nodo_list,char *type,int key,int SUB_NODO)
-{	// Função para adicionar chaves na árvore
+{	// Funï¿½ï¿½o para adicionar chaves na ï¿½rvore
 	ARVOREB new;
 	NODO nnew;
 	int c=0,scroll,aux,aux2,aux3,aux4,cdn=1;
@@ -1067,10 +1099,10 @@ void add_key_tree(ARQUIVOS arquivos,FILE *tree, FILE *nodo_list,char *type,int k
 
 	scroll=new.raiz;
 	if(new.raiz==-1)
-	{	printf("\nEntrou em condição raiz =-1\n");
+	{	printf("\nEntrou em condiï¿½ï¿½o raiz =-1\n");
 		nnew.chaves[0]=key;
 		nnew.num_chaves=1;
-		nnew.addresses[0]=add_LISTA_ENC(arquivos.config,arquivos.lista_enc,-1,SUB_NODO);//Aqui deve ser o endereço da lista
+		nnew.addresses[0]=add_LISTA_ENC(arquivos.config,arquivos.lista_enc,-1,SUB_NODO);//Aqui deve ser o endereï¿½o da lista
 		nnew.pai=-1;
 		nnew.ne_folha=0;
 		new.raiz=new.next_NODO==-1?new.num_NODOS:new.next_NODO;
@@ -1084,9 +1116,9 @@ void add_key_tree(ARQUIVOS arquivos,FILE *tree, FILE *nodo_list,char *type,int k
 		fseek(nodo_list,sizeof(NODO)*scroll,SEEK_SET);
 		fread(&nnew,sizeof(NODO),1,nodo_list);
 
-		if(nnew.num_chaves==k-1) // 	Divisão de NODO cheio
+		if(nnew.num_chaves==k-1) // 	Divisï¿½o de NODO cheio
 		{
-			printf("\n---> DIVISÃO)\n");
+			printf("\n---> DIVISï¿½O)\n");
 			split_tree(tree,nodo_list,nnew.pai,c);
 			rewind(tree);
 			printf("\nnewraiz = %d\n", new.raiz);
@@ -1098,7 +1130,7 @@ void add_key_tree(ARQUIVOS arquivos,FILE *tree, FILE *nodo_list,char *type,int k
 		}
 
 		for(c=0;c<nnew.num_chaves && 1 > compara_infos(arquivos,type,nnew.chaves[c],key);c++);
-		if(!nnew.ne_folha)//Caso básico
+		if(!nnew.ne_folha)//Caso bï¿½sico
 		{
 			aux=nnew.chaves[c];
 			nnew.chaves[c] = key;
@@ -1133,9 +1165,9 @@ void add_key_tree(ARQUIVOS arquivos,FILE *tree, FILE *nodo_list,char *type,int k
 	return;
 }
 
-//Decisão de projeto
+//Decisï¿½o de projeto
 /*void remove_key_tree(int account_address, char *dir,char *name,int key)
-{	//	Remover chave da árvore, só chamado caso todos os SUB_NODOS da chave tenham sido removidos
+{	//	Remover chave da ï¿½rvore, sï¿½ chamado caso todos os SUB_NODOS da chave tenham sido removidos
 	char *address, *sub_address, *a, *sa;
 	FILE *tree, *nodo_list;
 	ARVOREB new;
@@ -1168,7 +1200,7 @@ void add_key_tree(ARQUIVOS arquivos,FILE *tree, FILE *nodo_list,char *type,int k
 			rewind(tree);
 			fread(&new,sizeof(ARVOREB),1,tree);
 			rewind(tree);
-			scroll=nnew.pai?nnew.pai:new.raiz;	// definir após definir merge_nodo
+			scroll=nnew.pai?nnew.pai:new.raiz;	// definir apï¿½s definir merge_nodo
 			fseek(nodo_list,sizeof(NODO)*scroll,SEEK_SET);
 			fread(&nnew,sizeof(NODO),1,nodo_list);
 		}
@@ -1224,7 +1256,7 @@ int busca_SUB_NODO_tree(ARQUIVOS arquivos,FILE *tree, FILE *nodo_list, char *typ
 			cdn = 0;
 		}
 		else
-		if (!nnew.ne_folha)//É FOLHA!
+		if (!nnew.ne_folha)//ï¿½ FOLHA!
 		{
 			achou = -1;
 			cdn = 0;
@@ -1279,7 +1311,7 @@ void remove_SUB_NODO_tree(ARQUIVOS arquivos,FILE *tree, FILE *nodo_list, char *t
 }
 
 
-//FUNÇÕES DE ÁRVORE DE CONTAS
+//FUNï¿½ï¿½ES DE ï¿½RVORE DE CONTAS
 void create_tree_account(char *dir)
 {
 	char *address, *sub_address;
@@ -1315,7 +1347,7 @@ void create_tree_account(char *dir)
 	return;
 }
 void add_CONTA_tree(FILE *addresses,FILE *tree, FILE *nodo_list,int account_address)
-{	// Função para adicionar chaves na árvore
+{	// Funï¿½ï¿½o para adicionar chaves na ï¿½rvore
 	ARVOREB avb;
 	NODO nodo;
 	int c=0,scroll,aux,aux2,cdn=1;
@@ -1327,7 +1359,7 @@ void add_CONTA_tree(FILE *addresses,FILE *tree, FILE *nodo_list,int account_addr
 
 	scroll=avb.raiz;
 	if(avb.raiz==-1)
-	{	printf("\nEntrou em condição raiz =-1\n");
+	{	printf("\nEntrou em condiï¿½ï¿½o raiz =-1\n");
 		nodo.chaves[0]=account_address;
 		nodo.addresses[0]=account_address;
 		nodo.num_chaves=1;
@@ -1345,9 +1377,9 @@ void add_CONTA_tree(FILE *addresses,FILE *tree, FILE *nodo_list,int account_addr
 		fseek(nodo_list,sizeof(NODO)*scroll,SEEK_SET);
 		fread(&nodo,sizeof(NODO),1,nodo_list);
 
-		if(nodo.num_chaves==k-1) // 	Divisão de NODO cheio
+		if(nodo.num_chaves==k-1) // 	Divisï¿½o de NODO cheio
 		{	/*DEBUG ABAIXO*/
-			printf("\n---> DIVISÃO)\n");
+			printf("\n---> DIVISï¿½O)\n");
 			split_tree(tree,nodo_list,nodo.pai,c);
 			rewind(tree);
 			printf("\nnewraiz = %d\n", avb.raiz);
@@ -1359,7 +1391,7 @@ void add_CONTA_tree(FILE *addresses,FILE *tree, FILE *nodo_list,int account_addr
 		}
 
 		for(c=0;c<nodo.num_chaves && 1 > compara_infos(aux3,"addresses",nodo.chaves[c],account_address);c++);
-		if(!nodo.ne_folha)//Caso básico
+		if(!nodo.ne_folha)//Caso bï¿½sico
 		{
 			aux=nodo.chaves[c];
 			nodo.chaves[c] = account_address;
@@ -1413,7 +1445,7 @@ int busca_CONTA_tree(FILE *addresses,FILE *tree, FILE *nodo_list,int key)
 			cdn = 0;
 		}
 		else
-		if (!nnew.ne_folha)//É FOLHA!
+		if (!nnew.ne_folha)//ï¿½ FOLHA!
 		{
 			achou = -1;
 			cdn = 0;
@@ -1426,7 +1458,7 @@ int busca_CONTA_tree(FILE *addresses,FILE *tree, FILE *nodo_list,int key)
 }
 
 
-//FUNÇÕES DE COMPARAÇÃO
+//FUNï¿½ï¿½ES DE COMPARAï¿½ï¿½O
 int compara_infos(ARQUIVOS arquivos, char *tipo,int a,int b)
 {
 	if (!strcmp(tipo,"messages"))
@@ -1514,7 +1546,7 @@ int horario_maior(HORARIO a,HORARIO b)
 		if (a.data[c] < b.data[c])
 			return 0;
 	}
-	return 0;//se chegar aqui necessariamente é igual
+	return 0;//se chegar aqui necessariamente ï¿½ igual
 }
 
 int horario_menor(HORARIO a,HORARIO b)
@@ -1528,7 +1560,7 @@ int horario_menor(HORARIO a,HORARIO b)
 		if (a.data[c] > b.data[c])
 			return 0;
 	}
-	return 0;//se chegar aqui necessariamente é igual
+	return 0;//se chegar aqui necessariamente ï¿½ igual
 }
 
 int horario_menor_igual(HORARIO a,HORARIO b)
@@ -1542,7 +1574,7 @@ int horario_menor_igual(HORARIO a,HORARIO b)
 		if (a.data[c] > b.data[c])
 			return 0;
 	}
-	return 1;//se chegar aqui necessariamente é igual
+	return 1;//se chegar aqui necessariamente ï¿½ igual
 }
 
 int horario_maior_igual(HORARIO a,HORARIO b)
@@ -1556,7 +1588,7 @@ int horario_maior_igual(HORARIO a,HORARIO b)
 		if(a.data[c] < b.data[c])
 			return 0;
 	}
-	return 1;//se chegar aqui necessariamente é igual
+	return 1;//se chegar aqui necessariamente ï¿½ igual
 }
 
 RESULTADO create_result_list(void)
