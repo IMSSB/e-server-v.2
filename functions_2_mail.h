@@ -31,8 +31,16 @@ void criar_conta(PRINCIPAL *principal,char *dir);
 void acessar_conta(PRINCIPAL *principal,char *dir);
 void abrir_conta(PRINCIPAL principal,char *dir,int conta);
 
+char * print_email_header_to_string(ARQUIVOS arquivos,int email_pos);
 void print_email(ARQUIVOS arquivos,int email_pos);
 void print_horario(HORARIO data);
+char * print_horario_to_string(HORARIO data);
+
+void access_inbox(ARQUIVOS arquivos);
+send_email(PRINCIPAL principal, ARQUIVOS arquivos);
+
+void list_email_decreasing(RESULTADO *resultado,ARQUIVOS arquivos,FILE *tree,FILE *nodo_list,int pos);
+
 
 ARQUIVOS open_account_files(char *dir, int account_address);
 void close_account_files(ARQUIVOS arquivos);

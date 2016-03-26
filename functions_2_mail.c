@@ -228,11 +228,26 @@ void create_account(PRINCIPAL *principal,char *dir,char *user,char *password)
 }
 void criar_conta(PRINCIPAL *principal,char *dir)
 {
-	char *user,*password;
-	formated_message("CRIAÇÃO DE CONTA DE USUÁRIO");
-	printf("Digite o nome de usuário:"); breakline;
-	user = ler('\n');
-	printf("Digite a senha para a conta:"); breakline;
+	char *user,*password=(char *)calloc(sizeof(char),1);
+	int conta,temp;
+
+	do {
+		formated_message("CRIAÇÃO DE CONTA DE USUÁRIO");
+		printf("Digite o nome de usuário:"); breakline;
+		user = ler('\n');
+		temp = add_address(principal->settings,principal->addresses,user,password);
+
+		conta = busca_CONTA_tree(principal->addresses,principal->tree_CONTA, principal->tree_L_CONTA,temp);
+		if (conta != -1)
+			printf("Uma conta de email com esse nome já existe. Por favor tente com outro nome de usuário.\n");
+		pause;
+		cls;
+		remove_address(principal->settings,principal->addresses,temp);
+
+	} while(conta != -1);
+	free(password);
+
+	printf("Digite uma senha para a conta:"); breakline;
 	password = ler('\n');
 
 	pause;
@@ -264,8 +279,9 @@ void acessar_conta(PRINCIPAL *principal,char *dir)
 		pause;
 		cls;
 		remove_address(principal->settings,principal->addresses,temp);
-		free(password);
 	} while(conta == -1);
+	free(password);
+
 	do {
 		printf("Digite a senha da conta:"); breakline;
 		password = ler('\n');
@@ -349,10 +365,10 @@ void abrir_conta(PRINCIPAL principal,char *dir,int conta)
 				access_sent(arquivos);
 			break;
 			case 4: // Lixeira
-				access_trasharquivos);
+				access_trash(arquivos);
 			break;
 			case 5: // Enviar Email
-				send_email(arquivos);
+				send_email(principal,arquivos);
 			break;
 			case 6: // Pesquisar Email
 				search_email(arquivos);
@@ -366,6 +382,8 @@ void abrir_conta(PRINCIPAL principal,char *dir,int conta)
 				return;
 		}*/
 	} while (loop);
+
+	return;
 }
 
 void print_email_header(ARQUIVOS arquivos,int email_pos)
@@ -393,8 +411,43 @@ void print_email_header(ARQUIVOS arquivos,int email_pos)
 	printf("Para: %s",destinatario.address); breakline;
 	printf("%s   ",assunto.subject);
 	print_horario(data); breakline;
+}
 
+char * print_email_header_to_string(ARQUIVOS arquivos,int email_pos)
+{
+	char *email_header=calloc(size_subject+(size_address*2)+size_horario+10*4,sizeof(char)),*hor;
+	SUB_NODO email; 				//	Manipulação de email
+	subjects assunto;
+	HORARIO data;
+	addresses remetente, destinatario;
 
+	fseek(arquivos.email_list,sizeof(SUB_NODO)*email_pos,SEEK_SET);
+	fread(&email,sizeof(SUB_NODO),1,arquivos.email_list);
+
+	fseek(arquivos.subject_list,sizeof(subjects)*email.assunto,SEEK_SET);
+	fread(&assunto,sizeof(subjects),1,arquivos.subject_list);
+
+	fseek(arquivos.horario_list,sizeof(HORARIO)*email.data,SEEK_SET);
+	fread(&data,sizeof(HORARIO),1,arquivos.horario_list);
+
+	fseek(arquivos.addresses,sizeof(addresses)*email.remetente,SEEK_SET);
+	fread(&remetente,sizeof(addresses),1,arquivos.addresses);
+	fseek(arquivos.addresses,sizeof(addresses)*email.destinatario,SEEK_SET);
+	fread(&destinatario,sizeof(addresses),1,arquivos.addresses);
+
+	sprintf(email_header,"%s","|De: ");
+	strcat(email_header,remetente.address);
+	strcat(email_header,"\n    |Para: ");
+	strcat(email_header,destinatario.address);
+	strcat(email_header,"\n    | ");
+	strcat(email_header,assunto.subject);
+	strcat(email_header,"\n    | ");
+	hor=print_horario_to_string(data);
+	strcat(email_header,hor);
+
+	free(hor);
+
+	return email_header;
 }
 
 void print_email(ARQUIVOS arquivos,int email_pos)
@@ -440,26 +493,219 @@ void print_horario(HORARIO data)
 			data.data[2],data.data[1],data.data[0],
 			data.data[3],data.data[4],data.data[5]);
 }
-void access_inbox(ARQUIVOS arquivos)
-{
 
+char * print_horario_to_string(HORARIO data)
+{
+	char *horario=(char *)calloc(size_horario+2,sizeof(char));
+	sprintf(horario,"%00d/%00d/%0000d %00d:%00d:%00d",
+			data.data[2],data.data[1],data.data[0],
+			data.data[3],data.data[4],data.data[5]);
+	return horario;
 }
 
-void list_email_decreasing(ARQUIVOS arquivos,FILE *tree,FILE *nodo_list,int pos)
-{	//	FUNÇÃO PARA IMPRIMIR LISTA DE EMAILS COM ORGANIZAÇÃO A PARTIR DE UMA ÁRVORE
+void access_inbox(ARQUIVOS arquivos)
+{
+	RESULTADO resultado = create_result_list();
 	ARVOREB avb;
-	NODO nodo;
-	fseek(nodo_list,sizeof(NODO)*pos,SEEK_SET);
-	fread(&nodo,sizeof(NODO),1,nodo_list);
-	if (nodo.ne_folha)
-	{
-		list_email_decreasing(arquivos,tree,nodo_list,nodo.filhos[nodo.num_chaves+1]);
-	}
-	else
-	{
-		//print_email_header();
-	}
+	int opcao=0,nova_opcao=0,tecla=0,loop=1,multiplicador=0,aux;
+	char *roll[11],cursor[]="-->",vazio[]="   ";
+	roll[0]=cursor;
+	roll[1]=roll[2]=roll[3]=roll[4]=roll[5]=roll[6]=roll[7]=roll[8]=roll[9]=roll[10]=vazio;
 
+	rewind(arquivos.inbox_tree_HORARIO);
+	fread(&avb,sizeof(ARVOREB),1,arquivos.inbox_tree_HORARIO);
+	if (avb.num_NODOS)
+		list_email_decreasing(&resultado,arquivos,arquivos.inbox_tree_HORARIO,arquivos.inbox_tree_L_HORARIO,avb.raiz);
+
+	do
+	{
+		while(tecla!=KeyEnter)
+		{
+			if(opcao-nova_opcao)
+			{
+				roll[opcao]=vazio;
+				roll[nova_opcao]=cursor;
+				opcao=nova_opcao;
+			}
+			printf("Selecione o que deseja fazer e aperte ENTER:"); breakline;
+			printf("%s |Sair da pasta",roll[0]); breakline;
+			if (avb.num_NODOS)
+			{
+				printf("%s %s",roll[1],(*(resultado.index+(multiplicador*10)))->text); breakline;
+				if (1+(multiplicador*10)<resultado.num_resultados) {
+					printf("%s %s",roll[2],(*(resultado.index+1+(multiplicador*10)))->text); breakline;
+					if (2+(multiplicador*10)<resultado.num_resultados)
+					{
+						printf("%s %s",roll[3],(*(resultado.index+2+(multiplicador*10)))->text); breakline;
+						if (3+(multiplicador*10)<resultado.num_resultados)
+						{
+							printf("%s %s",roll[4],(*(resultado.index+3+(multiplicador*10)))->text); breakline;
+							if (4+(multiplicador*10)<resultado.num_resultados)
+							{
+								printf("%s %s",roll[5],(*(resultado.index+4+(multiplicador*10)))->text); breakline;
+								if (5+(multiplicador*10)<resultado.num_resultados)
+								{
+									printf("%s %s",roll[6],(*(resultado.index+5+(multiplicador*10)))->text); breakline;
+									if (6+(multiplicador*10)<resultado.num_resultados)
+									{
+										printf("%s %s",roll[7],(*(resultado.index+6+(multiplicador*10)))->text); breakline;
+										if (7+(multiplicador*10)<resultado.num_resultados)
+										{
+											printf("%s %s",roll[8],(*(resultado.index+7+(multiplicador*10)))->text); breakline;
+											if (8+(multiplicador*10)<resultado.num_resultados)
+											{
+												printf("%s %s",roll[9],(*(resultado.index+8+(multiplicador*10)))->text); breakline;
+												if (9+(multiplicador*10)<resultado.num_resultados)
+													printf("%s %s",roll[10],(*(resultado.index+9+(multiplicador*10)))->text); breakline;
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+				breakline;
+			}
+			else
+				printf("Pasta vazia. Não existem e-mails para serem exibidos.");
+			kbhit();
+			tecla = getch();
+			while (tecla != KeySpecial2 && tecla != KeyEnter)
+				tecla = getch();
+			if (tecla == KeySpecial2)
+			{
+				tecla = getch();
+				if (tecla == KeyUp)
+				{
+					if (opcao)
+						nova_opcao--;
+				}
+				else if (tecla == KeyDown)
+				{
+					aux = resultado.num_resultados-((multiplicador)*10);
+					if (opcao < ((aux>9)?10:aux))
+						nova_opcao++;
+				}
+				else if (tecla == KeyLeft)
+				{
+					if (multiplicador)
+						multiplicador--;
+				}
+				else if (tecla == KeyRight)
+				{
+					if (resultado.num_resultados/((multiplicador+1)*10) > 1)
+						multiplicador++;
+
+				}
+			}
+			cls;
+		}
+		tecla=0;
+
+
+		switch(opcao)
+		{
+			case 0:	//	Sair da pasta
+				loop=0;
+			break;
+			case 1:	//	Selecionar o email na posição 1
+				//exibir_email(arquivos,(*(resultado.index+(multiplicador*10)))->pos_email);
+			break;
+			default:
+			break;
+		}
+	}while(loop);
+}
+
+send_email(PRINCIPAL principal, ARQUIVOS arquivos)
+{
+	SUB_NODO email; 				//	Manipulação de email
+	HORARIO data;
+	configuration con;
+	time_t tempo;
+	struct tm *tempoc;
+	char *mensagem,*assunto,*remetente,*destinatario,*password=(char *)malloc(sizeof(char));
+	int auxad;
+	int pos_email;
+
+	printf("Destinatário: ");
+	destinatario = ler('\n');
+	printf("Assunto: ");
+	assunto = ler('\n');
+	mensagem = ler('\n');
+
+	rewind(arquivos.config);
+	fread(&con,sizeof(configuration),1,arquivos.config);
+	email.remetente = con.account_address;
+
+	auxad = add_address(principal.settings,principal.addresses,destinatario,password);
+	email.destinatario = busca_CONTA_tree(principal.addresses,principal.tree_CONTA,principal.tree_L_CONTA,auxad);
+	remove_address(principal.settings,principal.addresses,auxad);
+	free(password);
+
+	email.assunto = add_subject(arquivos.config,arquivos.subject_list,assunto);
+	email.MSG = add_text(arquivos.config,arquivos.text_list,mensagem);
+
+	tempo = time(NULL);
+	tempoc = localtime(&tempo);
+	data.data[0]=tempoc->tm_year;
+	data.data[1]=tempoc->tm_mon;
+	data.data[2]=tempoc->tm_mday;
+	data.data[3]=tempoc->tm_hour;
+	data.data[4]=tempoc->tm_min;
+	data.data[5]=tempoc->tm_sec;
+	email.data = add_horario(arquivos.config,arquivos.horario_list,data);
+
+	pos_email = add_email(arquivos.config,arquivos.email_list,email.remetente,email.destinatario,email.assunto,email.MSG,email.data,email.historico);
+	add_SUB_NODO_tree(arquivos,arquivos.outbox_tree_HORARIO,arquivos.outbox_tree_L_HORARIO,"horario",email.data,pos_email);
+}
+
+void list_email_decreasing(RESULTADO *resultado,ARQUIVOS arquivos,FILE *tree,FILE *nodo_list,int pos)
+{	//	FUNÇÃO PARA IMPRIMIR LISTA DE EMAILS COM ORGANIZAÇÃO A PARTIR DE UMA ÁRVORE
+	NODO nodo;
+	LISTA lista_subnodo;
+	int c;
+	if (pos != -1)
+	{
+		fseek(nodo_list,sizeof(NODO)*pos,SEEK_SET);
+		fread(&nodo,sizeof(NODO),1,nodo_list);
+		if (!nodo.ne_folha)
+		{
+			for (c=nodo.num_chaves-1;c+1;c--)
+			{
+				fseek(arquivos.lista_enc,sizeof(LISTA)*nodo.addresses[c],SEEK_SET);
+				fread(&lista_subnodo,sizeof(LISTA),1,arquivos.lista_enc);
+				add_result(resultado,nodo.addresses[c],print_email_header_to_string(arquivos,lista_subnodo.address));
+				while (lista_subnodo.next != -1)
+				{
+					fseek(arquivos.lista_enc,sizeof(LISTA)*lista_subnodo.next,SEEK_SET);
+					fread(&lista_subnodo,sizeof(LISTA),1,arquivos.lista_enc);
+					add_result(resultado,lista_subnodo.next,print_email_header_to_string(arquivos,lista_subnodo.address));
+				}
+			}
+		}
+		else
+		{
+			for (c=nodo.num_chaves+1;c+1;c--)
+			{
+				list_email_decreasing(resultado,arquivos,tree,nodo_list,nodo.filhos[c]);
+				if (c)
+				{
+					fseek(arquivos.lista_enc,sizeof(LISTA)*nodo.addresses[c-1],SEEK_SET);
+					fread(&lista_subnodo,sizeof(LISTA),1,arquivos.lista_enc);
+					add_result(resultado,nodo.addresses[c-1],print_email_header_to_string(arquivos,lista_subnodo.address));
+					while (lista_subnodo.next != -1)
+					{
+						fseek(arquivos.lista_enc,sizeof(LISTA)*lista_subnodo.next,SEEK_SET);
+						fread(&lista_subnodo,sizeof(LISTA),1,arquivos.lista_enc);
+						add_result(resultado,lista_subnodo.next,print_email_header_to_string(arquivos,lista_subnodo.address));
+					}
+				}
+			}
+		}
+	}
+	return;
 }
 
 ARQUIVOS open_account_files(char *dir, int account_address)

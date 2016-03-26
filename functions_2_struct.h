@@ -29,12 +29,21 @@
 #define breakline printf("\n");
 #define line breakline; printf("____________________________________________________________"); breakline;
 #define x 10	// Limite de histórico
-#define k 6	// Ordem - Use número par - Número de Chaves será k-1 e o número de filhos será k
-#define min_chaves ((k/2)-1)
+#define k 6
+// Ordem - Usar número par - Número de Chaves será k-1 e o número de filhos será k
+#define numChaves k-1
+#define numFilhos k
+#define minChaves ((k/2)-1)
 #define windus "C:/Users/Ruan/Desktop/T/"
 #define ubuntus "/home/ricardo/e-server"
+//	Tamanho dos tipos de arquivos
+#define size_message 300
+#define size_subject 100
+#define size_address 64
+#define size_horario strlen("00/00/0000 00:00:00")
 
 // 	Temos que voltar o ponteiro dos arquivos depois das operações de leitura
+
 
 typedef struct
 {
@@ -42,7 +51,8 @@ typedef struct
 	int next_address;
 	int anum_address;
 	char dir[200];
-}settings;
+}
+settings;
 
 typedef struct
 {
@@ -65,33 +75,40 @@ typedef struct
 	int anum_LISTA_ENC;
 	int anum_HORARIO;
 	int anum_PALAVRA;
+}
+configuration;
 
-}configuration;
+//	Estrutura dos tipos de informações de email
+typedef struct
+{
+	char mail[size_message];
+}
+messages;
 
 typedef struct
 {
-	char mail[300];
-
-}messages;
-
-typedef struct
-{
-	char subject[100];
-
-}subjects;
+	char subject[size_subject];
+}
+subjects;
 
 typedef struct
 {
-	char address[64];
-
-}addresses;
+	char address[size_address];
+}
+addresses;
 
 typedef struct //O resto das informações não serve pra busca
 {
 	//int dia,mês,ano,horas,minutos,segundos;
 	int data[6];//data ordenada por relevância (ano,mês,dia,hora,minuto,segundo)
+}
+HORARIO;
 
-}HORARIO;
+typedef struct
+{
+	char key[30];
+}
+PALAVRA;
 
 typedef struct
 {
@@ -101,8 +118,8 @@ typedef struct
 	int MSG;
 	int data;
 	int historico; 		// PARA RICARDO E RUAN DO FUTURO: A ESTRUTURA RETRO ALUDIDA
-						// REFERENCIARÁ UM SUBNODO, E ASSIM EM DIANTE, ENCADEANDO.
-}SUB_NODO;
+}						// REFERENCIARÁ UM SUBNODO, E ASSIM EM DIANTE, ENCADEANDO.
+SUB_NODO;
 
 typedef struct
 {
@@ -113,9 +130,9 @@ typedef struct
        int read;
        int trash;
        int sent;*/
-
-}CONTA;//Conta deve ser uma arvore pois seria totalmente incompreensível
-//usar métodos tão sofisticados de busca pra tudo exceto pra achar as contas
+}
+CONTA;		//Conta deve ser uma arvore pois seria totalmente incompreensível
+			//usar métodos tão sofisticados de busca pra tudo exceto pra achar as contas
 
 typedef struct
 {
@@ -125,8 +142,8 @@ typedef struct
 	int pai;
 	char num_chaves;	// Escolha do tipo char devido ao tamanho máximo escalado para o programa, 64 filhos e 63 chaves.
 	char ne_folha;	// Número de Filhos. Também pode indicar se o NODO é uma folha ou não, 0 = folha.
-
-}NODO;
+}
+NODO;
 
 typedef struct
 {
@@ -135,22 +152,17 @@ typedef struct
 	int anum_NODOS;
 	int next_NODO;
 	int num_SUB_NODOS;
-
-}ARVOREB;
-
-typedef struct
-{
-	char key[30];
-
-}PALAVRA;
+}
+ARVOREB;
 
 typedef struct
 {
 	int address;
 	int next;
+}
+LISTA; //	Lista de SUB_NODOs
 
-}LISTA;
-
+//	Estruturas para abertura dos arquivos
 typedef struct
 {
 	FILE *addresses;
@@ -216,21 +228,31 @@ typedef struct
 	FILE *trash_tree_L_messages;
 	FILE *trash_tree_L_PALAVRA;
 	FILE *trash_tree_L_subjects;
-
-}ARQUIVOS;
+}
+ARQUIVOS;
 
 typedef struct{
 	FILE *settings;
 	FILE *addresses;
 	FILE *tree_CONTA;
 	FILE *tree_L_CONTA;
+}
+PRINCIPAL;
 
-}PRINCIPAL;
+typedef struct{
+	int pos_email;
+	char *text;
+}RESULT;
+
+typedef struct{
+	int num_resultados;
+	RESULT **index;
+}RESULTADO;
 
 //ESCOPO DAS FUNÇÕES
 char* detecta_os();
 void print_nodo(NODO nodo);
-void prin_arvoreb(ARVOREB avb);
+void print_arvoreb(ARVOREB avb);
 void make_dir(char *aux);
 void error_m(char *errormessage);
 char* filepath_gen(char *dir, char *file);
@@ -285,6 +307,7 @@ void remove_SUB_NODO_tree(ARQUIVOS arquivos,FILE *tree, FILE *nodo_list, char *t
 
 void create_tree_account(char *dir);
 void add_CONTA_tree(FILE *addresses,FILE *tree, FILE *nodo_list,int account_address);
+int busca_CONTA_tree(FILE *addresses,FILE *tree, FILE *nodo_list,int key);
 
 int compara_infos(ARQUIVOS arquivos,char *type,int a,int b);
 int horario_igual(HORARIO a,HORARIO b);
@@ -292,6 +315,9 @@ int horario_maior(HORARIO a,HORARIO b);
 int horario_menor(HORARIO a,HORARIO b);
 int horario_menor_igual(HORARIO a,HORARIO b);
 int horario_maior_igual(HORARIO a,HORARIO b);
+
+RESULTADO create_result_list(void);
+void add_result(RESULTADO *lista,int pos_email,char *text);
 
 
 #endif /* FUNCTIONS_2_STRUCT_H_ */

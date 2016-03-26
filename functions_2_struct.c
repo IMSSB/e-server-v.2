@@ -142,12 +142,9 @@ int add_address(FILE *set, FILE *ad,char *user,char *password)
 	int scroll;		//	Variáveis auxiliares
 	fpos_t c;
 
-	printf("---- #1");
 	rewind(set);						//	Colocando a posição do fluxo de dados no inicio
 	fread(&s,sizeof(settings),1,set);	//	Lendo arquivo de configurações e armazenando na variável s
-	printf("---- #2");
 	scroll=(s.next_address == -1)?s.num_addresses:s.next_address;	//	Definindo a posição em que o novo endereço será salvo no arquivo addresses.bin
-	printf("---- #3");
 	fseek(ad,scroll*sizeof(CONTA),SEEK_SET);				//	Deslocando a posição do buffer no arquivo addresses.bin
 	if(s.next_address!=-1)										//	caso haja blocos não utilizados a serem subscritos
 	{
@@ -158,14 +155,13 @@ int add_address(FILE *set, FILE *ad,char *user,char *password)
 	}
 	else
 		s.anum_address++;
-	printf("---- #4");
 	sprintf(ads.user,"%s",user);			//	Guardando usuário
 	sprintf(ads.password,"%s",password);			//	Guardando senha
 	s.num_addresses++;						//	Incrementando o número de endereços
 	rewind(set);						//	Colocando a posição do fluxo de dados no inicio
 	fwrite(&s,sizeof(settings),1,set);		//	Escrevendo alterações feitas nos arquivos
 	fwrite(&ads,sizeof(CONTA),1,ad);
-	printf("---- #5");
+
 	return scroll;
 }
 
@@ -861,8 +857,8 @@ void split_tree(FILE *tree,FILE *nodo_list,int pai,int scroll)
 		pain.num_chaves=1;
 		pain.ne_folha=1;
 		pain.filhos[0]=AVB.raiz;
-		pain.chaves[0]=son1.chaves[min_chaves];
-		pain.addresses[0]=son1.addresses[min_chaves];
+		pain.chaves[0]=son1.chaves[minChaves];
+		pain.addresses[0]=son1.addresses[minChaves];
 	}
 
 	smith = (AVB.next_NODO == -1)?AVB.num_NODOS:AVB.next_NODO;
@@ -886,7 +882,7 @@ void split_tree(FILE *tree,FILE *nodo_list,int pai,int scroll)
 	if (son1.ne_folha)
 		son2.filhos[c-(k/2)] = son1.filhos[c];
 	son2.ne_folha = son1.ne_folha;
-	son1.num_chaves = son2.num_chaves = min_chaves; // Só funciona para ordem par
+	son1.num_chaves = son2.num_chaves = minChaves; // Só funciona para ordem par
 
 	if(pai+1)
 	{
@@ -901,8 +897,8 @@ void split_tree(FILE *tree,FILE *nodo_list,int pai,int scroll)
 			pain.chaves[c]=pain.chaves[c-1];
 		}
 		pain.filhos[scroll+1]=smith;
-		pain.chaves[scroll]=son1.chaves[min_chaves];
-		pain.addresses[scroll]=son1.addresses[min_chaves];
+		pain.chaves[scroll]=son1.chaves[minChaves];
+		pain.addresses[scroll]=son1.addresses[minChaves];
 		pain.num_chaves++;
 	}
 	else // Criar nodo no arquivo para ser o pai
@@ -965,8 +961,8 @@ fpos_t predescessor(FILE *tree,FILE *nodo_list,int nodo,int key)
 		fread(&N1,sizeof(NODO),1,nodo_list);
 	}
 
-	N.addresses[key] = N1.addresses[N1.num_chaves];
-	N.chaves[key] = N1.chaves[N1.num_chaves];
+	N.addresses[key] = N1.addresses[(int)N1.num_chaves];
+	N.chaves[key] = N1.chaves[(int)N1.num_chaves];
 
 	return p;
 }
@@ -975,7 +971,7 @@ int merge_nodo(FILE *tree,FILE *nodo_list,int pai,int scroll)
 {	//	Função para juntar dois NODOs irmãos, retorna o tipo da junção. 0 = Só passou um elemento, 1 = Junção dos irmãos com o pai.
 	NODO pain,son1,son2;
 	ARVOREB AVB;
-	int c,felipe,smith;
+	int c,felipe;
 	fpos_t p,f1,f2;
 
 	rewind(tree);
@@ -1046,8 +1042,8 @@ int merge_nodo(FILE *tree,FILE *nodo_list,int pai,int scroll)
 		son1.chaves[0]=pain.chaves[scroll];
 		son1.addresses[0]=pain.addresses[scroll];
 		son1.num_chaves++;
-		pain.chaves[scroll]=son2.chaves[son2.num_chaves];
-		pain.addresses[scroll];son2.addresses[son2.num_chaves];
+		pain.chaves[scroll]=son2.chaves[(int)son2.num_chaves];
+		pain.addresses[scroll]=son2.addresses[(int)son2.num_chaves];
 		son2.num_chaves--;
 		//em tese é só isso...
 
@@ -1166,7 +1162,7 @@ void add_key_tree(ARQUIVOS arquivos,FILE *tree, FILE *nodo_list,char *type,int k
 		fseek(nodo_list,sizeof(NODO)*scroll,SEEK_SET);
 		fread(&nnew,sizeof(NODO),1,nodo_list);
 
-		if (nnew.num_chaves == min_chaves && nnew.pai+1)
+		if (nnew.num_chaves == minChaves && nnew.pai+1)
 		{
 			aux2 = merge_nodo(tree,nodo_list,nnew.pai,scroll);
 			rewind(tree);
@@ -1413,7 +1409,7 @@ int busca_CONTA_tree(FILE *addresses,FILE *tree, FILE *nodo_list,int key)
 
 		if (!aux)
 		{
-			achou = nnew.addresses[c];
+			achou = nnew.chaves[c];
 			cdn = 0;
 		}
 		else
@@ -1563,4 +1559,20 @@ int horario_maior_igual(HORARIO a,HORARIO b)
 	return 1;//se chegar aqui necessariamente é igual
 }
 
+RESULTADO create_result_list(void)
+{
+	RESULTADO new;
+	new.num_resultados = 0;
+	new.index = NULL;
+	return new;
+}
+
+void add_result(RESULTADO *lista,int pos_email,char *text)
+{
+	RESULT *novo_resultado=(RESULT *)calloc(sizeof(RESULT),1);
+	lista->index = (RESULT **) realloc(lista->index,sizeof(RESULT *)*(++lista->num_resultados));
+	(*(lista->index+(lista->num_resultados-1)))= novo_resultado;
+	novo_resultado->pos_email = pos_email;
+	novo_resultado->text = text;
+}
 
