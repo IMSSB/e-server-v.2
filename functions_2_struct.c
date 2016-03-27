@@ -1000,11 +1000,11 @@ fpos_t predescessor(FILE *tree,FILE *nodo_list,int nodo,int key)
 }
 
 int merge_nodo(FILE *tree,FILE *nodo_list,int pai,int scroll)
-{	//	Fun��o para juntar dois NODOs irm�os, retorna o tipo da jun��o. 0 = S� passou um elemento, 1 = Jun��o dos irm�os com o pai.
+{	//	Fun��o para juntar dois NODOs irm�os, retorna o tipo da jun��o. 0 = S� passou um elemento, 1 = Jun��o dos irm�os com um elemento do pai.
 	NODO pain,son1,son2;
 	ARVOREB AVB;
-	int c,felipe;
-	fpos_t p,f1,f2;
+	int c,felipe,retorno;
+	fpos_t p,f1,f2,aux;
 
 	rewind(tree);
 	fread(&AVB,sizeof(ARVOREB),1,tree); 	//	L� o arquivo de configura��o da �rvore
@@ -1027,13 +1027,23 @@ int merge_nodo(FILE *tree,FILE *nodo_list,int pai,int scroll)
 			fread(&son1,sizeof(NODO),1,nodo_list);
 			fsetpos(nodo_list,&f1);
 			fread(&son2,sizeof(NODO),1,nodo_list);
+			aux=f2;
+			f2=f1;
+			f1=aux;
 		}
 
-			son1.chaves[(int)son1.num_chaves]=pain.chaves[scroll];//Talvez tenha que fazer um deslocamento em alguns casos disso (AFF)
+			son1.chaves[(int)son1.num_chaves]=pain.chaves[scroll];
 			son1.addresses[(int)son1.num_chaves++]=pain.addresses[scroll];
+			for(c=scroll;c<pain.num_chaves;c++)//Deslocando chaves do pai para cobrir a ausência da chave retirada para o filho
+			{
+				pain.addresses[scroll]=pain.addresses[scroll+1];
+				pain.chaves[scroll]=pain.addresses[scroll+1];
+				pain.filhos[scroll]=pain.addresses[scroll+1];
+			}
+			pain.filhos[scroll]=pain.addresses[scroll+1];
 			pain.num_chaves--;
 
-			for(c=0;c<son2.num_chaves;c++)
+			for(c=0;c<son2.num_chaves;c++)//Colocando as chaves do filho dois no um
 			{
 				son1.chaves[son1.num_chaves+c]=son2.chaves[c];
 				son1.addresses[son1.num_chaves+c]=son2.addresses[c];
@@ -1042,26 +1052,29 @@ int merge_nodo(FILE *tree,FILE *nodo_list,int pai,int scroll)
 			son1.num_chaves+=c;
 			son1.filhos[son1.num_chaves+1]=son2.filhos[c];
 
-
+			//É necessário remover o nodo de son2. abaixo está sendo feito
+			son2.pai=AVB.next_NODO;//Arbitrando isso aqui, se não for, mude!
+			AVB.next_NODO=scroll>felipe?scroll:felipe;
 			AVB.num_NODOS--;
 			//Manter funcionamento da lista okay...
 
-
+			retorno=1;
 	}
 	else
 	if(scroll<felipe)//Acho que isso n�o altera a configura��o de filhos caso feito do jeito certo
 	{	//caso n�o seja o ultimo filho e o irm�o tenha 1 chave para doar
-		son1.chaves[(int)++son1.num_chaves]=pain.chaves[scroll];
-		son1.addresses[(int)son1.num_chaves]=pain.addresses[scroll];
+		son1.chaves[(int)son1.num_chaves]=pain.chaves[scroll];
+		son1.addresses[(int)son1.num_chaves++]=pain.addresses[scroll];
 		pain.chaves[scroll]=son2.chaves[0];
 		pain.addresses[scroll]=son2.addresses[0];
+		son2.num_chaves--;
 
-		for(c=son2.num_chaves; c>0;c--)
+		for(c=0; c<son2.num_chaves;c++)
 		{
-			son2.chaves[c-1]=son2.chaves[c];
-			son2.addresses[c-1]=son2.addresses[c];
+			son2.chaves[c]=son2.chaves[c+1];
+			son2.addresses[c]=son2.addresses[c+1];
 		}
-
+		retorno=0;
 	}
 	else
 	{//caso seja o ultimo filho e o irm�o tenha 1 chave para doar
@@ -1077,16 +1090,16 @@ int merge_nodo(FILE *tree,FILE *nodo_list,int pai,int scroll)
 		pain.chaves[scroll]=son2.chaves[(int)son2.num_chaves];
 		pain.addresses[scroll]=son2.addresses[(int)son2.num_chaves];
 		son2.num_chaves--;
-		//em tese � s� isso...
-
+		//em tese � s� isso...//Ainda concordo comigo no passado
+		retorno=0;
 	}
-
-
-
-
-
-
-	return 0;
+	fsetpos(nodo_list,&p);
+	fwrite(&pain,sizeof(NODO),1,nodo_list);
+	fsetpos(nodo_list,&f1);
+	fwrite(&son1,sizeof(NODO),1,nodo_list);
+	fsetpos(nodo_list,&f2);
+	fwrite(&son2,sizeof(NODO),1,nodo_list);
+	return retorno;
 }
 void add_key_tree(ARQUIVOS arquivos,FILE *tree, FILE *nodo_list,char *type,int key,int SUB_NODO)
 {	// Fun��o para adicionar chaves na �rvore
