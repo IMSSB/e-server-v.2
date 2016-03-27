@@ -964,7 +964,7 @@ void split_tree(FILE *tree,FILE *nodo_list,int pai,int scroll)
 	return;
 }
 
-fpos_t predescessor(FILE *tree,FILE *nodo_list,int nodo,int key)
+void predescessor(FILE *tree,FILE *nodo_list,int nodo,int key)
 {
 
 	NODO N,N1;
@@ -995,8 +995,9 @@ fpos_t predescessor(FILE *tree,FILE *nodo_list,int nodo,int key)
 
 	N.addresses[key] = N1.addresses[(int)N1.num_chaves];
 	N.chaves[key] = N1.chaves[(int)N1.num_chaves];
+	N1.num_chaves--;
 
-	return p;
+
 }
 
 int merge_nodo(FILE *tree,FILE *nodo_list,int pai,int scroll)
@@ -1177,73 +1178,68 @@ void add_key_tree(ARQUIVOS arquivos,FILE *tree, FILE *nodo_list,char *type,int k
 
 	return;
 }
-
-//Decis�o de projeto
-/*void remove_key_tree(int account_address, char *dir,char *name,int key)
-{	//	Remover chave da �rvore, s� chamado caso todos os SUB_NODOS da chave tenham sido removidos
-	char *address, *sub_address, *a, *sa;
-	FILE *tree, *nodo_list;
-	ARVOREB new;
-	NODO nnew;
-	int c,scroll,aux,aux2,aux3,cdn=1;
-
-	a = merge_string("tree_",name);
-	sa = merge_string("tree_L_",name);
-	address = dir_builder(dir,account_address,a);
-	sub_address	= dir_builder(dir,account_address,sa);
-
-	if (!(tree = fopen(address,"r+b")))
-		error_m("Error at file opening");
-	if (!(nodo_list = fopen(sub_address,"r+b")))
-		error_m("Error at file opening");
-	fread(&new,sizeof(ARVOREB),1,tree);
-	rewind(tree);
+void remove_key_tree(ARQUIVOS arquivos,FILE *tree, FILE *nodo_list,char *type,int key)
+{
+	// Fun��o para adicionar chaves na �rvore
+		ARVOREB new;
+		NODO nnew;
+		int c=0,scroll,aux,aux2,aux3,aux4,cdn=1;
 
 
-	if((scroll=new.raiz)==-1)
-		cdn=0;
-	while(cdn)
-	{
-		fseek(nodo_list,sizeof(NODO)*scroll,SEEK_SET);
-		fread(&nnew,sizeof(NODO),1,nodo_list);
+		rewind(tree);
+		fread(&new,sizeof(ARVOREB),1,tree);
 
-		if (nnew.num_chaves == minChaves && nnew.pai+1)
+
+		scroll=new.raiz;
+
+		while(cdn)
 		{
-			aux2 = merge_nodo(tree,nodo_list,nnew.pai,scroll);
-			rewind(tree);
-			fread(&new,sizeof(ARVOREB),1,tree);
-			rewind(tree);
-			scroll=nnew.pai?nnew.pai:new.raiz;	// definir ap�s definir merge_nodo
 			fseek(nodo_list,sizeof(NODO)*scroll,SEEK_SET);
 			fread(&nnew,sizeof(NODO),1,nodo_list);
+
+			if(nnew.num_chaves==k/2-1) // 	Junção de NODO com mínimo de chaves
+			{
+				printf("\n---> Junção)\n");
+				merge_tree(tree,nodo_list,nnew.pai,c);
+				rewind(tree);
+				printf("\nnewraiz = %d\n", new.raiz);
+				fread(&new,sizeof(ARVOREB),1,tree);
+				rewind(tree);
+				scroll=nnew.pai+1?nnew.pai:new.raiz;
+				fseek(nodo_list,sizeof(NODO)*scroll,SEEK_SET);
+				fread(&nnew,sizeof(NODO),1,nodo_list);
+			}
+
+			for(c=0;c<nnew.num_chaves && 1 > compara_infos(arquivos,type,nnew.chaves[c],key);c++);
+			if(!compara_infos(arquivos,type,nnew.chaves[c],key))//Caso b�sico
+			{
+				if(!nnew.ne_folha)//é folha
+				{
+					for(;c<nnew.num_chaves;c++)
+					{
+						nnew.addresses[c]=nnew.addresses[c+1];
+						nnew.chaves[c]=nnew.chaves[c+1];
+						nnew.filhos[c]=nnew.filhos[c+1];
+					}
+					nnew.filhos[c]=nnew.filhos[c+1];
+					nnew.num_chaves--;
+
+				}
+				else
+					 predecessor(tree,nodo_list,scroll,c);//Sobrescreve a chave pelo predescessor e apaga-o no nó folha
+			}
+			//GENIAL CORMEN <3
+			else	// 	Garante que haja filhos, por causa do if acima
+				scroll=nnew.filhos[c];
+
 		}
+		new.num_SUB_NODOS--;
+		fwrite(&nnew,sizeof(NODO),1,nodo_list);
+		rewind(tree);
+		fwrite(&new,sizeof(ARVOREB),1,tree);
 
-		for(c=0;c<nnew.num_chaves && 1 > (aux=compara_infos(dir,account_address,name,nnew.chaves[c],key)) && aux;c++);
-		if(!aux)
-		{
-
-		}
-		else
-			scroll=nnew.filhos[c];
-	}
-
-
-
-
-	fwrite(&new,sizeof(ARVOREB),1,tree);
-	fwrite(&nnew,sizeof(NODO),1,nodo_list);
-
-	fclose(tree);
-	fclose(nodo_list);
-
-	free(a);
-	free(sa);
-	free(address);
-	free(sub_address);
-
-	return;
-}*/
-;
+		return;
+}
 
 int busca_SUB_NODO_tree(ARQUIVOS arquivos,FILE *tree, FILE *nodo_list, char *type,int key)
 {

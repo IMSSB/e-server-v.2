@@ -298,10 +298,10 @@ void remove_word(FILE *config, FILE *word_list, int scroll);
 
 void create_tree_type(char *dir,int account_address, char *folder, char *type);
 void split_tree(FILE *tree,FILE *nodo_list,int pai,int scroll);
-fpos_t predescessor(FILE *tree,FILE *nodo_list,int nodo,int key);
+void predescessor(FILE *tree,FILE *nodo_list,int nodo,int key);
 int merge_nodo(FILE *tree,FILE *nodo_list,int pai,int scroll);
 void add_key_tree(ARQUIVOS arquivos,FILE *tree, FILE *nodo_list,char *type,int key,int SUB_NODO);
-void remove_key_tree(char *dir,int account_address,char *folder,char *type,int key);
+void remove_key_tree(ARQUIVOS arquivos,FILE *tree, FILE *nodo_list,char *type,int key);
 int busca_SUB_NODO_tree(ARQUIVOS arquivos,FILE *tree, FILE *nodo_list, char *type,int key);
 void add_SUB_NODO_tree(ARQUIVOS arquivos,FILE *tree, FILE *nodo_list,char *type,int key,int SUB_NODO);
 void remove_SUB_NODO_tree(ARQUIVOS arquivos,FILE *tree, FILE *nodo_list, char *type,int key,int SUB_NODO);
