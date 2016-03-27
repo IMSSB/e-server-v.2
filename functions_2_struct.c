@@ -969,10 +969,11 @@ void predescessor(FILE *tree,FILE *nodo_list,int nodo,int key)
 
 	NODO N,N1;
 	int aux;
-	fpos_t p;
+	fpos_t p,aux_p;
 
 	fseek(nodo_list,sizeof(NODO)*nodo,SEEK_SET);
 	fread(&N,sizeof(NODO),1,nodo_list);
+	fgetpos(nodo_list,&aux_p);
 	fseek(nodo_list,sizeof(NODO)*N.filhos[key],SEEK_SET);
 	fread(&N1,sizeof(NODO),1,nodo_list);
 
@@ -980,6 +981,7 @@ void predescessor(FILE *tree,FILE *nodo_list,int nodo,int key)
 	{
 		fseek(nodo_list,sizeof(NODO)*N1.filhos[aux = N1.num_chaves+1],SEEK_SET);
 		fread(&N1,sizeof(NODO),1,nodo_list);
+		fgetpos(nodo_list,&p);
 
 	}
 
@@ -996,6 +998,10 @@ void predescessor(FILE *tree,FILE *nodo_list,int nodo,int key)
 	N.addresses[key] = N1.addresses[(int)N1.num_chaves];
 	N.chaves[key] = N1.chaves[(int)N1.num_chaves];
 	N1.num_chaves--;
+	fsetpos(nodo_list,&aux_p);
+	fwrite(&N,sizeof(nodo),1,nodo_list);
+	fsetpos(nodo_list,&p);
+	fwrite(&N1,sizeof(nodo),1,nodo_list);
 
 
 }
