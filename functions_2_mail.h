@@ -10,15 +10,30 @@
 #include "functions_2_struct.h"
 
 //	Teclas
+#ifdef __linux__
+#define KeyEnter 10
+//Teclas Especiais
+#define KeySpecial 27
+// Teclas Especiais 2
+#define KeySpecial2 79
+#define KeySpecial3 91
+#define KeyUp 65
+#define KeyDown 66
+#define KeyRight 67
+#define KeyLeft 68
+
+#else
 #define KeyEnter 13
 //Teclas Especiais
 #define KeySpecial 0
 // Teclas Especiais 2
 #define KeySpecial2 224
 #define KeyUp 72
-#define KeyLeft 75
-#define KeyRight 77
 #define KeyDown 80
+#define KeyRight 77
+#define KeyLeft 75
+
+#endif
 
 #define numMenu 5
 

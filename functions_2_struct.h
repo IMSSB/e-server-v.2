@@ -23,7 +23,7 @@
 #endif
 
 #define cls system("CLS || clear");
-#define pause printf("\nDigite algo para continuar"); getch();
+#define pause printf("\nDigite algo para continuar"); getchar();
 #define spc printf("  |");
 #define spc_m printf("              ");
 #define breakline printf("\n");
