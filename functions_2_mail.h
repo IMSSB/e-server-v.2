@@ -40,6 +40,7 @@ void access_inbox(ARQUIVOS arquivos);
 send_email(PRINCIPAL principal, ARQUIVOS arquivos);
 
 void list_email_decreasing(RESULTADO *resultado,ARQUIVOS arquivos,FILE *tree,FILE *nodo_list,int pos);
+void list_email_increasing(RESULTADO *resultado,ARQUIVOS arquivos,FILE *tree,FILE *nodo_list,int pos);
 
 
 ARQUIVOS open_account_files(char *dir, int account_address);

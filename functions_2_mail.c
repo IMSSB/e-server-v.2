@@ -18,9 +18,9 @@ void menu()
 
 	if (!(principal.settings))
 	{
-		printf("Foi detectado que essa é a primeira abertura do E-Server v.2.0");
+		printf("Foi detectado que essa ï¿½ a primeira abertura do E-Server v.2.0");
 		breakline;
-		printf("É necessário que seja feita a configuração inicial para funcionamento do programa");
+		printf("ï¿½ necessï¿½rio que seja feita a configuraï¿½ï¿½o inicial para funcionamento do programa");
 		breakline;
 		setup(principal);
 		principal = open_server_files();
@@ -76,7 +76,7 @@ void menu()
 			break;
 			case 2:	//	Configurar
 				setup(principal);
-				close_server_files(principal);	//	Fecha arquivos antigos se tiver sido efetuada alguma alteração
+				close_server_files(principal);	//	Fecha arquivos antigos se tiver sido efetuada alguma alteraï¿½ï¿½o
 				principal = open_server_files();	//	Abre novos arquivos
 			break;
 			case 3:
@@ -98,10 +98,10 @@ void project_presentation()
 	formated_message("E-Server v.2.0");
 	formated_message("Trabalho da Disciplina Algoritmos e Estrutura de Dados II");
 	formated_message("Professora: Ana Emilia de Melo Queiroz");
-	formated_message("Alunos:     Ricardo Valério Teixeira de Medeiros Silva");
+	formated_message("Alunos:     Ricardo Valï¿½rio Teixeira de Medeiros Silva");
 	formated_message("            Ruan de Medeiros Bahia");
 	formated_message("Simulador de um servidor de e-mails, sendo salvos em arquivos,");
-	formated_message("com uso de Árvores B para pesquisas nos dados");
+	formated_message("com uso de ï¿½rvores B para pesquisas nos dados");
 	line;
 
 	pause;
@@ -118,11 +118,11 @@ void setup(PRINCIPAL principal)
 	int opcao;
 
 	breakline;
-	printf("Configuração do Servidor");
+	printf("Configuraï¿½ï¿½o do Servidor");
 	breakline;
 	if ((principal.settings))
 	{
-		printf("Foi detectada que um arquivo de configuração anterior do servidor já foi criado, funcionando na pasta:");
+		printf("Foi detectada que um arquivo de configuraï¿½ï¿½o anterior do servidor jï¿½ foi criado, funcionando na pasta:");
 		breakline;
 
 		rewind(principal.settings);
@@ -130,14 +130,14 @@ void setup(PRINCIPAL principal)
 		printf("%s",config.dir);
 
 		breakline;
-		printf("Deseja alterar o caminho da pasta de funcionamento do servidor? [0] Não - [1] Sim");
+		printf("Deseja alterar o caminho da pasta de funcionamento do servidor? [0] Nï¿½o - [1] Sim");
 		breakline;
 		scanf("%d",&opcao);
 		if (opcao != 1)
 			return;
 	}
 
-	printf("Digite o caminho completo para o diretório em que o servidor de e-mails irá funcionar: (Ex: C:\\E-Server\\\n");
+	printf("Digite o caminho completo para o diretï¿½rio em que o servidor de e-mails irï¿½ funcionar: (Ex: C:\\E-Server\\\n");
 	breakline;
 	caminho = ler('\n');
 
@@ -232,14 +232,14 @@ void criar_conta(PRINCIPAL *principal,char *dir)
 	int conta,temp;
 
 	do {
-		formated_message("CRIAÇÃO DE CONTA DE USUÁRIO");
-		printf("Digite o nome de usuário:"); breakline;
+		formated_message("CRIAï¿½ï¿½O DE CONTA DE USUï¿½RIO");
+		printf("Digite o nome de usuï¿½rio:"); breakline;
 		user = ler('\n');
 		temp = add_address(principal->settings,principal->addresses,user,password);
 
 		conta = busca_CONTA_tree(principal->addresses,principal->tree_CONTA, principal->tree_L_CONTA,temp);
 		if (conta != -1)
-			printf("Uma conta de email com esse nome já existe. Por favor tente com outro nome de usuário.\n");
+			printf("Uma conta de email com esse nome jï¿½ existe. Por favor tente com outro nome de usuï¿½rio.\n");
 		pause;
 		cls;
 		remove_address(principal->settings,principal->addresses,temp);
@@ -253,7 +253,7 @@ void criar_conta(PRINCIPAL *principal,char *dir)
 	pause;
 	create_account(principal,dir,user,password);
 	printf("Conta de e-mail criada com sucesso!"); breakline;
-	printf("Agora você pode acessá-la pelo menu principal."); breakline;
+	printf("Agora vocï¿½ pode acessï¿½-la pelo menu principal."); breakline;
 
 	pause;
 	cls;
@@ -268,14 +268,14 @@ void acessar_conta(PRINCIPAL *principal,char *dir)
 
 	do {
 		formated_message("ACESSAR UMA CONTA");
-		printf("Digite o nome de usuário:"); breakline;
+		printf("Digite o nome de usuï¿½rio:"); breakline;
 		user = ler('\n');
 		temp = add_address(principal->settings,principal->addresses,user,password);
 
 		conta = busca_CONTA_tree(principal->addresses,principal->tree_CONTA, principal->tree_L_CONTA,temp);
 
 		if (conta == -1)
-			printf("A conta de email não foi localizada, por favor tente novamente com um email válido.\n");
+			printf("A conta de email nï¿½o foi localizada, por favor tente novamente com um email vï¿½lido.\n");
 		pause;
 		cls;
 		remove_address(principal->settings,principal->addresses,temp);
@@ -287,11 +287,11 @@ void acessar_conta(PRINCIPAL *principal,char *dir)
 		password = ler('\n');
 		t = get_password(principal->addresses,conta);
 		if ((confirmacao = strcmp(password,t)))
-			printf("Senha inválida. Tente novamente com a senha correta.");
+			printf("Senha invï¿½lida. Tente novamente com a senha correta.");
 		pause;
 		cls;
 	} while(confirmacao);
-	printf("Acesso autorizado à conta: %s.\n",user);
+	printf("Acesso autorizado ï¿½ conta: %s.\n",user);
 	pause;
 	cls;
 	abrir_conta(*principal,dir,conta);
@@ -318,9 +318,9 @@ void abrir_conta(PRINCIPAL principal,char *dir,int conta)
 				roll[nova_opcao]=cursor;
 				opcao=nova_opcao;
 			}
-			printf("\n[Opção] - Pasta (Nº de E-mails) "); breakline;
+			printf("\n[Opï¿½ï¿½o] - Pasta (Nï¿½ de E-mails) "); breakline;
 			printf("%s |%21s (%d)",roll[0],"Caixa de Entrada",number_of_emails(arquivos.inbox_tree_messages)); breakline;
-			printf("%s |%21s (%d)",roll[1],"Caixa de Saída",number_of_emails(arquivos.outbox_tree_messages)); breakline;
+			printf("%s |%21s (%d)",roll[1],"Caixa de Saï¿½da",number_of_emails(arquivos.outbox_tree_messages)); breakline;
 			printf("%s |%21s (%d)",roll[2],"Lidos",number_of_emails(arquivos.read_tree_messages)); breakline;
 			printf("%s |%21s (%d)",roll[3],"Enviados",number_of_emails(arquivos.sent_tree_messages)); breakline;
 			printf("%s |%21s (%d)",roll[4],"Lixeira",number_of_emails(arquivos.trash_tree_messages)); breakline;
@@ -349,13 +349,13 @@ void abrir_conta(PRINCIPAL principal,char *dir,int conta)
 			cls;
 		}
 		tecla=0;
-		// Essas são as funções que faltam ser definidas
+		// Essas sï¿½o as funï¿½ï¿½es que faltam ser definidas
 		/*switch (escolha)
 		{
 			case 0: // Caixa de Entrada
 				access_inbox(arquivos);
 			break;
-			case 1: // Caixa de Saída
+			case 1: // Caixa de Saï¿½da
 				access_outbox(arquivos);
 			break;
 			case 2: // Lidos
@@ -388,7 +388,7 @@ void abrir_conta(PRINCIPAL principal,char *dir,int conta)
 
 void print_email_header(ARQUIVOS arquivos,int email_pos)
 {
-	SUB_NODO email; 				//	Manipulação de email
+	SUB_NODO email; 				//	Manipulaï¿½ï¿½o de email
 	subjects assunto;
 	HORARIO data;
 	addresses remetente, destinatario;
@@ -416,7 +416,7 @@ void print_email_header(ARQUIVOS arquivos,int email_pos)
 char * print_email_header_to_string(ARQUIVOS arquivos,int email_pos)
 {
 	char *email_header=calloc(size_subject+(size_address*2)+size_horario+10*4,sizeof(char)),*hor;
-	SUB_NODO email; 				//	Manipulação de email
+	SUB_NODO email; 				//	Manipulaï¿½ï¿½o de email
 	subjects assunto;
 	HORARIO data;
 	addresses remetente, destinatario;
@@ -452,7 +452,7 @@ char * print_email_header_to_string(ARQUIVOS arquivos,int email_pos)
 
 void print_email(ARQUIVOS arquivos,int email_pos)
 {
-	SUB_NODO email; 				//	Manipulação de email
+	SUB_NODO email; 				//	Manipulaï¿½ï¿½o de email
 	messages mensagem;
 	subjects assunto;
 	HORARIO data;
@@ -479,12 +479,12 @@ void print_email(ARQUIVOS arquivos,int email_pos)
 	print_horario(data);
 	breakline;
 	printf("Remetente: %s\n",remetente.address);
-	printf("Destinatário: %s\n",destinatario.address);
+	printf("Destinatï¿½rio: %s\n",destinatario.address);
 	printf("Assunto: %s\n",assunto.subject);
 	printf("%s\n",mensagem.mail);
 
-	//	Implementar impressão do histórico (recursão?)
-	// 	Melhorar formatação da impressão
+	//	Implementar impressï¿½o do histï¿½rico (recursï¿½o?)
+	// 	Melhorar formataï¿½ï¿½o da impressï¿½o
 }
 
 void print_horario(HORARIO data)
@@ -568,7 +568,7 @@ void access_inbox(ARQUIVOS arquivos)
 				breakline;
 			}
 			else
-				printf("Pasta vazia. Não existem e-mails para serem exibidos.");
+				printf("Pasta vazia. Nï¿½o existem e-mails para serem exibidos.");
 			kbhit();
 			tecla = getch();
 			while (tecla != KeySpecial2 && tecla != KeyEnter)
@@ -609,7 +609,7 @@ void access_inbox(ARQUIVOS arquivos)
 			case 0:	//	Sair da pasta
 				loop=0;
 			break;
-			case 1:	//	Selecionar o email na posição 1
+			case 1:	//	Selecionar o email na posiï¿½ï¿½o 1
 				//exibir_email(arquivos,(*(resultado.index+(multiplicador*10)))->pos_email);
 			break;
 			default:
@@ -620,7 +620,7 @@ void access_inbox(ARQUIVOS arquivos)
 
 send_email(PRINCIPAL principal, ARQUIVOS arquivos)
 {
-	SUB_NODO email; 				//	Manipulação de email
+	SUB_NODO email; 				//	Manipulaï¿½ï¿½o de email
 	HORARIO data;
 	configuration con;
 	time_t tempo;
@@ -629,7 +629,7 @@ send_email(PRINCIPAL principal, ARQUIVOS arquivos)
 	int auxad;
 	int pos_email;
 
-	printf("Destinatário: ");
+	printf("Destinatï¿½rio: ");
 	destinatario = ler('\n');
 	printf("Assunto: ");
 	assunto = ler('\n');
@@ -662,7 +662,7 @@ send_email(PRINCIPAL principal, ARQUIVOS arquivos)
 }
 
 void list_email_decreasing(RESULTADO *resultado,ARQUIVOS arquivos,FILE *tree,FILE *nodo_list,int pos)
-{	//	FUNÇÃO PARA IMPRIMIR LISTA DE EMAILS COM ORGANIZAÇÃO A PARTIR DE UMA ÁRVORE
+{	//	FUNï¿½ï¿½O PARA IMPRIMIR LISTA DE EMAILS DE FORMA DECRESCENTE COM ORGANIZAï¿½ï¿½O A PARTIR DE UMA ï¿½RVORE
 	NODO nodo;
 	LISTA lista_subnodo;
 	int c;
@@ -687,7 +687,7 @@ void list_email_decreasing(RESULTADO *resultado,ARQUIVOS arquivos,FILE *tree,FIL
 		}
 		else
 		{
-			for (c=nodo.num_chaves+1;c+1;c--)
+			for (c=nodo.num_chaves;c+1;c--)
 			{
 				list_email_decreasing(resultado,arquivos,tree,nodo_list,nodo.filhos[c]);
 				if (c)
@@ -706,6 +706,52 @@ void list_email_decreasing(RESULTADO *resultado,ARQUIVOS arquivos,FILE *tree,FIL
 		}
 	}
 	return;
+}
+void list_email_increasing(RESULTADO *resultado,ARQUIVOS arquivos,FILE *tree,FILE *nodo_list,int pos)
+{//	FUNï¿½ï¿½O PARA IMPRIMIR LISTA DE EMAILS DE FORMA CRESCENTE COM ORGANIZAï¿½ï¿½O A PARTIR DE UMA ï¿½RVORE
+		NODO nodo;
+		LISTA lista_subnodo;
+		int c;
+		if (pos != -1)
+		{
+			fseek(nodo_list,sizeof(NODO)*pos,SEEK_SET);
+			fread(&nodo,sizeof(NODO),1,nodo_list);
+			if (!nodo.ne_folha)
+			{
+				for (c=0;c<nodo.num_chaves;c++)
+				{
+					fseek(arquivos.lista_enc,sizeof(LISTA)*nodo.addresses[c],SEEK_SET);
+					fread(&lista_subnodo,sizeof(LISTA),1,arquivos.lista_enc);
+					add_result(resultado,nodo.addresses[c],print_email_header_to_string(arquivos,lista_subnodo.address));
+					while (lista_subnodo.next != -1)
+					{
+						fseek(arquivos.lista_enc,sizeof(LISTA)*lista_subnodo.next,SEEK_SET);
+						fread(&lista_subnodo,sizeof(LISTA),1,arquivos.lista_enc);
+						add_result(resultado,lista_subnodo.next,print_email_header_to_string(arquivos,lista_subnodo.address));
+					}
+				}
+			}
+			else//ramificaÃ§Ã£o
+			{
+				for (c=0;c<=nodo.num_chaves;c++)
+				{
+					list_email_increasing(resultado,arquivos,tree,nodo_list,nodo.filhos[c]);
+					if (c<nodo.num_chaves)
+					{
+						fseek(arquivos.lista_enc,sizeof(LISTA)*nodo.addresses[c],SEEK_SET);
+						fread(&lista_subnodo,sizeof(LISTA),1,arquivos.lista_enc);
+						add_result(resultado,nodo.addresses[c-1],print_email_header_to_string(arquivos,lista_subnodo.address));
+						while (lista_subnodo.next != -1)
+						{
+							fseek(arquivos.lista_enc,sizeof(LISTA)*lista_subnodo.next,SEEK_SET);
+							fread(&lista_subnodo,sizeof(LISTA),1,arquivos.lista_enc);
+							add_result(resultado,lista_subnodo.next,print_email_header_to_string(arquivos,lista_subnodo.address));
+						}
+					}
+				}
+			}
+		}
+		return;
 }
 
 ARQUIVOS open_account_files(char *dir, int account_address)
@@ -753,7 +799,7 @@ ARQUIVOS open_account_files(char *dir, int account_address)
 		error_m("Error at file opening");
 	free(arquivo);
 
-	//	Árvores Gerais
+	//	ï¿½rvores Gerais
 	arquivo=dir_builder(dir,account_address,"tree_HORARIO.bin");
 	if (!(arquivos.tree_HORARIO = fopen(arquivo,"rb+")))
 		error_m("Error at file opening");
@@ -795,7 +841,7 @@ ARQUIVOS open_account_files(char *dir, int account_address)
 	free(arquivo);
 
 	//	Caixas de Emails
-	//	Árvores de Inbox
+	//	ï¿½rvores de Inbox
 	arquivo=dir_builder(dir,account_address,"inbox/tree_HORARIO.bin");
 	if (!(arquivos.inbox_tree_HORARIO = fopen(arquivo,"rb+")))
 		error_m("Error at file opening");
@@ -836,7 +882,7 @@ ARQUIVOS open_account_files(char *dir, int account_address)
 		error_m("Error at file opening");
 	free(arquivo);
 
-	//	Árvores de Outbox
+	//	ï¿½rvores de Outbox
 	arquivo=dir_builder(dir,account_address,"outbox/tree_HORARIO.bin");
 	if (!(arquivos.outbox_tree_HORARIO = fopen(arquivo,"rb+")))
 		error_m("Error at file opening");
@@ -877,7 +923,7 @@ ARQUIVOS open_account_files(char *dir, int account_address)
 		error_m("Error at file opening");
 	free(arquivo);
 
-	//	Árvores de Read
+	//	ï¿½rvores de Read
 	arquivo=dir_builder(dir,account_address,"read/tree_HORARIO.bin");
 	if (!(arquivos.read_tree_HORARIO = fopen(arquivo,"rb+")))
 		error_m("Error at file opening");
@@ -918,7 +964,7 @@ ARQUIVOS open_account_files(char *dir, int account_address)
 		error_m("Error at file opening");
 	free(arquivo);
 
-	//	Árvores de Sent
+	//	ï¿½rvores de Sent
 	arquivo=dir_builder(dir,account_address,"sent/tree_HORARIO.bin");
 	if (!(arquivos.sent_tree_HORARIO = fopen(arquivo,"rb+")))
 		error_m("Error at file opening");
@@ -959,7 +1005,7 @@ ARQUIVOS open_account_files(char *dir, int account_address)
 		error_m("Error at file opening");
 	free(arquivo);
 
-	//	Árvores de Trash
+	//	ï¿½rvores de Trash
 	arquivo=dir_builder(dir,account_address,"trash/tree_HORARIO.bin");
 	if (!(arquivos.trash_tree_HORARIO = fopen(arquivo,"rb+")))
 		error_m("Error at file opening");
