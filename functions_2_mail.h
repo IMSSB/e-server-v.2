@@ -52,7 +52,12 @@ void print_horario(HORARIO data);
 char * print_horario_to_string(HORARIO data);
 
 void access_inbox(ARQUIVOS arquivos);
-send_email(PRINCIPAL principal, ARQUIVOS arquivos);
+void access_outbox(ARQUIVOS arquivos);
+void access_read(ARQUIVOS arquivos);
+void access_sent(ARQUIVOS arquivos);
+void access_trash(ARQUIVOS arquivos);
+void search_email(ARQUIVOS arquivos);
+void send_email(PRINCIPAL principal, ARQUIVOS arquivos);
 
 void list_email_decreasing(RESULTADO *resultado,ARQUIVOS arquivos,FILE *tree,FILE *nodo_list,int pos);
 void list_email_increasing(RESULTADO *resultado,ARQUIVOS arquivos,FILE *tree,FILE *nodo_list,int pos);

@@ -16,7 +16,7 @@
 #include <time.h>
 #include <sys/stat.h>
 #ifndef __linux__ // Verifica se o sistema atual n�o � Linux
-	#include <direct.h> 	//	Inclui biblioteca espec�fica do Windows se n�o for
+	#include <direct.h> 	//	Inclui biblioteca específica do Windows se não for
 	#include <conio.h>
 #else
 	#include <curses.h>
@@ -40,6 +40,7 @@
 #define size_message 300
 #define size_subject 100
 #define size_address 64
+#define size_word 30
 #define size_horario strlen("00/00/0000 00:00:00")
 
 // 	Temos que voltar o ponteiro dos arquivos depois das opera��es de leitura
@@ -106,7 +107,7 @@ HORARIO;
 
 typedef struct
 {
-	char key[30];
+	char key[size_word];
 }
 PALAVRA;
 
@@ -123,7 +124,7 @@ SUB_NODO;
 
 typedef struct
 {
-       char user[64];
+       char user[size_address];
        char password[64];
        /*int inbox; //Todos v�o conter o valor no qual est� no vetor o NODO que corresponde
        int outbox;
@@ -298,7 +299,7 @@ void remove_word(FILE *config, FILE *word_list, int scroll);
 
 void create_tree_type(char *dir,int account_address, char *folder, char *type);
 void split_tree(FILE *tree,FILE *nodo_list,int pai,int scroll);
-void predescessor(FILE *tree,FILE *nodo_list,int nodo,int key);
+void predecessor(FILE *tree,FILE *nodo_list,int nodo,int key);
 int merge_nodo(FILE *tree,FILE *nodo_list,int pai,int scroll);
 void add_key_tree(ARQUIVOS arquivos,FILE *tree, FILE *nodo_list,char *type,int key,int SUB_NODO);
 void remove_key_tree(ARQUIVOS arquivos,FILE *tree, FILE *nodo_list,char *type,int key);

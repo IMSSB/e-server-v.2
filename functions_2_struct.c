@@ -79,7 +79,7 @@ char* dir_builder(char*dir,int account_number,char* file)
 	char *ad = get_address(dir,account_number), *r;
 
 	r = strcat(strcat(strcat(filepath_gen(dir,""),ad),"/"),file);
-	printf("\nAd = %s \n r= %s",ad,r);
+
 	free(ad);
 	return r;
 }
@@ -118,7 +118,7 @@ char* ler(char modo)
 
 //LISTA DE ENDERE�OS GLOBAL
 void create_address_list(char *dir) //
-{	// Fun��o para criar o arquivo da Lista de Endere�os
+{	// Função para criar o arquivo da Lista de Endere�os
 	FILE *new;			//	Declarando ponteiro para arquivo que ser� criado
 	CONTA ad;		//	Declarando vari�vel addresses para ser escrita no arquivo
 	char *dir_ad=filepath_gen(dir,"addresses.bin");		//	Gerando caminho para o arquivo
@@ -136,15 +136,15 @@ void create_address_list(char *dir) //
 }
 
 int add_address(FILE *set, FILE *ad,char *user,char *password)
-{	//	Fun��o para adicionar um endere�o na Lista de Endere�os
+{	//	Função para adicionar um endere�o na Lista de Endere�os
 	settings s;
 	CONTA ads;
-	int scroll;		//	Vari�veis auxiliares
+	int scroll;		//	Variáveis auxiliares
 	fpos_t c;
 
-	rewind(set);						//	Colocando a posi��o do fluxo de dados no inicio
+	rewind(set);						//	Colocando a posição do fluxo de dados no inicio
 	fread(&s,sizeof(settings),1,set);	//	Lendo arquivo de configura��es e armazenando na vari�vel s
-	scroll=(s.next_address == -1)?s.num_addresses:s.next_address;	//	Definindo a posi��o em que o novo endere�o ser� salvo no arquivo addresses.bin
+	scroll=(s.next_address == -1)?s.num_addresses:s.next_address;	//	Definindo a posição em que o novo endere�o ser� salvo no arquivo addresses.bin
 	fseek(ad,scroll*sizeof(CONTA),SEEK_SET);				//	Deslocando a posi��o do buffer no arquivo addresses.bin
 	if(s.next_address!=-1)										//	caso haja blocos n�o utilizados a serem subscritos
 	{
@@ -375,21 +375,21 @@ char** words_from_text(FILE *config,FILE *text_list, int scroll)
 {
 	char  **words;
 	messages read;
-	char aux[300];
+	char aux[size_message];
 	int c=0,ca=0,tam,num_words=0;
 
-	fseek(text_list,scroll,SEEK_SET);
+	fseek(text_list,sizeof(messages)*scroll,SEEK_SET);
 	fread(&read,sizeof(messages),1,text_list);
 
 	while(c<300 && read.mail[c])
 	{
-		for(num_words++,ca++,tam=0 ; c<300 && read.mail[c] && tam <=30 && read.mail[c] !=' ' && read.mail[c] !='.' && read.mail[c] !=',' && read.mail[c] !='!' && read.mail[c] !='?' && read.mail[c] !='<' && read.mail[c] !='>' &&read.mail[c] !=';' && read.mail[c] !=':';c++,ca++,tam++ )//Tratando possíveis pontuações existentes
+		for(num_words++,ca++,tam=0 ; c<size_message && read.mail[c] && tam <=size_word && read.mail[c] !=' ' && read.mail[c] !='.' && read.mail[c] !=',' && read.mail[c] !='!' && read.mail[c] !='?' && read.mail[c] !='<' && read.mail[c] !='>' &&read.mail[c] !=';' && read.mail[c] !=':';c++,ca++,tam++ )//Tratando possíveis pontuações existentes
 		{
 			aux[ca]=read.mail[c];
 		}
 	}
 
-	aux[ca]='\o';//Barra zero é assim mesmo?
+	aux[ca]='\0';//Barra zero é assim mesmo?
 
 	words=(char**)malloc(sizeof(char*)*num_words);
 
@@ -407,8 +407,8 @@ char** words_from_text(FILE *config,FILE *text_list, int scroll)
 
 //LISTA DE ASSUNTOS
 void create_subject_list(char* dir,int account_address)
-{	// Fun��o para criar o arquivo da Lista de Assuntos do usu�rio
-	char *subjects_address=dir_builder(dir,account_address,"subject_list.bin");//fazer uma fun��o pra isso!!!
+{	// Função para criar o arquivo da Lista de Assuntos do usuário
+	char *subjects_address=dir_builder(dir,account_address,"subject_list.bin");//fazer uma função pra isso!!!
 	FILE *subject_list;
 	subjects sub;
 
@@ -426,7 +426,7 @@ void create_subject_list(char* dir,int account_address)
 }
 
 int add_subject(FILE *config, FILE *subject_list,char *new)
-{	// Fun��o para adicionar um assunto � Lista de Assuntos
+{	// Função para adicionar um assunto � Lista de Assuntos
 	configuration c;
 	subjects s;
 	int pos;
@@ -475,7 +475,7 @@ void remove_subject(FILE *config, FILE *subject_list,int pos)
 }
 
 char* get_subject(FILE *config, FILE *subject_list,int pos)
-{	//	Fun��o que retorna um assunto da Lista de Assuntos dada sua posi��o (pos)
+{	//	Função que retorna um assunto da Lista de Assuntos dada sua posição (pos)
 	char *sub;
 	subjects s;
 
@@ -872,14 +872,14 @@ void split_tree(FILE *tree,FILE *nodo_list,int pai,int scroll)
 	{
 		printf("\n---> CASO N�O TENHA PAI)\n");
 		fseek(nodo_list,sizeof(NODO)*AVB.raiz,SEEK_SET);
-		fgetpos(nodo_list,&f1);	//	Guarda a posi��o de grava��o do Filho 1
+		fgetpos(nodo_list,&f1);	//	Guarda a posição de gravação do Filho 1
 		fread(&son1,sizeof(NODO),1,nodo_list);
 		smith = (AVB.next_NODO == -1)?AVB.num_NODOS:AVB.next_NODO;
 		fseek(nodo_list,sizeof(NODO)*smith,SEEK_SET);
 		fgetpos(nodo_list,&p);
 		fread(&pain,sizeof(NODO),1,nodo_list);
 		if (AVB.next_NODO+1)
-			AVB.next_NODO = pain.pai; // Possibilitar isso na remo��o
+			AVB.next_NODO = pain.pai; // Possibilitar isso na remoção
 		else
 			AVB.anum_NODOS++;
 
@@ -964,7 +964,7 @@ void split_tree(FILE *tree,FILE *nodo_list,int pai,int scroll)
 	return;
 }
 
-void predescessor(FILE *tree,FILE *nodo_list,int nodo,int key)
+void predecessor(FILE *tree,FILE *nodo_list,int nodo,int key)
 {
 
 	NODO N,N1;
@@ -1007,14 +1007,14 @@ void predescessor(FILE *tree,FILE *nodo_list,int nodo,int key)
 }
 
 int merge_nodo(FILE *tree,FILE *nodo_list,int pai,int scroll)
-{	//	Fun��o para juntar dois NODOs irm�os, retorna o tipo da jun��o. 0 = S� passou um elemento, 1 = Jun��o dos irm�os com um elemento do pai.
+{	//	Função para juntar dois NODOs irm�os, retorna o tipo da junção. 0 = S� passou um elemento, 1 = Junção dos irm�os com um elemento do pai.
 	NODO pain,son1,son2;
 	ARVOREB AVB;
 	int c,felipe,retorno;
 	fpos_t p,f1,f2,aux;
 
 	rewind(tree);
-	fread(&AVB,sizeof(ARVOREB),1,tree); 	//	L� o arquivo de configura��o da �rvore
+	fread(&AVB,sizeof(ARVOREB),1,tree); 	//	L� o arquivo de configuração da �rvore
 	fseek(nodo_list,sizeof(NODO)*pai,SEEK_SET);
 	fgetpos(nodo_list,&p);
 	fread(&pain,sizeof(NODO),1,nodo_list);
@@ -1022,7 +1022,7 @@ int merge_nodo(FILE *tree,FILE *nodo_list,int pai,int scroll)
 	fgetpos(nodo_list,&f1);
 	fread(&son1,sizeof(NODO),1,nodo_list);
 	felipe=scroll;
-	felipe+=(scroll <= pain.num_chaves)?1:-1; // Verifica se tem irm�o � direita e define o irm�o para jun��o
+	felipe+=(scroll <= pain.num_chaves)?1:-1; // Verifica se tem irm�o � direita e define o irm�o para junção
 	fseek(nodo_list,sizeof(NODO)*pain.filhos[felipe],SEEK_SET);
 	fgetpos(nodo_list,&f2);
 	fread(&son2,sizeof(NODO),1,nodo_list);
@@ -1068,7 +1068,7 @@ int merge_nodo(FILE *tree,FILE *nodo_list,int pai,int scroll)
 			retorno=1;
 	}
 	else
-	if(scroll<felipe)//Acho que isso n�o altera a configura��o de filhos caso feito do jeito certo
+	if(scroll<felipe)//Acho que isso n�o altera a configuração de filhos caso feito do jeito certo
 	{	//caso n�o seja o ultimo filho e o irm�o tenha 1 chave para doar
 		son1.chaves[(int)son1.num_chaves]=pain.chaves[scroll];
 		son1.addresses[(int)son1.num_chaves++]=pain.addresses[scroll];
@@ -1109,7 +1109,7 @@ int merge_nodo(FILE *tree,FILE *nodo_list,int pai,int scroll)
 	return retorno;
 }
 void add_key_tree(ARQUIVOS arquivos,FILE *tree, FILE *nodo_list,char *type,int key,int SUB_NODO)
-{	// Fun��o para adicionar chaves na �rvore
+{	// Função para adicionar chaves na �rvore
 	ARVOREB new;
 	NODO nnew;
 	int c=0,scroll,aux,aux2,aux3,aux4,cdn=1;
@@ -1119,7 +1119,7 @@ void add_key_tree(ARQUIVOS arquivos,FILE *tree, FILE *nodo_list,char *type,int k
 
 	scroll=new.raiz;
 	if(new.raiz==-1)
-	{	printf("\nEntrou em condi��o raiz =-1\n");
+	{	printf("\nEntrou em condição raiz =-1\n");
 		nnew.chaves[0]=key;
 		nnew.num_chaves=1;
 		nnew.addresses[0]=add_LISTA_ENC(arquivos.config,arquivos.lista_enc,-1,SUB_NODO);//Aqui deve ser o endere�o da lista
@@ -1136,12 +1136,10 @@ void add_key_tree(ARQUIVOS arquivos,FILE *tree, FILE *nodo_list,char *type,int k
 		fseek(nodo_list,sizeof(NODO)*scroll,SEEK_SET);
 		fread(&nnew,sizeof(NODO),1,nodo_list);
 
-		if(nnew.num_chaves==k-1) // 	Divis�o de NODO cheio
+		if(nnew.num_chaves==k-1) // 	Divisão de NODO cheio
 		{
-			printf("\n---> DIVIS�O)\n");
 			split_tree(tree,nodo_list,nnew.pai,c);
 			rewind(tree);
-			printf("\nnewraiz = %d\n", new.raiz);
 			fread(&new,sizeof(ARVOREB),1,tree);
 			rewind(tree);
 			scroll=nnew.pai+1?nnew.pai:new.raiz;
@@ -1186,7 +1184,7 @@ void add_key_tree(ARQUIVOS arquivos,FILE *tree, FILE *nodo_list,char *type,int k
 }
 void remove_key_tree(ARQUIVOS arquivos,FILE *tree, FILE *nodo_list,char *type,int key)
 {
-	// Fun��o para adicionar chaves na �rvore
+	// Função para adicionar chaves na �rvore
 		ARVOREB new;
 		NODO nnew;
 		int c=0,scroll,aux,aux2,aux3,aux4,cdn=1;
@@ -1206,7 +1204,7 @@ void remove_key_tree(ARQUIVOS arquivos,FILE *tree, FILE *nodo_list,char *type,in
 			if(nnew.num_chaves==k/2-1) // 	Junção de NODO com mínimo de chaves
 			{
 				printf("\n---> Junção)\n");
-				merge_tree(tree,nodo_list,nnew.pai,c);
+				merge_nodo(tree,nodo_list,nnew.pai,c);
 				rewind(tree);
 				printf("\nnewraiz = %d\n", new.raiz);
 				fread(&new,sizeof(ARVOREB),1,tree);
@@ -1271,7 +1269,7 @@ int busca_SUB_NODO_tree(ARQUIVOS arquivos,FILE *tree, FILE *nodo_list, char *typ
 			cdn = 0;
 		}
 		else
-		if (!nnew.ne_folha)//� FOLHA!
+		if (!nnew.ne_folha)//É FOLHA!
 		{
 			achou = -1;
 			cdn = 0;
@@ -1326,7 +1324,7 @@ void remove_SUB_NODO_tree(ARQUIVOS arquivos,FILE *tree, FILE *nodo_list, char *t
 }
 
 
-//FUN��ES DE �RVORE DE CONTAS
+//FUNçãES DE �RVORE DE CONTAS
 void create_tree_account(char *dir)
 {
 	char *address, *sub_address;
@@ -1362,7 +1360,7 @@ void create_tree_account(char *dir)
 	return;
 }
 void add_CONTA_tree(FILE *addresses,FILE *tree, FILE *nodo_list,int account_address)
-{	// Fun��o para adicionar chaves na �rvore
+{	// Função para adicionar chaves na �rvore
 	ARVOREB avb;
 	NODO nodo;
 	int c=0,scroll,aux,aux2,cdn=1;
@@ -1374,7 +1372,7 @@ void add_CONTA_tree(FILE *addresses,FILE *tree, FILE *nodo_list,int account_addr
 
 	scroll=avb.raiz;
 	if(avb.raiz==-1)
-	{	printf("\nEntrou em condi��o raiz =-1\n");
+	{	printf("\nEntrou em condição raiz =-1\n");
 		nodo.chaves[0]=account_address;
 		nodo.addresses[0]=account_address;
 		nodo.num_chaves=1;
@@ -1473,7 +1471,7 @@ int busca_CONTA_tree(FILE *addresses,FILE *tree, FILE *nodo_list,int key)
 }
 
 
-//FUN��ES DE COMPARA��O
+//FUNÇÕES DE COMPARAÇÃO
 int compara_infos(ARQUIVOS arquivos, char *tipo,int a,int b)
 {
 	if (!strcmp(tipo,"messages"))
@@ -1618,7 +1616,7 @@ void add_result(RESULTADO *lista,int pos_email,char *text)
 {
 	RESULT *novo_resultado=(RESULT *)calloc(sizeof(RESULT),1);
 	lista->index = (RESULT **) realloc(lista->index,sizeof(RESULT *)*(++lista->num_resultados));
-	(*(lista->index+(lista->num_resultados-1)))= novo_resultado;
+	(lista->index[lista->num_resultados-1])= novo_resultado;
 	novo_resultado->pos_email = pos_email;
 	novo_resultado->text = text;
 }
