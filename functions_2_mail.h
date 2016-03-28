@@ -29,6 +29,7 @@ void setup(PRINCIPAL principal);
 void create_account(PRINCIPAL *principal,char *dir,char *user,char *password);
 void criar_conta(PRINCIPAL *principal,char *dir);
 void acessar_conta(PRINCIPAL *principal,char *dir);
+int generic_account_menu(MENU_GUIDE GUIDE);
 void abrir_conta(PRINCIPAL principal,char *dir,int conta);
 
 char * print_email_header_to_string(ARQUIVOS arquivos,int email_pos);
