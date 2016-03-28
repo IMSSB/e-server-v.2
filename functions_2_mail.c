@@ -298,7 +298,69 @@ void acessar_conta(PRINCIPAL *principal,char *dir)
 	return;
 }
 
+int generic_account_menu(MENU_GUIDE GUIDE)
+{
+	int opcao=0,nova_opcao=0,tecla=0,loop=1,c,total_itens=GUIDE.num_headered_itens+GUIDE.num_simple_itens;
+	char *roll[total_itens],cursor[]="-->",vazio[]="   ";//Uma roubadinha
 
+	for(c=0;c<total_itens;c++)
+	{
+		if(!c)
+			roll[c]=cursor;
+		else
+			roll[c]=vazio;
+	}
+
+
+	do {
+		while(tecla!=KeyEnter)
+		{
+			if(opcao-nova_opcao)
+			{
+				roll[opcao]=vazio;
+				roll[nova_opcao]=cursor;
+				opcao=nova_opcao;
+			}
+			printf("\n%s",GUIDE.menu_header); breakline;
+			for(c=0;c<total_itens;c++)
+			{
+				if(c<GUIDE.num_headered_itens)
+					printf("%s |%21s (%d)",roll[c],GUIDE.headered_titles[c],GUIDE.headers[c]);
+				else
+					printf("%s |%25s",roll[c],GUIDE.simple_titles[c-GUIDE.num_headered_itens]);
+
+				breakline;
+
+			}
+
+
+
+			tecla = getch();
+			while (tecla != KeySpecial2 && tecla != KeyEnter)
+				tecla = getch();
+			if (tecla == KeySpecial2)
+			{
+				tecla = getch();
+				if (tecla == KeyUp)
+				{
+					if (opcao)
+						nova_opcao--;
+				}
+				else if (tecla == KeyDown)
+				{
+					if (opcao < total_itens)
+						nova_opcao++;
+				}
+			}
+			cls;
+		}//Apertou enter, saiu
+
+		loop=0;
+
+	}while(loop);
+
+	return opcao;
+}
 void abrir_conta(PRINCIPAL principal,char *dir,int conta)
 {
 	ARQUIVOS arquivos;

@@ -250,6 +250,17 @@ typedef struct{
 	RESULT **index;
 }RESULTADO;
 
+typedef struct{
+
+	char *menu_header;
+	int num_headered_itens;
+	int *headers;
+	int num_simple_itens;
+	char **headered_titles;
+	char **simple_titles;
+
+}MENU_GUIDE;
+
 //ESCOPO DAS FUN��ES
 char* detecta_os();
 void print_nodo(NODO nodo);
