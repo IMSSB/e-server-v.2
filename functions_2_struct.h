@@ -98,10 +98,10 @@ typedef struct
 }
 addresses;
 
-typedef struct //O resto das informa��es n�o serve pra busca
+typedef struct //O resto das informações não servem pra busca
 {
-	//int dia,m�s,ano,horas,minutos,segundos;
-	int data[6];//data ordenada por relev�ncia (ano,m�s,dia,hora,minuto,segundo)
+	//int dia,mês,ano,horas,minutos,segundos;
+	int data[6];//data ordenada por relevância (ano,mês,dia,hora,minuto,segundo)
 }
 HORARIO;
 
@@ -132,17 +132,17 @@ typedef struct
        int trash;
        int sent;*/
 }
-CONTA;		//Conta deve ser uma arvore pois seria totalmente incompreens�vel
-			//usar m�todos t�o sofisticados de busca pra tudo exceto pra achar as contas
+CONTA;		//Conta deve ser uma arvore pois seria totalmente incompreensível
+			//usar métodos tão sofisticados de busca pra tudo exceto pra achar as contas
 
 typedef struct
 {
-	int chaves[k-1]; 	// Campo que � escolhido convenientemente ao funcionamento do sistema. (messages, subjects, HORARIO
+	int chaves[k-1]; 	// Campo que é escolhido convenientemente ao funcionamento do sistema. (messages, subjects, HORARIO
 	int addresses[k-1];	// Apontam para Listas de SUB_NODO
 	int filhos[k]; 		// NODOS
 	int pai;
-	char num_chaves;	// Escolha do tipo char devido ao tamanho m�ximo escalado para o programa, 64 filhos e 63 chaves.
-	char ne_folha;	// N�mero de Filhos. Tamb�m pode indicar se o NODO � uma folha ou n�o, 0 = folha.
+	char num_chaves;	// Escolha do tipo char devido ao tamanho máximo escalado para o programa, 64 filhos e 63 chaves.
+	char ne_folha;	// Número de Filhos. Também pode indicar se o NODO é uma folha ou não, 0 = folha.
 }
 NODO;
 
@@ -174,7 +174,7 @@ typedef struct
 	FILE *text_list;
 	FILE *word_list;
 	FILE *lista_enc;
-	//�rvores Gerais
+	//Árvores Gerais
 	FILE *tree_HORARIO;
 	FILE *tree_messages;
 	FILE *tree_PALAVRA;
@@ -265,6 +265,7 @@ typedef struct{
 char* detecta_os();
 void print_nodo(NODO nodo);
 void print_arvoreb(ARVOREB avb);
+void print_configuration(configuration c);
 void make_dir(char *aux);
 void error_m(char *errormessage);
 char* filepath_gen(char *dir, char *file);
@@ -298,7 +299,7 @@ void remove_email(FILE *config, FILE *email_list,int scroll);
 
 void create_LISTA_ENC(char *dir,int account_address);
 int add_LISTA_ENC(FILE *config, FILE *lista_enc,int ultimo,int novo);
-void remove_LISTA_ENC(FILE *config, FILE *lista_enc, int anterior,int atual);//A chamada desta fun��o deve ser feita dentro da arvore onde � pos�vel ter essas informa��es
+int remove_LISTA_ENC(FILE *config, FILE *lista_enc, int anterior,int atual);//A chamada desta fun��o deve ser feita dentro da arvore onde � pos�vel ter essas informa��es
 
 void create_horario_list(char *dir,int account_address);
 int add_horario(FILE *config, FILE *horario_list, HORARIO novo);
@@ -312,17 +313,19 @@ void create_tree_type(char *dir,int account_address, char *folder, char *type);
 void split_tree(FILE *tree,FILE *nodo_list,int pai,int scroll);
 void predecessor(FILE *tree,FILE *nodo_list,int nodo,int key);
 int merge_nodo(FILE *tree,FILE *nodo_list,int pai,int scroll);
-void add_key_tree(ARQUIVOS arquivos,FILE *tree, FILE *nodo_list,char *type,int key,int SUB_NODO);
-void remove_key_tree(ARQUIVOS arquivos,FILE *tree, FILE *nodo_list,char *type,int key);
-int busca_SUB_NODO_tree(ARQUIVOS arquivos,FILE *tree, FILE *nodo_list, char *type,int key);
-void add_SUB_NODO_tree(ARQUIVOS arquivos,FILE *tree, FILE *nodo_list,char *type,int key,int SUB_NODO);
-void remove_SUB_NODO_tree(ARQUIVOS arquivos,FILE *tree, FILE *nodo_list, char *type,int key,int SUB_NODO);
+void add_key_tree(ARQUIVOS *arquivos,FILE *tree, FILE *nodo_list,char *type,int key,int SUB_NODO);
+void remove_key_tree(ARQUIVOS *arquivos,FILE *tree, FILE *nodo_list,char *type,int key);
+int busca_SUB_NODO_tree(ARQUIVOS *arquivos,FILE *tree, FILE *nodo_list, char *type,int key);
+void add_SUB_NODO_tree(ARQUIVOS *arquivos,FILE *tree, FILE *nodo_list,char *type,int key,int SUB_NODO);
+void remove_SUB_NODO_tree(ARQUIVOS *arquivos,FILE *tree, FILE *nodo_list, char *type,int key,int SUB_NODO);
+
+NODO clean_NODO(void);
 
 void create_tree_account(char *dir);
 void add_CONTA_tree(FILE *addresses,FILE *tree, FILE *nodo_list,int account_address);
 int busca_CONTA_tree(FILE *addresses,FILE *tree, FILE *nodo_list,int key);
 
-int compara_infos(ARQUIVOS arquivos,char *type,int a,int b);
+int compara_infos(ARQUIVOS *arquivos,char *type,int a,int b);
 int horario_igual(HORARIO a,HORARIO b);
 int horario_maior(HORARIO a,HORARIO b);
 int horario_menor(HORARIO a,HORARIO b);

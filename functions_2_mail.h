@@ -39,35 +39,43 @@
 
 void menu();
 void project_presentation();
-void setup(PRINCIPAL principal);
+void setup(PRINCIPAL *principal);
 
 void create_account(PRINCIPAL *principal,char *dir,char *user,char *password);
 void criar_conta(PRINCIPAL *principal,char *dir);
 void acessar_conta(PRINCIPAL *principal,char *dir);
 int generic_account_menu(MENU_GUIDE GUIDE);
-void abrir_conta(PRINCIPAL principal,char *dir,int conta);
+void abrir_conta(PRINCIPAL *principal,char *dir,int conta);
 
-char * print_email_header_to_string(ARQUIVOS arquivos,int email_pos);
-void print_email(ARQUIVOS arquivos,int email_pos);
+char * print_email_header_to_string(ARQUIVOS *arquivos,int email_pos);
+void print_email(ARQUIVOS *arquivos,int email_pos);
 void print_horario(HORARIO data);
 char * print_horario_to_string(HORARIO data);
 
-void access_inbox(ARQUIVOS arquivos);
-void access_outbox(ARQUIVOS arquivos);
-void access_read(ARQUIVOS arquivos);
-void access_sent(ARQUIVOS arquivos);
-void access_trash(ARQUIVOS arquivos);
-void search_email(ARQUIVOS arquivos);
-void send_email(PRINCIPAL principal, ARQUIVOS arquivos);
+void access_inbox(PRINCIPAL *principal,ARQUIVOS *arquivos);
+void access_outbox(PRINCIPAL *principal,ARQUIVOS *arquivos);
+void access_read(PRINCIPAL *principal,ARQUIVOS *arquivos);
+void access_sent(PRINCIPAL *principal,ARQUIVOS *arquivos);
+void access_trash(PRINCIPAL *principal,ARQUIVOS *arquivos);
 
-void list_email_decreasing(RESULTADO *resultado,ARQUIVOS arquivos,FILE *tree,FILE *nodo_list,int pos);
-void list_email_increasing(RESULTADO *resultado,ARQUIVOS arquivos,FILE *tree,FILE *nodo_list,int pos);
+void search_email(PRINCIPAL *principal,ARQUIVOS *arquivos);
+void send_email(PRINCIPAL *principal, ARQUIVOS *arquivos, char *dest);
+void move_email(ARQUIVOS *arquivos,int email_pos,char *from);
+void delete_email(ARQUIVOS *arquivos,int email_pos,char *folder);
+void add_email_to_tfolder(ARQUIVOS *arquivos,int email_pos,char *folder);
+void remove_email_from_tfolder(ARQUIVOS *arquivos,int email_pos,char *folder);
 
+void exibir_email(PRINCIPAL *principal,ARQUIVOS *arquivos,char *pasta,int pos_email);
+char *destinatario_email(ARQUIVOS *arquivos, int pos_email);
+char *remetente_email(ARQUIVOS *arquivos, int pos_email);
 
-ARQUIVOS open_account_files(char *dir, int account_address);
-void close_account_files(ARQUIVOS arquivos);
-PRINCIPAL open_server_files();
-void close_server_files(PRINCIPAL principal);
+void list_email_decreasing(RESULTADO *resultado,ARQUIVOS *arquivos,FILE *nodo_list,int pos);
+void list_email_increasing(RESULTADO *resultado,ARQUIVOS *arquivos,FILE *nodo_list,int pos);
+
+ARQUIVOS *open_account_files(char *dir, int account_address);
+void close_account_files(ARQUIVOS *arquivos);
+PRINCIPAL *open_server_files();
+void close_server_files(PRINCIPAL *principal);
 
 int number_of_emails(FILE *tree);
 
