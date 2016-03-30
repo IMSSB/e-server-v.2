@@ -286,7 +286,7 @@ void create_text_list(char *dir,int account_address);
 int add_text(FILE *config,FILE *text_list,char *new);
 void remove_text(FILE *config,FILE *text_list,int scroll);
 char* get_text(FILE *config,FILE *text_list, int scroll);
-char** words_from_text(FILE *config,FILE *text_list, int scroll);
+char** words_from_text(FILE *text_list, int pos);
 void words_to_tree(ARQUIVOS *arquivos,FILE *tree, FILE *nodo_list,int SUB_NODO,FILE *config, FILE *word_list,char** words);
 
 void create_subject_list(char *dir,int account_address);

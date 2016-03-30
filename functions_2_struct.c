@@ -396,14 +396,15 @@ char* get_text(FILE *config,FILE *text_list, int pos)
 
 	return t;
 }
-char** words_from_text(FILE *config,FILE *text_list, int scroll)
+
+char** words_from_text(FILE *text_list, int pos)
 {
 	char  **words;
 	messages read;
 	char aux[size_message];
 	int c=0,ca=0,tam,num_words=0;
 
-	fseek(text_list,sizeof(messages)*scroll,SEEK_SET);
+	fseek(text_list,sizeof(messages)*pos,SEEK_SET);
 	fread(&read,sizeof(messages),1,text_list);
 
 	while(c<300 && read.mail[c])
@@ -429,17 +430,21 @@ char** words_from_text(FILE *config,FILE *text_list, int scroll)
 	return words;
 
 }
+
 void words_to_tree(ARQUIVOS *arquivos,FILE *tree, FILE *nodo_list,int SUB_NODO,FILE *config, FILE *word_list,char** words)
 {
-	int c=0,add;
-
-	while(words[c])
+	int c,add;
+	printf("TESTE 1\n");
+		pause;
+	for(c=0;words[c];c++)
 	{
+		printf("TESTE2.%d\n",c);
+			pause;
 		add = add_word(config,word_list,words[c]);
 		add_SUB_NODO_tree(arquivos,tree,nodo_list,"PALAVRA",add,SUB_NODO);
-		c++;
 	}
-
+	printf("TESTE 3\n");
+		pause;
 	return;
 }
 
@@ -472,7 +477,7 @@ int add_subject(FILE *config, FILE *subject_list,char *new)
 
 	rewind(config);
 	fread(&c,sizeof(configuration),1,config);
-	rewind(config);
+
 	pos=(c.next_subject==-1)?c.num_subjects:c.next_subject;
 	fseek(subject_list,pos*sizeof(subjects),SEEK_SET);
 	if(c.next_subject != -1)
@@ -486,8 +491,9 @@ int add_subject(FILE *config, FILE *subject_list,char *new)
 		c.anum_subjects++;
 	sprintf(s.subject,"%s",new);
 	c.num_subjects++;
-	fwrite(&c,sizeof(configuration),1,config);
 	fwrite(&s,sizeof(subjects),1,subject_list);
+	rewind(config);
+	fwrite(&c,sizeof(configuration),1,config);
 
 	return pos;
 }
@@ -837,7 +843,7 @@ void create_word_list(char *dir,int account_address)
 }
 
 int add_word(FILE *config, FILE *word_list, char *new)
-{	// 	Fun��o para adicionar palavra da Lista de Palavras
+{	// 	Função para adicionar palavra da Lista de Palavras
 	PALAVRA w;
 	configuration c;
 	int pos;
@@ -848,13 +854,10 @@ int add_word(FILE *config, FILE *word_list, char *new)
 
 	pos=(c.next_PALAVRA==-1)?c.num_PALAVRA:c.next_PALAVRA;
 	fseek(word_list,pos*sizeof(PALAVRA),SEEK_SET);
-	fgetpos(word_list,&p);
-	fread(&w,sizeof(PALAVRA),1,word_list);
-	fsetpos(word_list,&p);
 	if (c.next_PALAVRA != -1)
 	{
 		fgetpos(word_list,&p);
-		fread(&w,sizeof(messages),1,word_list);
+		fread(&w,sizeof(PALAVRA),1,word_list);
 		sscanf(w.key,"%d",&(c.next_PALAVRA));
 		fsetpos(word_list,&p);
 	}
@@ -864,7 +867,7 @@ int add_word(FILE *config, FILE *word_list, char *new)
 	c.num_PALAVRA++;
 	fwrite(&w,sizeof(PALAVRA),1,word_list);
 	rewind(config);
-	fwrite(&c,sizeof(PALAVRA),1,config);
+	fwrite(&c,sizeof(configuration),1,config);
 
 	return pos;
 }
@@ -885,7 +888,7 @@ void remove_word(FILE *config, FILE *word_list, int scroll)
 		fseek(word_list,scroll*sizeof(PALAVRA),SEEK_SET);
 		fwrite(&w,sizeof(PALAVRA),1,word_list);
 		rewind(config);
-		fwrite(&c,sizeof(PALAVRA),1,config);
+		fwrite(&c,sizeof(configuration),1,config);
 	}
 
 	return;

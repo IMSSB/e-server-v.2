@@ -429,7 +429,7 @@ void abrir_conta(PRINCIPAL *principal,char *dir,int conta)
 				send_email(principal,arquivos,NULL);
 			break;
 			case 6: // Pesquisar Email
-				search_email(arquivos);
+				search_email(principal,arquivos);
 			break;
 			case 7: // Sair da Conta
 				loop=0;
@@ -1493,9 +1493,12 @@ void send_email(PRINCIPAL *principal, ARQUIVOS *arquivos,char *dest)
 	add_SUB_NODO_tree(arquivos,arquivos->outbox_tree_HORARIO,arquivos->outbox_tree_L_HORARIO,"horario",email.data,pos_email);
 	add_SUB_NODO_tree(arquivos,arquivos->outbox_tree_messages,arquivos->outbox_tree_L_messages,"messages",email.MSG,pos_email);
 	add_SUB_NODO_tree(arquivos,arquivos->outbox_tree_subjects,arquivos->outbox_tree_L_subjects,"subjects",email.assunto,pos_email);
+	words_to_tree(arquivos,arquivos->outbox_tree_PALAVRA,arquivos->outbox_tree_L_PALAVRA,pos_email,arquivos->config,arquivos->word_list,words_from_text(arquivos->word_list,email.MSG));
+
 	add_SUB_NODO_tree(arquivos,arquivos->tree_HORARIO,arquivos->tree_L_HORARIO,"horario",email.data,pos_email);
 	add_SUB_NODO_tree(arquivos,arquivos->tree_messages,arquivos->tree_L_messages,"messages",email.MSG,pos_email);
 	add_SUB_NODO_tree(arquivos,arquivos->tree_subjects,arquivos->tree_L_subjects,"subjects",email.assunto,pos_email);
+	words_to_tree(arquivos,arquivos->tree_PALAVRA,arquivos->tree_L_PALAVRA,pos_email,arquivos->config,arquivos->word_list,words_from_text(arquivos->text_list,email.MSG));
 
 }
 
