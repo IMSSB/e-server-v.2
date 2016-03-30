@@ -429,6 +429,18 @@ char** words_from_text(FILE *config,FILE *text_list, int scroll)
 	return words;
 
 }
+void words_to_tree(ARQUIVOS *arquivos,FILE *tree, FILE *nodo_list,int SUB_NODO,FILE *config, FILE *word_list,char** words)
+{
+	int c=0,add;
+
+	while(words[c])
+	{
+		add = add_word(config,word_list,words[c]);
+		add_SUB_NODO_tree(arquivos,tree,nodo_list,"PALAVRA",add,SUB_NODO);
+	}
+
+	return;
+}
 
 //LISTA DE ASSUNTOS
 void create_subject_list(char* dir,int account_address)
