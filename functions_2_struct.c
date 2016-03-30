@@ -437,6 +437,7 @@ void words_to_tree(ARQUIVOS *arquivos,FILE *tree, FILE *nodo_list,int SUB_NODO,F
 	{
 		add = add_word(config,word_list,words[c]);
 		add_SUB_NODO_tree(arquivos,tree,nodo_list,"PALAVRA",add,SUB_NODO);
+		c++;
 	}
 
 	return;
